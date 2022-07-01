@@ -10,3 +10,5 @@
 *.toc
 *.blg
 *.bbl
+*.fdb_latexmk
+*.fls
