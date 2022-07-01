@@ -2,13 +2,102 @@
 
 \chapter{Attacks}
 
-common assumption read/write access to firmware image through exploit or physical access
+attacks with escalating security mechanisms
+assumptions:
+read/write access to firmware image through
+exploit or physical access (spi clamp override)
 
-\section{No Secure Boot}
+\section{No Security}
+dump image
+open with UEFITool
+add in NTFS driver
+remove previous NTFS driver if present, for full control, might be read only etc
+try in EFI shell
+navigate to Windows folder
+create folder
+try in code
+SimpleFileSystem Protocol iteration
+write failed on hibernated file
+patch to allow write on hibernated drivers
+pack executable binary as uefi module
+iterate over firmware volume protocols
+search for payload guid
+check size match
+override notepad works
+
+but no automatic execution nor elevated privileges
+dll proxying
+dll hijacking
+
+Task Scheduler
+defined in xml
+cached in registry
+edit with start cmd.exe and trigger manually
+whoami
+
+chntpw and reged
+port to uefi
+edit Task in machine under Control
+export target registry key
+modify so that registry key can differ and found via matching values
+import and override registry key on target machine
+payload whoami
+
 
 \section{Secure Boot}
+expect not to boot
+no difference
+secure boot default policy snippet
+instead relies on Signed Capsule Updates
+
 
 \section{Secure Boot and Bitlocker}
+boot execution differs from normal
+tpm values different
+bitlocker encryption fails
+recovery key prompt
+prompt is still during transient system load phase
+therefor uses uefi services such as SimpleTextInputEx Protocol
+explain more in depth how protocols are returned to the end user
+explain basic hooking
+explain how we retain information of the hook in question
+keylog recovery key
+key input advancment is weird and makes tracking hard
+alternatively screen shot
+still hook to find when enter is pressed
+explain how screenshotting works
+some basic compression
 
+network stack wasn't installed onto handles when boot over ip was disabled
+compared loaded dxe drivers between both configurations
+Realtek Family driver not loaded
+load manually
+reinstall all handle to controllers to enable network stack regardless
+
+sending key out is only good for physical access attack vector
+dislocker linux utility
+mount encrypted drive with decryption mean
+read and write access
+dual boot in vm
+enter password and it works
+port to uefi
+bitlocker encrypts block-wise
+uefi protocol stack
+hook block io
+again hook data mapping
+wait for recovery key
+send recovery key on enter press
+
+hook ExitBootServices
+enable hook
+write payload
+import registry key
+disable hook
+
+persistence when part of root of trust
+fresh install / tpm update values
+hook Trusted Copmuting Group 2 (TCG2) Protocol
+TPM communication
+receive bitlocker vmk key and send to dislocker
 
 

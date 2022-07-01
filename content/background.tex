@@ -9,28 +9,59 @@ security
 \section{UEFI}
 \subsection{Boot Sequence}
 
+\subsubsection{1. Security (SEC)}
+establishment of root of trust
+\subsubsection{2. Pre-EFI (PEI)}
+\subsubsection{3. Driver Execution Environment (DXE)}
+dxe core
+dxe dispatcher
+dxe drivers
+\subsubsection{4. Boot Device Selection (BDS)}
+\subsubsection{5. Transient System Load (TSL)}
+boottime and runtime services/driver
+bootloader
+ExitBootServices()
+\subsubsection{6. Runtime (RT)}
+runtime services/driver
+\subsubsection{7. Afterlife (AL)}
+hibernation
+sleep
+
+
 \subsection{UEFI/PI Firmware Images}
 flash device
 flash volume
 flash file system
 
-\subsection{Images}
-file format
+\subsection{Executables}
+PE32 file format
+fixed and dynamic address loading
+relocatable
 application vs driver
+boot and runtime memory
+
+\subsection{Programming}
 boot and runtime services
 boot service table
+guids
+handles and protocols
 protocols
-protocol handles
 
-\subsection{Secure Boot}
-TPM
-spi write
+\subsection{edk2}
+build system
 
+\subsection{Security}
+% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/
+\subsubsection{Secure Boot}
+% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
+\subsubsection{Signed Capsule Update}
 
 \section{Windows}
-\subsection{Bitlocker}
-\subsection{UAC}
+\subsection{User Access Control (UAC)}
 \subsection{Signing}
+\subsection{Bitlocker}
+how does it work
+explain TPM
 
 
 
