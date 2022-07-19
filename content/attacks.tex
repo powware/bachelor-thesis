@@ -31,16 +31,19 @@ try in code
 compile dxe driver within ovmf to receive .ffs file with version depex user interface section
 SimpleFileSystem Protocol iteration
 write failed on hibernated file
-patch to allow write on hibernated drivers
+patch to allow write on hibernated drives
+
 pack executable binary as uefi module
 iterate over firmware volume protocols
 search for payload guid
 check size match
 override notepad works
 
+% ref to background UAC signed
 but no automatic execution nor elevated privileges
 dll proxying
 dll hijacking
+registry editing
 
 Task Scheduler
 defined in xml
@@ -56,15 +59,22 @@ export target registry key
 modify so that registry key can differ and found via matching values
 import and override registry key on target machine
 payload whoami
+localsystem
 
 
 \section{Secure Boot}
 how does one enable it
-expect not to boot
+mostly comes with default keys OEM
+expectation:
+not to boot
+observation:
 no difference
+% ref to paper default policy
 secure boot default policy snippet
 option roms and bootloader
+% ref background firmware update
 instead relies on Signed Capsule Updates
+assumes integrity
 
 
 \section{Secure Boot and Bitlocker}
@@ -73,7 +83,7 @@ secure boot or not
 bitlocker enabled with TPM auto decryption
 
 observation:
-boot execution differs from executing reootkit
+boot execution differs from executing rootkit
 tpm values different
 bitlocker auto decryption fails
 recovery key prompt
@@ -83,6 +93,7 @@ what is the reaction of the average user
 type in recovery password
 alternative would be to remove drive and insert into safe device
 
+% ref to background os loader
 prompt is done by the OS Loader
 ergo still during transient system load phase
 required to use protocol services
@@ -104,6 +115,8 @@ alternatively screen shot
 still need hook to find when enter is pressed
 explain how screenshotting works
 some basic compression
+wait for recovery key
+send recovery key on enter press
 
 on real hardware
 network stack wasn't installed onto handles when boot over ip was disabled
@@ -123,8 +136,8 @@ bitlocker encrypts block-wise
 uefi protocol stack
 hook block io
 again hook data mapping
-wait for recovery key
-send recovery key on enter press
+dislocker validate block
+solves recovery key advancement issue
 
 hook ExitBootServices
 enable hook
@@ -136,8 +149,10 @@ next boot would require to input tpm values again
 update tpm values in payload
 caveat pin? look into this
 
+% reference to rootkit definition
 persistence when part of root of trust
 fresh install / tpm update values
+% paper von betreuern
 hook Trusted Copmuting Group 2 (TCG2) Protocol
 TPM communication
 receive bitlocker vmk key and send to dislocker
