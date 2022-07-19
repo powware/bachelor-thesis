@@ -6,14 +6,15 @@ attacks with escalating security mechanisms
 assumptions:
 read/write access to firmware image through
 exploit or physical access (spi clamp override)
+intercepting the deployment chain (distribution or privately signed targeted attacks)
+ref lenovo vantage for distributed example
 
-how does one compile uefi application with edk2
-it's open source so we can look up examples for most stuff
 
 
 \section{Neither Secure Boot nor Bitlocker}
 use read access to dump image
-open with UEFITool
+% ref to background UEFI/PI IMAGE
+since it an FV with FFS we can open with UEFITool
 remove previous NTFS driver if present, for full control, might be read only etc
 in UEFITool search and remove
 add in NTFS driver
@@ -22,6 +23,9 @@ use write access
 try in EFI shell
 navigate to Windows folder
 create folder
+
+how does one compile uefi application with edk2
+it's open source so we can look up examples for most stuff
 
 try in code
 compile dxe driver within ovmf to receive .ffs file with version depex user interface section

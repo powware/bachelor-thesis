@@ -22,25 +22,26 @@ security
 
 \subsection{Boot Sequence}
 focus will be on dxe and transient system load
-\subsubsection{1. Security (SEC)}
-establishment of root of trust
-\subsubsection{2. Pre-EFI (PEI)}
-\subsubsection{3. Driver Execution Environment (DXE)}
-dxe core
-dxe dispatcher
-depex
-dxe drivers
-\subsubsection{4. Boot Device Selection (BDS)}
-\subsubsection{5. Transient System Load (TSL)}
-boottime and runtime services/driver
-bootloader
-ExitBootServices()
-\subsubsection{6. Runtime (RT)}
-runtime services/driver
-\subsubsection{7. Afterlife (AL)}
-hibernation
-sleep
-
+\itemize{
+    \subsubsection{1. Security (SEC)}
+    establishment of root of trust
+    \subsubsection{2. Pre-EFI (PEI)}
+    \subsubsection{3. Driver Execution Environment (DXE)}
+    dxe core
+    dxe dispatcher
+    depex
+    dxe drivers
+    \subsubsection{4. Boot Device Selection (BDS)}
+    \subsubsection{5. Transient System Load (TSL)}
+    boottime and runtime services/driver
+    bootloader
+    ExitBootServices()
+    \subsubsection{6. Runtime (RT)}
+    runtime services/driver
+    \subsubsection{7. Afterlife (AL)}
+    hibernation
+    sleep
+}
 
 \subsection{UEFI/PI Firmware Images}
 flash device
@@ -111,8 +112,6 @@ build system
 \subsection{User Access Control (UAC)}
 \subsection{Signing}
 \subsection{Bitlocker}
+\subsubsection{TPM}
 how does it work
 explain TPM
-
-
-
