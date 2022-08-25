@@ -2,7 +2,12 @@
 
 \chapter{Attacks}
 
-We split our attacks into three different categories facing escalating levels of security mechanisms. All attacks share the assumption of being able to add DXE Drivers to the DXE Volume. This can be achieved by having read/write access to the SPI flash or using the Signed Capsule Update. Gaining read/write access to the SPI Flash is possible either through physical access to the device by using an SPI clamp on the chip itself or through exploits like for example the
+% chapter summary, briefly introduce the three attacks
+Our different attacks face three escalating levels of security mechanisms. The first is with Secure Boot and Bitlocker disabled, the second is just Secure Boot enabled and the third is both Secure Boot and Bitlocker enabled with the focus of the study on Bitlocker.
+% common assumption/requirement across the attacks
+All attacks share the requirement of being able to add DXE Drivers to the DXE Volume.
+% how to achieve assumption/requirement
+This can be achieved by having read/write access to the SPI flash or using the Signed Capsule Update. Gaining read/write access to the SPI Flash is possible either through physical access to the device by using an SPI clamp on the chip itself or through exploits like for example the
 % see SMM multi threaded exploit
 . Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
 % ref lenovo vantage for distributed example
