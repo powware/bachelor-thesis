@@ -2,12 +2,12 @@
 
 \chapter{Attacks}
 
-attacks with escalating security mechanisms
-assumptions:
-read/write access to firmware image through
-exploit or physical access (spi clamp override)
-intercepting the deployment chain (distribution or privately signed targeted attacks)
-ref lenovo vantage for distributed example
+We split our attacks into three different categories facing escalating levels of security mechanisms. All attacks share the assumption of being able to add DXE Drivers to the DXE Volume. This can be achieved by having read/write access to the SPI flash or using the Signed Capsule Update. Gaining read/write access to the SPI Flash is possible either through physical access to the device by using an SPI clamp on the chip itself or through exploits like for example the
+% see SMM multi threaded exploit
+. Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
+% ref lenovo vantage for distributed example
+% network boot maybe
+
 
 
 
