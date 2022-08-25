@@ -1,11 +1,12 @@
 % !TEX root = ../thesis.tex
-%
+
 \chapter{Background}
 
+We now introduce the background information neccessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as it's security mechanisms. It is also necessary to understand our target's defenses, for this we briefly describe the Window's security mechanisms faced when performing our attacks.
 
-\section{UEFI}
+\section{\acf{UEFI}}
 
-general introduction to uefi
+% general introduction to uefi
 interface between operating system and platform firmware
 data datables containing platform-related information
 boot- and runttime service functions for the bootloader and os to call
@@ -21,36 +22,55 @@ does not require changes to the first sector, this allows media to boot legacy a
 security
 
 \subsection{Boot Sequence}
+
 focus will be on dxe and transient system load
-\itemize{
-    \subsubsection{1. Security (SEC)}
+
+\begin{enumerate}
+    \item{\acf{SEC}}
+
     establishment of root of trust
-    \subsubsection{2. Pre-EFI (PEI)}
-    \subsubsection{3. Driver Execution Environment (DXE)}
+
+    \item{\acf{PEI}}
+
+    initialize stuff
+
+    \item{\acf{DXE}}
+
     dxe core
     dxe dispatcher
     depex
     dxe drivers
-    \subsubsection{4. Boot Device Selection (BDS)}
-    \subsubsection{5. Transient System Load (TSL)}
+
+    \item{\acf{BDS}}
+
+
+    \item{\acf{TSL}}
+
     boottime and runtime services/driver
     bootloader
     ExitBootServices()
-    \subsubsection{6. Runtime (RT)}
+
+    \item{\acf{RT}}
+
     runtime services/driver
-    \subsubsection{7. Afterlife (AL)}
+
+    \item{\acf{AL}}
+
     hibernation
     sleep
-}
 
-\subsection{UEFI/PI Firmware Images}
+\end{enumerate}
+
+\subsection{\acs{UEFI}/\acs{PI} Firmware Images}
+
 flash device
 flash volume
 flash file system
 file sections
 depex
 
-\subsection{UEFI Images}
+\subsection{\acs{UEFI} Images}
+
 executable
 subset of PE32+ file format with modified header signature to distinguish from normal PE32 Images
 + stands addition of 64-bit relocation fix-up extension
@@ -63,13 +83,15 @@ memory marked as code and data
 jump to entry point
 what is the boot manager
 
-\subsubsection{UEFI Applications}
+\subsubsection{\acs{UEFI} Applications}
+
 example efi shell
 loaded by boot manager or other applications
 return or calling exit specifically
 always unloaded from memory
 
 \subsubsection{UEFI OS Loaders}
+
 example windows boot manager
 normally take over control from the firmware
 upon load behaves like a normal UEFI application
@@ -82,6 +104,7 @@ all boot services in the system are terminated, including memory management
 UEFI OS loader now responsible
 
 \subsubsection{UEFI Drivers}
+
 loaded by boot manager, UEFI firmware (DXE foundation), or other applications
 example payload
 unloaded only when returning error code
@@ -93,6 +116,7 @@ runttime drivers are fixed up with virtual mappings upon SetVirtualAddressMap ca
 has to convert its allocated memory
 
 \subsection{Firmware Core}
+
 boot and runtime services
 boot service table
 guids
@@ -107,6 +131,7 @@ build system
 \subsubsection{Secure Boot}
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
 \subsubsection{Signed Capsule Update}
+SMM
 
 \section{Windows}
 \subsection{User Access Control (UAC)}
