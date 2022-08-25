@@ -2,7 +2,7 @@
 
 \chapter{Background}
 
-We now introduce the background information neccessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as it's security mechanisms. It is also necessary to understand our target's defenses, for this we briefly describe the Window's security mechanisms faced when performing our attacks.
+The following introduces the background information necessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as its security mechanisms. It is also necessary to understand our target's defenses, for this, we briefly describe the Window's security mechanisms faced when performing our attacks.
 
 \section{\acf{UEFI}}
 
@@ -28,7 +28,10 @@ focus will be on dxe and transient system load
 \begin{enumerate}
     \item{\acf{SEC}}
 
+    first phase
     establishment of root of trust
+    handles platform restart
+    temporary memory in CPU cache (CAR) cache as ram, no evictions mode
 
     \item{\acf{PEI}}
 
