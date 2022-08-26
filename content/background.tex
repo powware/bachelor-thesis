@@ -4,21 +4,24 @@
 
 The following introduces the background information necessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as its security mechanisms. It is also necessary to understand our target's defenses, for this, we briefly describe the Window's security mechanisms faced when performing our attacks.
 
-\section{\acf{UEFI}}
+\section{\acs{UEFI}}
 
-% general introduction to uefi
-interface between operating system and platform firmware
-data datables containing platform-related information
+% what is it
+\acf{UEFI} is a specification that defines an abstract interface between an \acf{OS} and the \acf{PF}.
+% why does it exist
+It was designed to replace the legacy \acl{BF} \ac{BIOS}, while also often offering a backwards compatible mode with the \acf{CSM}.
+% what it defines
+The specification is a pure interface specification thus merely states what interfaces and structures a \ac{PF} has to offer and what an \ac{OS} may use.
+% what it doesn't define
+how it is implemented by PF
+what is used by OS
+% what does it consist of
 boot- and runttime service functions for the bootloader and os to call
-pure interface specification
-merely states what interfaces to offer and not how they are implemented nor which or how they are used
-goals:
+datatables containing platform-related information
+% what are its concrete goals
 - complete solution describing all features and capabilities
 - abstract interfaces to support a range of processors without the need for knowledge about underlying hardware for the bootloader
 - sharable persistent storage for platform support code
-replace bios but also backwards compatible with Compability Support Module (CMS)
-supports boot from media containing UEFI OS loader or UEFI System Partition
-does not require changes to the first sector, this allows media to boot legacy and uefi at the same time
 security
 
 \subsection{Boot Sequence}
@@ -28,10 +31,40 @@ focus will be on dxe and transient system load
 \begin{enumerate}
     \item{\acf{SEC}}
 
-    first phase
-    establishment of root of trust
-    handles platform restart
-    temporary memory in CPU cache (CAR) cache as ram, no evictions mode
+    establishment of root of trust in the system
+    inductive security design
+    integrity of subsequent module is checked by the previous module
+    first module is root of trust
+    %ref to PSP
+
+    handles all platform restart events
+    applying power to system from unpowered state
+    restarting from active state
+    receiving exception conditions
+
+    creates temporary memory store
+    possibly CPU \ac{CAR}
+    cache behaves as linear store of memory
+    no evictions mode
+    every memory access is a hit
+    eviction not supported as main memory is not set up yet and would lead to platform failure
+
+
+    final step
+    Pass handoff information to the \ac{PEI} Foundation
+    % what is the PEI foundation
+    \begin{itemize}
+        \item state of platform
+        \item location and size of the \ac{BFV}
+        \item location and size of the temporary RAM
+        \item location and size of the stack
+        \item optionally one or more \acp{HOB} via the \ac{SEC} \ac{HOB} Data \ac{PPI}
+    \end{itemize}
+
+    SEC Platform Information PPI
+    information about the health of the processor
+
+    SEC HOB Data PPI
 
     \item{\acf{PEI}}
 
@@ -135,6 +168,8 @@ build system
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
 \subsubsection{Signed Capsule Update}
 SMM
+\subsubsection{TPM}
+SEC starts by measuring PEI
 
 \section{Windows}
 \subsection{User Access Control (UAC)}
