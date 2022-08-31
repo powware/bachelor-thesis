@@ -4,10 +4,12 @@
 
 The following introduces the background information necessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as its security mechanisms. It is also necessary to understand our target's defenses, for this, we briefly describe the Window's security mechanisms faced when performing our attacks.
 
-\section{\acs{UEFI}}
-
+\section{\acs{UEFI}/\acs{PI}}
 % what is it
-\acf{UEFI} is a specification that defines an abstract interface between an \acf{OS} and the \acf{PF}.
+\textcquote{uefi-spec-overview}{The \ac{UEFI} specifications define a new model for the interface between personal-computer \ac{OS} and \ac{PF}. \textelp{} Together, these provide a standard environment for booting an \ac{OS} and running pre-boot applications}.
+
+UEFI is pure interface spec
+\cite{beyond-bios}
 % why does it exist
 It was designed to replace the legacy \acl{BF} \ac{BIOS}, while also often offering a backwards compatible mode with the \acf{CSM}.
 % what it defines
@@ -68,17 +70,60 @@ focus will be on dxe and transient system load
 
     \item{\acf{PEI}}
 
-    initialize stuff
+    \begin{itemize}
+        \item init permanent memory
+        \item describe memory in \acp{HOB}
+        \item describe \ac{FV} in \acp{HOB}
+        \item pass control to \ac{DXE}
+    \end{itemize}
+
+    crisis recovery (what is this?)
+    resuming from S3 sleep state
+    linear array of RAM
+    \ac{PEIM} provides a framework to allow vendors to supply separate initialization modules for
+    each functionally distinct piece of system hardware that must be initialized prior to the DXE phase \cite{pi-spec}
+
+    % design goals
+    maintenance of chain of trust, protection against unauthorized updates to the PEI phase or modules
+    authentication of the PEI Foundation and its modules
+    provide core PEI module (PEI foundation) processor architecture independent, supports add-in moudles from vendors for processors, chipsets, RAM
+
+    % what it does
+    Locating, validating, and dispatching PEIMs
+    Facilitating communication between PEIMs
+    Providing handoff data to subsequent phases
 
     \item{\acf{DXE}}
 
-    dxe core
+    dxe core/foundation
+    platform independent
+    is implementation of UEFI
+    UEFI Boot Services
+    UEFI Runtime Services
+    DXE Services
+
     dxe dispatcher
-    depex
+    discover drivers stored in firmware volumes and execute in proper order
+    apriori file optionally in FV or depex of driver
+    hands control over to BDS
+
     dxe drivers
+    init processor, chipset and platform
+    produce arichtectural protocols and i/o abstractions for consoles and boot devices
+
+    % responsibilities
+    initializing the processor, chipset, and platform components
+    providing software abstractions for system services, console devices, and boot devices.
 
     \item{\acf{BDS}}
+    platform boot policy
 
+
+    \begin{itemize}
+        \item Initializing console devices
+        \item Loading device drivers
+        \item Attempting to load and execute boot selections
+    \end{itemize}
 
     \item{\acf{TSL}}
 
@@ -163,6 +208,56 @@ protocols
 build system
 
 \subsection{Security}
+DXE SMM Ready to Lock Vol4
+Security Architecture Protocol
+Abstracts security-specific functions from the DXE Foundation for purposes of handling GUIDed
+section encapsulations. This protocol must be produced by a boot service or runtime DXE driver
+and may only be consumed by the DXE Foundation and any other DXE drivers that need to validate
+the authentication of files.
+
+EFI_SECURITY_VIOLATION, platform specific policy to execute untrusted code
+EFI_ACCESS_DENIED, image unloaded from memory
+
+See the Platform Initialization Specification, Volume 3, for details on
+the GUIDed Section Extraction Protocol and Authentication Sections.
+
+Security2 Architecture Protocol
+Abstracts security-specific functions from the DXE Foundation of UEFI Image Verification,
+Trusted Computing Group (TCG) measured boot, and User Identity policy for image loading and
+consoles. This protocol must be produced by a boot service or runtime DXE driver.
+This protocol is optional and must be published prior to the EFI_SECURITY_ARCH_PROTOCOL.
+As a result, the same driver must publish both of these interfaces.
+When both Security and Security2 Architectural Protocols are published, LoadImage must use
+them in accordance with the following rules:
+- The Security2 protocol must be used on every image being loaded.
+- The Security protocol must be used after the Securiy2 protocol and only on images that have
+
+been read using Firmware Volume protocol.
+When only Security architectural protocol is published, LoadImage must use it on every image
+being loaded.
+
+measuring the PE/COFF image prior to invoking, comparing the
+image against a policy (whether a white-list/black-list of public image verification keys or registered
+hashes)
+
+FileAuthenticationState()
+The EFI_SECURITY_ARCH_PROTOCOL (SAP) is used to abstract platform-specific policy from
+the DXE Foundation response to an attempt to use a file that returns a given status for the
+authentication check from the section extraction protocol.
+The possible responses in a given SAP implementation may include locking flash upon failure to
+authenticate, attestation logging for all signed drivers, and other exception operations. The File
+parameter allows for possible logging within the SAP of the driver.
+
+FileAuthentication()
+This service abstracts the invocation of Trusted Computing Group (TCG) measured boot, UEFI
+Secure boot, and UEFI User Identity infrastructure. For the former two, the DXE Foundation
+invokes the FileAuthentication() with a DevicePath and corresponding image in
+FileBuffer memory. The TCG measurement code will record the FileBuffer contents into the
+appropriate PCR. The image verification logic will confirm the integrity and provenance of the
+image
+
+Capsule Architectural Protocol
+
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/
 \subsubsection{Secure Boot}
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
