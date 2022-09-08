@@ -38,8 +38,7 @@ focus will be on dxe and transient system load
 
     establishment of root of trust in the system
     inductive security design
-    integrity of subsequent module is checked by the previous module
-    first module is root of trust
+    integrity of next module checked by the previous module
     %ref to PSP
 
     handles all platform restart events
@@ -108,7 +107,7 @@ focus will be on dxe and transient system load
     dxe dispatcher
     discover drivers stored in firmware volumes and execute in proper order
     apriori file optionally in FV or depex of driver
-    hands control over to BDS
+    after dispatching all drivers in the dispatch queue hands control over to BDS
 
     dxe drivers
     init processor, chipset and platform
@@ -119,8 +118,20 @@ focus will be on dxe and transient system load
     providing software abstractions for system services, console devices, and boot devices.
 
     \item{\acf{BDS}}
-    platform boot policy
 
+    DXE arichtectural protocol
+    one function entry
+    platform boot
+
+    attempts to connect boot devices required to load the os
+    discovers volumes containing new drivers
+    calls DXE dispatcher
+    doesnt return when successfully booting OS
+
+    UEFI itself only specifies the NVRAM variables used in selecting boot options
+    leaves the implementation of the menu system as value added implementation space \cite{uefi-spec}
+
+    \cite{pi-spec}
 
     \begin{itemize}
         \item Initializing console devices
@@ -149,29 +160,89 @@ focus will be on dxe and transient system load
 
 \includegraphics[width=\textwidth]{flash_device}
 firmware device
-persistent physical repository that contains firmware code and/or data
+persistent
+physical device
+contains firmware code and/or data
 typically flash
 may be divided into smaller pieces to form multiple logical firmware devices
 multiple physical firmware devices may be aggregated into one larger logical firmware device
-flash device
-flash volume
-flash file system
-file sections
+
+\acf{FV}
+logical device
+organized into a file system
+attributes such as
+- size
+- formatting
+- read/write access
+
+\acf{FFS}
+organization of files and free space
+no dierectory hierarchy
+all files flat in root dir
+parsing requires walking for beginning to end
+
+firmware files
+types
+PEI_CORE
+PEIM
+DXE_CORE
+DRIVER
+FIRMWARE_VOLUME_IMAGE
+FREEFORM
+
+some file types are sub-divided in file sections
+
+file sections can be either
+encapsulation or leaf
+leaf sections such as
+PE32
+DXE_DEPEX
+PEI_DEPEX
+RAW
+VERSION
+TE
+
+dxe drivers files
+contain one PE32 executable section
+may contain version section
+may contain dxe depex section
+
+freeform files
+can contain any combination of sections
+
+PEI phase Service Table
+FfsFindNextFile, FfsFindFileByName and FfsGetFileInfo
+
+DXE phase
+EFI_FIRMWARE_VOLUME2_PROTOCOL
+
 depex
+
+\cite{tianocore-edk2-build-spec}
 
 \subsection{\acs{UEFI} Images}
 
-executable
+files containing executable code
 subset of PE32+ file format with modified header signature to distinguish from normal PE32 Images
-+ stands addition of 64-bit relocation fix-up extension
-fixed and dynamic address loading
++ stands for addition of 64-bit relocation fix-up extension
+
 relocatable
-boot and runtime memory
-application vs os loader vs driver
+fixed and dynamic address loading
 loaded fully into memory and reloaction fix ups
+
+three different subsystems types: application, boot service driver and runtime service driver
+boot and runtime memory
+
+application vs os loader vs driver
+memory they reside in
+unloaded on return
+unloaded on error
+
 memory marked as code and data
 jump to entry point
+
 what is the boot manager
+boot manager = bds
 
 \subsubsection{\acs{UEFI} Applications}
 
@@ -216,7 +287,22 @@ protocols
 \subsection{edk2}
 build system
 
+BaseTools package process files compiled by third party tools, as well as text and Unicode files in order to create UEFI or PI compliant binary image files
+\cite{tianocore-edk2}
+
 \subsection{Security}
+
+\subsubsection{Secure Boot}
+% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
+guarantees only valid 34 party firmware code can run in OEM firmware environment
+UEFI Secure Boot assumes the system firmware is a trusted entity
+any 3rd party firmware code is not trusted
+including bootloader/osloader, peripherals
+
+two parts
+verification of the boot image and verification of updates to the image security databsae
+\cite{understanding-uefi-secure-boot-chain}
+
 DXE SMM Ready to Lock Vol4
 Security Architecture Protocol
 Abstracts security-specific functions from the DXE Foundation for purposes of handling GUIDed
@@ -265,13 +351,10 @@ FileBuffer memory. The TCG measurement code will record the FileBuffer contents 
 appropriate PCR. The image verification logic will confirm the integrity and provenance of the
 image
 
-Capsule Architectural Protocol
-
-% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/
-\subsubsection{Secure Boot}
-% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
 \subsubsection{Signed Capsule Update}
 SMM
+Capsule Architectural Protocol
+flash device security
 \subsubsection{TPM}
 SEC starts by measuring PEI
 
