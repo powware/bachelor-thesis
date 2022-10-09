@@ -36,34 +36,39 @@ focus will be on dxe and transient system load
 \begin{enumerate}
     \item{\acf{SEC}}
 
-    establishment of root of trust in the system
-    inductive security design
-    integrity of next module checked by the previous module
+    The SEC phase is the first phase in the UEFI boot process. It is specified in \cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
     %ref to PSP
 
-    handles all platform restart events
-    applying power to system from unpowered state
-    restarting from active state
-    receiving exception conditions
+    % inductive security design
+    % integrity of next module checked by the previous module
 
-    creates temporary memory store
-    possibly CPU \ac{CAR}
-    cache behaves as linear store of memory
-    no evictions mode
-    every memory access is a hit
-    eviction not supported as main memory is not set up yet and would lead to platform failure
+    % handles all platform restart events
+    % applying power to system from unpowered state
+    % restarting from active state
+    % receiving exception conditions
+
+    % creates temporary memory store
+    % possibly CPU \ac{CAR}
+    % cache behaves as linear store of memory
+    % no evictions mode
+    % every memory access is a hit
+    % eviction not supported as main memory is not set up yet and would lead to platform failure
 
 
-    final step
-    Pass handoff information to the \ac{PEI} Foundation
-    % what is the PEI foundation
-    \begin{itemize}
-        \item state of platform
-        \item location and size of the \ac{BFV}
-        \item location and size of the temporary RAM
-        \item location and size of the stack
-        \item optionally one or more \acp{HOB} via the \ac{SEC} \ac{HOB} Data \ac{PPI}
-    \end{itemize}
+    % final step
+    % Pass handoff information to the \ac{PEI} Foundation
+    % % what is the PEI foundation
+    % \begin{itemize}
+    %     \item state of platform
+    %     \item location and size of the \ac{BFV}
+    %     \item location and size of the temporary RAM
+    %     \item location and size of the stack
+    %     \item optionally one or more \acp{HOB} via the \ac{SEC} \ac{HOB} Data \ac{PPI}
+    % \end{itemize}
+
+
+    Part of this process is a so called \ac{HOB} with a function pointer to a procedure to verify PE modules.
+    % todo
 
     SEC Platform Information PPI
     information about the health of the processor
@@ -183,12 +188,12 @@ parsing requires walking for beginning to end
 
 firmware files
 types
-PEI_CORE
-PEIM
-DXE_CORE
-DRIVER
-FIRMWARE_VOLUME_IMAGE
-FREEFORM
+% PEI_CORE
+% PEIM
+% DXE_CORE
+% DRIVER
+% FIRMWARE_VOLUME_IMAGE
+% FREEFORM
 
 some file types are sub-divided in file sections
 
@@ -196,8 +201,8 @@ file sections can be either
 encapsulation or leaf
 leaf sections such as
 PE32
-DXE_DEPEX
-PEI_DEPEX
+% DXE_DEPEX
+% PEI_DEPEX
 RAW
 VERSION
 TE
@@ -214,7 +219,7 @@ PEI phase Service Table
 FfsFindNextFile, FfsFindFileByName and FfsGetFileInfo
 
 DXE phase
-EFI_FIRMWARE_VOLUME2_PROTOCOL
+% EFI_FIRMWARE_VOLUME2_PROTOCOL
 
 depex
 
@@ -323,8 +328,8 @@ section encapsulations. This protocol must be produced by a boot service or runt
 and may only be consumed by the DXE Foundation and any other DXE drivers that need to validate
 the authentication of files.
 
-EFI_SECURITY_VIOLATION, platform specific policy to execute untrusted code
-EFI_ACCESS_DENIED, image unloaded from memory
+% EFI_SECURITY_VIOLATION, platform specific policy to execute untrusted code
+% EFI_ACCESS_DENIED, image unloaded from memory
 
 See the Platform Initialization Specification, Volume 3, for details on
 the GUIDed Section Extraction Protocol and Authentication Sections.
@@ -333,7 +338,7 @@ Security2 Architecture Protocol
 Abstracts security-specific functions from the DXE Foundation of UEFI Image Verification,
 Trusted Computing Group (TCG) measured boot, and User Identity policy for image loading and
 consoles. This protocol must be produced by a boot service or runtime DXE driver.
-This protocol is optional and must be published prior to the EFI_SECURITY_ARCH_PROTOCOL.
+% This protocol is optional and must be published prior to the EFI_SECURITY_ARCH_PROTOCOL.
 As a result, the same driver must publish both of these interfaces.
 When both Security and Security2 Architectural Protocols are published, LoadImage must use
 them in accordance with the following rules:
@@ -349,7 +354,7 @@ image against a policy (whether a white-list/black-list of public image verifica
 hashes)
 
 FileAuthenticationState()
-The EFI_SECURITY_ARCH_PROTOCOL (SAP) is used to abstract platform-specific policy from
+% The EFI_SECURITY_ARCH_PROTOCOL (SAP) is used to abstract platform-specific policy from
 the DXE Foundation response to an attempt to use a file that returns a given status for the
 authentication check from the section extraction protocol.
 The possible responses in a given SAP implementation may include locking flash upon failure to
