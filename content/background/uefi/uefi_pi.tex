@@ -1,8 +1,5 @@
-% !TEX root = ../thesis.tex
+% !TeX root = ../../../thesis.tex
 
-\chapter{Background}
-
-The following introduces the background information necessary to understand the employment of a \ac{UEFI} rootkit. This includes the general workings of the \acf{PI} and \ac{UEFI}, the \ac{UEFI} programming model and interface itself; as well as its security mechanisms. It is also necessary to understand our target's defenses, for this, we briefly describe the Window's security mechanisms faced when performing our attacks.
 
 \section{\acs{UEFI}/\acs{PI}}
 % what is it
@@ -282,104 +279,15 @@ runttime drivers are fixed up with virtual mappings upon SetVirtualAddressMap ca
 has to convert its allocated memory
 
 \subsection{Firmware Core}
+system tables offers boot and runtime services
+supplied by drivers implementing arichtectural protocols % how to uefi buch zitat
+handles
 
-boot and runtime services
-boot service table
-guids
-handles and protocols
 protocols
+identified with guids
 
 \subsection{edk2}
 build system
 
 BaseTools package process files compiled by third party tools, as well as text and Unicode files in order to create UEFI or PI compliant binary image files
 \cite{tianocore-edk2}
-
-\subsection{Security}
-
-\subsubsection{Secure Boot}
-% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
-executables may be located on un-secured media
-system provider can authenticate either origin or integrity
-
-pubic/private key pair used to verify integrity
-embedded withing PE file
-
-calculating the pe image hash
-- hashing the pe header, omitting the file's checksum and the Certificate Table entry in Optional Header Data Directories
-- sorting and hasing pe sections
-omitting attribute certifacte table and hash remaining data
-
-\cite{microsoft-pe-signature-format}
-
-guarantees only valid 34 party firmware code can run in OEM firmware environment
-UEFI Secure Boot assumes the system firmware is a trusted entity
-any 3rd party firmware code is not trusted
-including bootloader/osloader, PCI option ROMs, UEFI shell tool
-
-two parts
-verification of the boot image and verification of updates to the image security database
-\cite{understanding-uefi-secure-boot-chain}
-
-DXE SMM Ready to Lock Vol4
-Security Architecture Protocol
-Abstracts security-specific functions from the DXE Foundation for purposes of handling GUIDed
-section encapsulations. This protocol must be produced by a boot service or runtime DXE driver
-and may only be consumed by the DXE Foundation and any other DXE drivers that need to validate
-the authentication of files.
-
-% EFI_SECURITY_VIOLATION, platform specific policy to execute untrusted code
-% EFI_ACCESS_DENIED, image unloaded from memory
-
-See the Platform Initialization Specification, Volume 3, for details on
-the GUIDed Section Extraction Protocol and Authentication Sections.
-
-Security2 Architecture Protocol
-Abstracts security-specific functions from the DXE Foundation of UEFI Image Verification,
-Trusted Computing Group (TCG) measured boot, and User Identity policy for image loading and
-consoles. This protocol must be produced by a boot service or runtime DXE driver.
-% This protocol is optional and must be published prior to the EFI_SECURITY_ARCH_PROTOCOL.
-As a result, the same driver must publish both of these interfaces.
-When both Security and Security2 Architectural Protocols are published, LoadImage must use
-them in accordance with the following rules:
-- The Security2 protocol must be used on every image being loaded.
-- The Security protocol must be used after the Securiy2 protocol and only on images that have
-
-been read using Firmware Volume protocol.
-When only Security architectural protocol is published, LoadImage must use it on every image
-being loaded.
-
-measuring the PE/COFF image prior to invoking, comparing the
-image against a policy (whether a white-list/black-list of public image verification keys or registered
-hashes)
-
-FileAuthenticationState()
-% The EFI_SECURITY_ARCH_PROTOCOL (SAP) is used to abstract platform-specific policy from
-the DXE Foundation response to an attempt to use a file that returns a given status for the
-authentication check from the section extraction protocol.
-The possible responses in a given SAP implementation may include locking flash upon failure to
-authenticate, attestation logging for all signed drivers, and other exception operations. The File
-parameter allows for possible logging within the SAP of the driver.
-
-FileAuthentication()
-This service abstracts the invocation of Trusted Computing Group (TCG) measured boot, UEFI
-Secure boot, and UEFI User Identity infrastructure. For the former two, the DXE Foundation
-invokes the FileAuthentication() with a DevicePath and corresponding image in
-FileBuffer memory. The TCG measurement code will record the FileBuffer contents into the
-appropriate PCR. The image verification logic will confirm the integrity and provenance of the
-image
-
-\subsubsection{Signed Capsule Update}
-SMM
-Capsule Architectural Protocol
-flash device security
-\subsubsection{TPM}
-SEC starts by measuring PEI
-
-\section{Windows}
-\subsection{User Access Control (UAC)}
-\subsection{Signing}
-\subsection{Bitlocker}
-\subsubsection{TPM}
-how does it work
-explain TPM

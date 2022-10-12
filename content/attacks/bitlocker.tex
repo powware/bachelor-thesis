@@ -1,0 +1,79 @@
+\section{Secure Boot and Bitlocker}
+assumptions:
+secure boot or not
+bitlocker enabled with TPM auto decryption
+
+observation:
+boot execution differs from executing rootkit
+tpm values different
+bitlocker auto decryption fails
+recovery key prompt
+
+what is the reaction of the average user
+(ask admin for recovery password)
+type in recovery password
+alternative would be to remove drive and insert into safe device
+
+% ref to background os loader
+prompt is done by the OS Loader
+ergo still during transient system load phase
+required to use protocol services
+therefor uses uefi services for IO
+such as SimpleTextInputEx Protocol
+go over the two different input protocols
+find out which one is used
+
+explain more in depth how protocols are returned to the end user
+one instance per controller/handle
+
+explain basic hooking
+explain how we retain information of the hook in question
+map protocol pointer to hook information
+keylog recovery key
+key input advancment is weird and makes tracking tricky
+
+alternatively screen shot
+still need hook to find when enter is pressed
+explain how screenshotting works
+some basic compression
+wait for recovery key
+send recovery key on enter press
+
+on real hardware
+network stack wasn't installed onto handles when boot over ip was disabled
+compared loaded dxe drivers between both configurations with efi shell
+Realtek Family driver not loaded
+load manually
+reinstall all handle to controllers to enable network stack regardless
+
+sending key out is only good for physical access attack vector
+dislocker linux utility
+mount encrypted drive with decryption mean
+read and write access
+dual boot in vm
+enter password and it works
+port to uefi
+bitlocker encrypts block-wise
+uefi protocol stack
+hook block io
+again hook data mapping
+dislocker validate block
+solves recovery key advancement issue
+
+hook ExitBootServices
+enable hook
+write payload
+import registry key
+disable hook
+
+next boot would require to input tpm values again
+update tpm values in payload
+caveat pin? look into this
+
+% reference to rootkit definition
+persistence when part of root of trust
+fresh install / tpm update values
+% paper von betreuern
+hook Trusted Copmuting Group 2 (TCG2) Protocol
+TPM communication
+receive bitlocker vmk key and send to dislocker
