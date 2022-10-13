@@ -5,8 +5,14 @@
 others not discussed further
 user identification
 
+PEI
+GuidedSection Extraction
+
+
 \subsubsection{Secure Boot}
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/uefi_secure_boot
+
+\cite{tianocore-understanding-uefi-secure-boot-chain}
 
 % workings of secure boot
 driver signing
@@ -17,14 +23,20 @@ digital signature
 data to sign
 public/private key pair used to verify integrity
 
-embedded withing PE file
+% how it is signed
 
+embedded within PE file
 calculating the pe image hash
 - hashing the pe header, omitting the file's checksum and the Certificate Table entry in Optional Header Data Directories
 - sorting and hasing pe sections
 omitting attribute certifacte table and hash remaining data
 
 \cite{microsoft-pe-signature-format}
+
+
+% key and hash storage
+
+% how, when and where is it verified
 
 guarantees only valid 3rd party firmware code can run in OEM firmware environment
 UEFI Secure Boot assumes the system firmware is a trusted entity
@@ -35,7 +47,12 @@ two parts
 verification of the boot image and verification of updates to the image security database
 \cite{understanding-uefi-secure-boot-chain}
 
+authenticated variables maybe
+
+
 \subsubsection{Signed Capsule Update}
+
+% https://eclypsium.com/2019/10/23/protecting-system-firmware-storage/
 
 DXE SMM Ready to Lock Vol4
 
@@ -49,11 +66,16 @@ of the runtime services table
 flash device security
 
 \subsubsection{TPM measurements}
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/
+
+\cite{tianocore-trusted-boot-chain}
+
 % what is TPM
 
 % TPM protocol
 
 % what is measured
 
-% when is it measured
-SEC starts by measuring PEI
+% when is it measured 
+
+% where is it measured 

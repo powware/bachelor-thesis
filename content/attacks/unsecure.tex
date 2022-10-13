@@ -1,9 +1,13 @@
 % !TeX root = ../../thesis.tex
 
 \section{Neither Secure Boot nor Bitlocker}
+retrieve the image
 use read access to dump image
-% ref to background UEFI/PI IMAGE
-since it an FV with FFS we can open with UEFITool
+
+we can open with UEFITool
+which is an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}
+since it an FV with FFS
+
 remove previous NTFS driver if present, for full control, might be read only etc
 in UEFITool search and remove
 add in NTFS driver

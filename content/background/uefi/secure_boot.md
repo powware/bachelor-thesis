@@ -44,8 +44,36 @@ Table which is available to the operating system.
 Database Update.
 11. End.
 
+PEI
 
-% implementation details in form of protcols
+PEI Guided Section Extraction PPI
+
+EFI_PEI_SECURITY2_PPI
+
+optional and vendor specific
+
+This PPI is installed by some platform PEIM that abstracts the security policy to the PEI Foundation,
+namely the case of a PEIM’s authentication state being returned during the PEI section extraction
+process
+
+This PPI is a means by which the platform builder can indicate a response to a PEIM's authentication
+state. This can be in the form of a requirement for the PEI Foundation to skip a module using the
+DeferExecution Boolean output in the AuthenticationState() member function.
+Alternately, the Security PPI can invoke something like a cryptographic PPI that hashes the PEIM
+contents to log attestations, for which the FileHandle parameter in
+AuthenticationState() will be useful. If this PPI does not exist, PEIMs will be considered
+trusted.
+
+AuthenticationState()
+
+This service is published by some platform PEIM. The purpose of this service is to expose a given platform's policy-based response to the PEI Foundation. For example, if there is a PEIM in a GUIDed encapsulation section and the extraction of the PEI file section yields an authentication failure, there is no a priori policy in the PEI Foundation. Specifically, this situation leads to the question whether PEIMs that are either not in GUIDed sections or are in sections whose authentication fails should still be executed. In fact, it is the responsibility of the platform builder to make this decision. This platform-scoped policy is a result that a desktop system might not be able to skip or not execute PEIMs because the skipped PEIM could be the agent that initializes main memory. Alternately, a system may require that unsigned PEIMs not be executed under any circumstances. In either case, the PEI Foundation simply multiplexes access to the Section Extraction PPI and the Security PPI. The Section Extraction PPI determines the contents of a section, and the Security PPI tells the PEI Foundation whether or not to invoke the PEIM. The PEIM that publishes the AuthenticationState() service uses its parameters in the following ways:
+- AuthenticationStatus conveys the source information upon which the PEIM acts.
+- The DeferExecution value tells the PEI Foundation whether or not to dispatch the PEIM. In addition, between receiving the AuthenticationState() from the PEI Foundation and returning with the DeferExecution value, the PEIM that publishes AuthenticationState() can do the following:
+- Log the file state.
+- Lock the firmware hubs in response to an unsigned PEIM being discovered.
+These latter behaviors are platform- and market-specific and thus outside the scope of the PEI CIS.
+
+DXE implementation details in form of protcols
 
 two protocols exist:
 - Security Architecture Protocol
