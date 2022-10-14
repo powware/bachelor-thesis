@@ -1,37 +1,83 @@
 % !TeX root = ../../thesis.tex
 
 \section{Neither Secure Boot nor Bitlocker}
-retrieve the image
-use read access to dump image
+first aim harddrive access
+windows uses NTFS
+search for UEFI NTFS driver with write access
+\cite{ntfs-3g}
+open source fork of ntfs-3g for UEFI
 
-we can open with UEFITool
-which is an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}
-since it an FV with FFS
-
-remove previous NTFS driver if present, for full control, might be read only etc
-in UEFITool search and remove
-add in NTFS driver
-use write access
+compile
+spits out .efi file
 
 try in EFI shell
+we are trying in qemu where the shell is available in boot options
+real hardware might require the uefi shell application .efi from the user via usb stick
+explain shell screen
+showing mapping, also available with map command
+consistent device mapping, comparable to partition names in windows
+\cite{uefi-shell}
+blk and fs
+load NtfsDxe.efi
+drivers
+map -r "reset all the default mappings in a system this option is useful if the system configuration has changed since the last boot"
+new mapping and fs ontop of old blk
 navigate to Windows folder
-create folder
+means read works
+try creating folder to test write
+debug why it failed
+find out its from windows having hibernation enabled by default
+change source code to not fallback to read only when encountering hibernation file
 
-how does one compile uefi application with edk2
-it's open source so we can look up examples for most stuff
+try to package in firmware image instead of loading from external medium
+retrieve the image
+for qemu we can build it ourselves
+for hardware use spi clamp to  dump image
 
-try in code
-compile dxe driver within ovmf to receive .ffs file with version depex user interface section
-SimpleFileSystem Protocol iteration
-write failed on hibernated file
-patch to allow write on hibernated drives
+we can open image with UEFITool
+an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}
+
+in UEFITool search for DXE Volume
+remove previous NTFS driver if present, for full control, might be read only etc
+in UEFITool search for string
+since files are part of file sections we cant drop in the .efi
+compile dxe driver within ovmf
+generate unused volume to receive .ffs file with version, depex, user interface and pe section
+add in NTFS driver .ffs file
+qemu just use path to modified image
+on hardware use write access with clamp
+
+now upon opening uefi shell
+we instantly see the filesystem
+
+try to use ntfs-driver in code
+this is our first rootkit iteration
+payload will also be DXE driver
+access to all drivers etc
+package payload in firmware image
+steps
+read payload into RAM
+search for windows installation
+write payload
 
 pack executable binary as uefi module
 edk2 produces freeform image with one raw section
-iterate over firmware volume protocols
-search for payload guid
-check size match
-override notepad works
+
+iterate over FirmwareVolume2 protocol instances
+boottime services offer a function LocateHandleBuffer which returns all handles having a given protocol attached to them
+iterate over all handles and open the protocol
+call ReadSection with payload guid, to read raw section
+check size match was necessary on hardware
+when compiling payload a post build script generates a header for the rootkit dxe containing the size on disk for the payload
+
+iterate over all FirmwareVolume2 Protocols
+read raw section of payload file GUID into memory
+
+iterate over all SimpleFileSystem Protocols
+open volume
+open file to write to
+since we write into windows folder this also checks if the volume has a windows installation
+
 
 % ref to background UAC signed
 but no automatic execution nor elevated privileges

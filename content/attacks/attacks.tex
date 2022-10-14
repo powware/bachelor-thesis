@@ -1,7 +1,6 @@
 % !TEX root = ../thesis.tex
 
 \chapter{Attacks}
-
 % chapter summary, briefly introduce the three attacks
 Our different attacks face three escalating levels of security mechanisms. The first is with Secure Boot and Bitlocker disabled, the second is just Secure Boot enabled and the third is both Secure Boot and Bitlocker enabled with the focus of the study on Bitlocker.
 % common assumption/requirement across the attacks
@@ -12,6 +11,10 @@ This can be achieved by having read/write access to the SPI flash or using the S
 . Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
 % ref lenovo vantage for distributed example
 % network boot maybe
+
+\section{Test Setup}
+\TODO{describe test setup}
+
 
 \input{content/attacks/unsecure.tex}
 \input{content/attacks/secure_boot.tex}
