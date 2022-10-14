@@ -6,17 +6,20 @@
 
 \chapter{Introduction}
 
-% background 
+% state the general topic and give some background
+
 % definition of (uefi/firmware) rootkit
-\cite{microsoft-secure-windows-boot-process, microsoft-rootkits, veracode, kaspersky}
-persistence
+A rootkit is a collection of software designed to grant a threat actor control over a system, typically with malicious intend.
+Rootkits set up a backdoor exploit and may deliver additional malware while leveraging their privileges to remain hidden.
+There are different types of rootkits such as User Mode, Kernel Mode, Bootkits (bootloader rootkits), Hypervisor level and Firmware rootkits.
+\cite{crowdstrike, techtarget}
+\TODO{consult abstract for similar definition, how easy uefi makes it to write hardware independent payload}
+Firmware rootkits targets the software running during the boot process, which is responsible for the system initialization. This is done before the operating system is executed making them particularly hard to find, they are also persistent across operating system installation or hard drive replacements.
+\cite{crowdstrike}
 % motiviation
 % problem statement
 goals
-% structure of the thesis
-1/3 - 1/2 pages
 
-% state the general topic and give some background
 % provide a review of the literature related to the topic
 % define the terms and scope of the topic
 % outline the current situation

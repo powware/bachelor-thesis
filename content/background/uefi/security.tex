@@ -67,15 +67,38 @@ flash device security
 
 \subsubsection{TPM measurements}
 % https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/3_TCG_Trusted_Boot_Chain_in_EDKII.html
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/6_Checklist_for_Platform_Developers.html
 
-\cite{tianocore-trusted-boot-chain}
 
 % what is TPM
+A \acf{TPM} is a system component which enables trust in computing platforms
+helps verify if the Trusted Computing Base has been compromised
+securely storing passwords, certificates and encryption keys in separate state to host
+only communicating through a well defined interface.
+store platform measurements that help ensure that the platform remains trustworthy
+authentication
+attestation
+hardware and software implementations
+software special mode shielding TPM resources from normal execution
+\cite{tcg-tpm-summary}
+\cite{tcg-tpm-library-part1-architecture}
 
-% TPM protocol
+% what is done with the measurements
+how are they used
+
 
 % what is measured
 
-% when is it measured 
+statically configured, unchangeable data
+not dynamic and changeable across the boot,
+\cite{tianocore-trusted-boot-chain}
 
-% where is it measured 
+% when is it measured
+\cite{tianocore-trusted-boot-chain}
+
+% where is it measured
+TCG2 Protocol
+\cite{tcg-efi-protocol}
+
+% secret storage, seal and unseal
