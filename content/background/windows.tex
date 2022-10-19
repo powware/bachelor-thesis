@@ -3,6 +3,7 @@
 \section{Windows}
 % https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
 \subsection{User Access Control (UAC)}
+% https://learn.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 \subsection{Signing}
 \subsection{BitLocker}
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-overview
@@ -14,7 +15,7 @@
 % fun thing to try
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#bkmk-configurepreboot
 
-drive encryption integrates with operating system
+BitLocker Drive Encryption (BDE) integrates with operating system
 encryption enabled per volume
 encrypt os and data drives
 supports removable data drives
@@ -52,7 +53,37 @@ latter the following is recommended
 % https://learn.microsoft.com/en-us/windows/security/information-protection/encrypted-hard-drive
 encrypted hard drive support
 
+% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc
 % how does it work
 two partitions
 - operating system partition with os and support files, all system files on the volume, including the paging files and hibernation files, bitlocker encrypted, ntfs
-- system partition with windows boot manager and minimal software required for decryption of the os, fat32, unencrypted, files needed to load windows after uefi
+- system partition with windows boot manager and minimal software required for decryption of the os, fat32, unencrypted, files needed
+
+data is encrypted blockwise with Full Volume Encryption Key (FVEK)
+- AES 128-bit the key is 128-bit of size
+- AES 256-bit the key is 256-bit of size
+FVEK encrypted with Volume Master Key (VMK) 256 bit
+VMK encrypted by multiple protectors, default configuration:
+- TPM
+- Recovery Key
+
+or
+- startup key/external key
+
+\subsubsection{Recovery Key}
+% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#24-recovery-key
+recovery key 48 digits of 8 blocks
+block is converted to a 16-bit value making up a 128-bit key
+
+\subsubsection{Clear Key}
+% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#25-clear-key
+unprotected 256-bit key stored on the volume t decrypt vmk
+
+\subsubsection{Startup Key}
+% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#26-startup-key
+stored in a .bek file with GUID name equaling key identifier in bitlocker meta data
+multiple possible for a single bitlocked volume
+
+\subsubsection{Startup Key}
+% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#27-user-key
+password with max 49 characters

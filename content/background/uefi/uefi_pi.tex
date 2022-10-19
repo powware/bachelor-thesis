@@ -25,6 +25,8 @@ security
 
 \subsection{Boot Sequence}
 
+% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/23_boot_sequence
+
 focus will be on dxe and transient system load
 
 \includegraphics[width=\textwidth]{boot_sequence}
@@ -159,6 +161,9 @@ focus will be on dxe and transient system load
 
 \subsection{\acs{UEFI}/\acs{PI} Firmware Images}
 
+% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
+\cite[Volume 3, 2.1]{pi-spec}
+
 \includegraphics[width=\textwidth]{flash_device}
 firmware device
 persistent
@@ -223,6 +228,8 @@ depex
 
 \subsection{\acs{UEFI} Images}
 
+% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
+
 files containing executable code
 subset of PE32+ file format with modified header signature to distinguish from normal PE32 Images
 + stands for addition of 64-bit relocation fix-up extension
@@ -247,12 +254,16 @@ boot manager = bds
 
 \subsubsection{\acs{UEFI} Applications}
 
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/readme.7/371_applications
+
 example efi shell
 loaded by boot manager or other applications
 return or calling exit specifically
 always unloaded from memory
 
 \subsubsection{UEFI OS Loaders}
+
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/readme.7/371_applications
 
 example windows boot manager
 normally take over control from the firmware
@@ -267,6 +278,8 @@ UEFI OS loader now responsible
 
 \subsubsection{UEFI Drivers}
 
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/readme.7/372_drivers
+
 loaded by boot manager, UEFI firmware (DXE foundation), or other applications
 example payload
 unloaded only when returning error code
@@ -279,10 +292,23 @@ has to convert its allocated memory
 
 \subsection{Firmware Core}
 \subsubsection{Systemtable}
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/33_uefi_system_table
 system tables offers boot and runtime services
 supplied by drivers implementing arichtectural protocols % how to uefi buch zitat
 \subsubsection{Handles}
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/34_handle_database
+\cite[7.3 Protocol Handler Services]{uefi-spec}
 \subsubsection{Protocols}
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/35_guids
+consists of GUID and protocol interface structure containing functions and instance data used to access a device
+
+provide software abstractions for devices such as consoles, mass storage devices and networks
+They can also be used to extend the number of generic services that are available in the platform
+\cite[2.4 Protocols]{uefi-spec}
+boot services provide function to install, locate, open, close and monitor protocols
+\cite[7.3 Protocol Handler Services]{uefi-spec}
+% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/5_uefi_services/51_services_that_uefi_drivers_commonly_use/513_handle_database_and_protocol_services
 identified with guids
 \subsubsection{Boottime Services}
 \subsubsection{Runtime Services}
