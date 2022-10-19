@@ -1,6 +1,58 @@
 % !TeX root = ../../thesis.tex
 
 \section{Windows}
+% https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
 \subsection{User Access Control (UAC)}
 \subsection{Signing}
-\subsection{Bitlocker}
+\subsection{BitLocker}
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-overview
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/ts-bitlocker-decode-measured-boot-logs
+% https://pulsesecurity.co.nz/articles/TPM-sniffing
+
+% fun thing to try
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#bkmk-configurepreboot
+
+drive encryption integrates with operating system
+encryption enabled per volume
+encrypt os and data drives
+supports removable data drives
+maximum protection with TPM 1.2 or later
+alternatively USB startup key or password, not system integrity verification
+optionally PIN or USB startup key required to unlock
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-how-to-enable-network-unlock
+also network unlock and pin as fallback
+
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures#pre-boot-authentication
+- tpm only
+no additional user interaction
+- tpm with startup key
+additional usb
+- tpm with PIN
+- tpm with startup keyc and PIN
+protects against unauthorized data access
+
+with tpm ensures integrity of early boot components and boot configuration
+
+
+system requirement
+include support for TCG-specified Static Root of Trust Measurement
+
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
+bitlocker device encryption if supported automatically enabled
+after clean install encrypted with clear key (bitlocker suspended state)
+non domain account -> recovery key uploaded to microsoft account
+domain account -> recovery key backed up to active directory domain services (AD DS)
+clear key removed
+
+encryption on used disk space only or whole drive
+former security risk if turned on after drive was already in use, deleted data accessible with disk recovery tools
+latter the following is recommended
+% https://learn.microsoft.com/en-us/windows/security/information-protection/encrypted-hard-drive
+encrypted hard drive support
+
+% how does it work
+two partitions
+- operating system partition with os and support files, all system files on the volume, including the paging files and hibernation files, bitlocker encrypted, ntfs
+- system partition with windows boot manager and minimal software required for decryption of the os, fat32, unencrypted, files needed to load windows after uefi

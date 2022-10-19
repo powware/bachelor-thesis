@@ -5,6 +5,7 @@
 
 \chapter{Discussion}
 
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures#bootkits-and-rootkits
 attack assumption reflected to real world aplicability
 
 social engineering aspekt
@@ -12,6 +13,30 @@ social engineering aspekt
 driver vorhanden und was mitbringen, debloating
 
 boottime vs runtime rootkit
+
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan
+
+recovery guide
+
+what causes bitlocker recovery
+- password wrong too often
+- TPM 1.2, changing the BIOS or firmware boot device order
+- Having the CD or DVD drive before the hard drive in the BIOS boot order and then inserting or removing a CD or DVD
+- Failing to boot from a network drive before booting from the hard drive.
+- Docking or undocking a portable computer
+- Changes to the NTFS partition table on the disk including creating, deleting, or resizing a primary partition.
+- Entering the personal identification number (PIN) incorrectly too many times
+- Upgrading critical early startup components, such as a BIOS or UEFI firmware upgrade
+- Updating option ROM firmware graphics card
+- Adding or removing hardware
+- REMOVING, INSERTING, OR COMPLETELY DEPLETING THE CHARGE ON A SMART BATTERY ON A PORTABLE COMPUTER
+- Pressing the F8 or F10 key during the boot process
+what does the recovery screen say
+
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
+% https://learn.microsoft.com/en-us/mem/configmgr/protect/deploy-use/bitlocker/helpdesk-portal?source=recommendations
+% https://learn.microsoft.com/en-us/microsoft-desktop-optimization-pack/mbam-v25/
+Enables end users to recover encrypted devices independently by using the Self-Service Portal
 
 \section{Rootkit classification}
 
