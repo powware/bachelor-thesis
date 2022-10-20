@@ -1,16 +1,36 @@
 % !TeX root = ../../thesis.tex
 
 \section{Neither Secure Boot nor Bitlocker}
-first aim harddrive access
-windows uses NTFS
-search for UEFI NTFS driver with write access
-\cite{ntfs-3g}
-open source fork of ntfs-3g for UEFI
+% first aim harddrive access
+The first attack is performed without enabling any security mechanisms (e.g. Secure Boot, BitLocker). Our first step is to gain unrestricted access to the hard drive from the UEFI environment.
+% windows uses NTFS
+Since Windows uses NTFS formatting for their hard drive volumes we need to use an NTFS driver, UEFI is not required to support NTFS and as such edk2 does not come with an NTFS driver.
 
-compile
-spits out .efi file
+% search for UEFI NTFS driver with write access
+% open source fork of ntfs-3g for UEFI
+Luckily open source NTFS drivers are readily available such as ntfs-3g from tuxera \cite{ntfs-3g} which allow for read and write access, on top of that there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
 
-try in EFI shell
+% compile
+% spits out .efi file
+We can compile this driver with edk2 following the listed steps and receive a .efi file.
+
+% try in EFI shell
+% what is the EFI shell
+Part of the UEFI specifications is a shell specification which is a feature rich UEFI shell application to interact with the UEFI environment.
+% https://docstore.mik.ua/manuals/hp-ux/en/5991-1247B/ch04s13.html
+It offers commands for
+boot,
+configuration,
+device, driver, handle
+filesystem
+network
+memory
+scripting.
+For now driver loading and filesystem navigation are of relevance.
+
+% how to use uefi shell
+
+
 we are trying in qemu where the shell is available in boot options
 real hardware might require the uefi shell application .efi from the user via usb stick
 explain shell screen
