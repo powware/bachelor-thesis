@@ -89,40 +89,56 @@ We now know that provided we get to load the NTFS driver we can access a Windows
 % try to package in firmware image instead of loading from external medium
 We can put the NTFS driver into the DXE Volume where the DXE Dispatcher of the DXE Core will automatically try to load it.
 
-retrieve the image
-for qemu we can build it ourselves
-for hardware use spi clamp to  dump image
+% for hardware use spi clamp to  dump image
+For this, we have to read out the firmware image, modify the contents and write the new image back to hardware. This can be done by using a spi flash programmer and clamping the physical chip.
+% for qemu we can build it ourselves
+If we want to use emulation we can build the Open Virtual Machine Firmware (OVMF) Package from edk2 which is a firmware image for virtual machines.
 
-we can open image with UEFITool
-an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}
+% we can open image with UEFITool
+Now that we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}.
+In UEFITool we navigate to the DXE Volume containing the DXE Core and DXE drivers.
+% remove previous NTFS driver if present, for full control, might be read only etc
+% in UEFITool search for string
+Before adding our driver we remove any other NTFS driver packed in the image by OEMs, because they might be read only or otherwise restricted and would inhibit our NTFS driver from controlling a device. UEFITool offers a search through the entire firmware image. We can search for "NTFS" as a case insenstive string, since most drivers either have a User Interface Section which contains a human-readable name for tools like UEFITool\cite[Vol 3, 3.2.5]{pi-spec} or support the optional Component Name Protocol which is part of the UEFI Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}. If this would not suffice it would be possible to search for the NTFS magic number indicating that a volume is formatted with NTFS, this number is ascii encoded NTFS followed by four white spaces.
 
-in UEFITool search for DXE Volume
-remove previous NTFS driver if present, for full control, might be read only etc
-in UEFITool search for string
-since files are part of file sections we cant drop in the .efi
-compile dxe driver within ovmf
-generate unused volume to receive .ffs file with version, depex, user interface and pe section
-add in NTFS driver .ffs file
-qemu just use path to modified image
-on hardware use write access with clamp
+% since files are part of file sections we cant drop in the .efi
+If we now want to add our NTFS driver .efi file with UEFITool we notice that it is displayed as having an unknown subtype, this is because added a file without file sections, a DXE driver has three mandatory sections: PE32 executable, version and DEPEX section \cite[Vol 3, 2.1.4.1.4]{pi-spec}.
+% compile dxe driver within ovmf
+% generate unused volume to receive .ffs file with version, depex, user interface and pe section
+For these files to be generated it is easiest to simply build the NTFS driver as part of the edk2 OVMF and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the DXE volume, for real hardware we can use the output of the build process which is a .ffs file. The .ffs file contains the PE32, version, DEPEX and an optional user interface section.
+% add in NTFS driver .ffs file
+% on hardware use write access with clamp
+% qemu just use path to modified image
+We can now simply insert the .ffs file into the target firmware image with UEFITool and overwrite the SPI flash with modified image by using the programmer again.
 
-now upon opening uefi shell
-we instantly see the filesystem
+% now upon opening uefi shell
+% we instantly see the filesystem
+If we now boot up the UEFI shell the splash screen immediately lists the NTFS formatted device in the mapping table indicating that the driver was successfully loaded during DXE dispatch.
 
-try to use ntfs-driver in code
-this is our first rootkit iteration
-payload will also be DXE driver
-access to all drivers etc
-package payload in firmware image
-load after NTFS driver
-install tag protocol on NTFS driver and put into depex of rootkit
+% access to all drivers etc
+\TODO{why did we choose dxe stage}
+
+% try to use ntfs-driver in code
+% this is our first rootkit iteration
+% payload will also be DXE driver
+% package payload in firmware image
+The next step is to now use the NTFS driver programmatically by writing a DXE driver that leverages the new file system access to overwrite an executable in the Windows installation.
+
+% This is our first rootkit iteration and is not a driver that conforms to the UEFI Driver Model \TODO{make sure UEFI driver model has been explained} as it does not need to install a Driver Binding Protocol instance onto its image handle and instead does all the work within the entry point.
+
+% pack executable binary as uefi module
+% edk2 produces freeform image with one raw section
+For the rootkit to write a payload to disk it needs to know what to write, we can create an edk2 module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which is only composed of the payload binary.
+When the rootkit is executed it starts by reading the payload into memory, this is done by calling the boot service function \lstinline{LocateHandleBuffer} with the option \lstinline{ByProtocol} and the GUID for \lstinline{gEfiFirmwareVolume2ProtocolGuid} which returns all handles that have a protocol instance associated with \lstinline{gEfiFirmwareVolume2ProtocolGuid} installed onto them \cite[7.3]{uefi-spec}. We can now iterate over all protocol instances, open the protocol and query the firmware volume for the GUID of our binary payload, we then read the content of the raw section into a buffer.
+
+\cite{exitbootservices-hooking}
+execute after NTFS driver by doing it in an ExitBootServices hook
+% seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
 steps
 read payload into RAM
 search for windows installation
 write payload
 
-pack executable binary as uefi module
-edk2 produces freeform image with one raw section
 
 iterate over FirmwareVolume2 protocol instances
 boottime services offer a function LocateHandleBuffer which returns all handles having a given protocol attached to them
