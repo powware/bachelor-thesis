@@ -119,3 +119,70 @@ passed to LoadImage() must successfully pass all image format, platform type, an
 checks including those related to UEFI secure boot, if enabled on the platform
 
 FmpAuthenticationLib
+
+FmpDxe.c
+SetTheImage
+CheckTheImageInternal
+AuthenticateFmpImage
+
+
+PcdFmpDeviceLockEventGuid
+
+ ## An event GUID that locks the firmware device when the event is signaled.
+  #  If this PCD is not a valid GUID value, then the firmware device is locked
+  #  when gEfiEndOfDxeEventGroupGuid (End of DXE Phase) is signaled.  The
+  #  default value is empty, so by default the firmware device is locked at the
+  #  end of the DXE phase.
+  # @Prompt Firmware Device Lock Event GUID.
+  gFmpDevicePkgTokenSpaceGuid.PcdFmpDeviceLockEventGuid|{0}|VOID*|0x4000000F
+
+
+
+/**
+  Determines if the FMP device should be locked when the event specified by
+  PcdFmpDeviceLockEventGuid is signaled. The expected result from this function
+  is TRUE so the FMP device is always locked.  A platform can choose to return
+  FALSE (e.g. during manufacturing) to allow FMP devices to remain unlocked.
+
+  @param[in]  This  A pointer to the EDKII_CAPSULE_UPDATE_POLICY_PROTOCOL instance.
+
+  @retval TRUE   The FMP device lock action is required at lock event guid.
+  @retval FALSE  Do not perform FMP device lock at lock event guid.
+
+**/
+BOOLEAN
+EFIAPI
+CapsuleUpdatePolicyIsLockFmpDeviceAtLockEventGuidRequired (
+  IN  EDKII_CAPSULE_UPDATE_POLICY_PROTOCOL  *This
+  )
+{
+  return IsLockFmpDeviceAtLockEventGuidRequired ();
+}
+
+5.1.2.1 End of DXE Event
+Prior to invoking any UEFI drivers, or applications that are not from the platform manufacturer, or
+connecting consoles, the platform should signals the event EFI_END_OF_DXE_EVENT_GUID
+End of DXE Event and immediately after that the platform installs DXE SMM Ready to Lock
+Protocol (defined in volume 4)..
+#define EFI_END_OF_DXE_EVENT_GROUP_GUID \
+{ 0x2ce967a, 0xdd7e, 0x4ffc, { 0x9e, 0xe7, 0x81, 0xc, \
+0xf0, 0x47, 0x8, 0x80 } }
+From SEC through the signaling of this event, all of the components should be under the authority of
+the platform manufacturer and not have to worry about interaction or corruption by 3rd party
+extensible modules such as UEFI drivers and UEFI applications.
+Platform may choose to lock certain resources or disable certain interfaces prior to executing third
+party extensible modules. Transition from the environment where all of the components are under
+the authority of the platform manufacturer to the environment where third party modules are
+executed is a two-step process:
+
+1. End of DXE Event is signaled. This event presents the last opportunity to use resources or
+interfaces that are going to be locked or disabled in anticipation of the invocation of 3rd party
+extensible modules.
+2. DXE SMM Ready to Lock Protocol is installed. PI modules that need to lock or protect their
+resources in anticipation of the invocation of 3rd party extensible modules should register for
+notification on installation of this protocol and effect the appropriate protections in their
+notification handlers
+
+// The lock event GUID is retrieved from PcdFmpDeviceLockEventGuid.
+// If PcdFmpDeviceLockEventGuid is not the size of an EFI_GUID, then
+// gEfiEndOfDxeEventGroupGuid is used.
