@@ -1,29 +1,65 @@
 \section{Secure Boot and Bitlocker}
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
-assumptions:
-secure boot or not
-bitlocker enabled with TPM auto decryption, no PIN, no startup key
+% assumptions:
 
-observation:
-boot execution differs from executing rootkit
-tpm values different
-bitlocker auto decryption fails
-recovery key prompt
+% bitlocker enabled with TPM auto decryption, no PIN, no startup key
+For our third attack we will enable BitLocker, this prevents us from trivially accessing any data before Windows has successfully booted.
+% secure boot or not
+As we have learned from our second attack Secure Boot does not matter for our attack vector thus we can assume Secure Boot being enabled for this scenario.
+\TODO{secure boot and bitlocker standard and cant do much more?}
 
-what is the reaction of the average user
-(ask admin for recovery password)
-type in recovery password
-alternative would be to remove drive and insert into safe device
+% how to enable bitlocker with TPM
+% sometimes in bios tpm needs to be enabled
+% full drive encryption or used space
+We configure BitLocker to use automatic TPM decryption without any additional PIN or Startup Key.
+
+% observation:
+% recovery key prompt
+When booting the system with our rootkit we are greeted with a screen prompting us to enter the BitLocker recovery key.
+
+\includegraphics[width=\textwidth]{attacks/bitlocker/01_recovery_prompt.png}
+
+% tpm values different
+This happens due to TPM PCR values differing from what was initially used to seal the VMK, leaving the Windows bootloader unable to retrieve an unencrypted VMK from the TPM and as a result unable to decrypt the Windows installation. \TODO{the two different bitlocker volumes}
+
+% bitlocker auto decryption fails
+% boot execution differs from executing rootkit
+\TODO{which measurements are used for sealing and unsealing}
+\TODO{which ones are altered by the rootkit being present}
+
+
+In theory this is as far as we get, BitLocker in combination of TPM measurements successfully mitigates UEFI attacks by disovering a deviation in the boot flow.
+% what is the reaction of the average user
+In practice we have to ask ourselves the question how a user reacts to seeing the BitLocker recovery prompt and the consequences to the action the user takes. As an immediate reaction the user has two options: entering the recovery key into the prompt or not entering the recovery key.
+% motivation behind user decision
+What decision the user makes is dependent on their tech saviness and influenced by a variety of factors such as urgency of booting into Windows, knowing alternatives to what the prompt tells them.
+It is reasonable to assume that the average user is willingly entering their recovery key in response to the prompt as the prompt does not suggest any malicious causes or any negative reprocussions in following the instructions. The link mentioned in the prompt also only aids in locating the reocvery key \cite{microsoft-recovery-key-faq}.
+\TODO{mention microsofts reasons for the prompt to be triggered}
+\TODO{what is the actual alternative}
+% does the user trust the system
+% why would they not trust the system
+% (ask admin for recovery password)
+% type in recovery password
+% alternative would be to remove drive and insert into safe device
+
+Having the user enter their recovery key does not directly benefit our endevaours as BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
+
+What we can do is try to record the keystrokes performed by the user while entering their recovery key and use it at some later point to gain control over the hard drive. A program designed to perform this type of attack is called a keylogger.
+
+To implement such a keylogger we have to alter the code execution that happens when the recovery prompt is shown. For this our first step is to find our what execution environment or UEFI stage we are in, is Windows already using separate drivers for keyboard access or still relying on the UEFI environment and its protocols.
 
 % ref to background os loader
-prompt is done by the OS Loader
-ergo still during transient system load phase
-required to use protocol services
-therefor uses uefi services for IO
-such as SimpleTextInputEx Protocol
-go over the two different input protocols
-find out which one is used
+% prompt is done by the OS Loader
+% ergo still during transient system load phase
+% required to use protocol services
+% therefor uses uefi services for IO
+% such as SimpleTextInputEx Protocol
+% go over the two different input protocols
+% find out which one is used
+The UEFI specification defines two protocols which are used to abstract keyboard input these are the \lstinline{{SimpleTextInputProtocol} and the \lstinline{{SimpleTextInputExProtocol} \cite[12.2, 12.3]{uefi-spec}. To figure out if the recovery prompt uses these to read key strokes we can just add some print statements to the \lstinline{ReadKeyStroke} and \lstinline{ReadKeyStrokeEx} functions of their implementations in the edk2 OVMF package. On the next boot when typing we find that our \lstinline{ReadKeyStrokeEx} print statements from the \lstinline{{SimpleTextInputExProtocol} are triggered.
+
+Now that we know that the BitLocker recovery prompt is shown by an application running in the UEFI boottime environment, we can leverage this environment to implement our keylogger.
 
 explain more in depth how protocols are returned to the end user
 one instance per controller/handle

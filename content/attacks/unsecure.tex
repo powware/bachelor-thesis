@@ -39,7 +39,7 @@ The UEFI shell can be part of the boot options or requires the user to supply th
 % explain shell screen
 Upon invocation, the shell application performs an initialization during which it \TODO{whats important for us here} and produces output that is equivalent to the output of the execution of the commands ver and map -terse \cite[3.3 Initialization]{uefi-shell}. ver displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
 
-\includegraphics[width=\textwidth]{unsecure/qemu/01_uefi_shell.png}
+\includegraphics[width=\textwidth]{attacks/unsecure/01_uefi_shell.png}
 
 
 % showing mapping, also available with map command
@@ -55,6 +55,7 @@ The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spe
 By default UEFI supports
 
 \TODO{explain file system indepent abstraction better}
+\TODO{explain block devices}
 Drivers providing these protocols use the Block I/O Protocol to access the underlying media.
 
 

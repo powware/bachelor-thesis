@@ -31,7 +31,7 @@ no additional user interaction
 - tpm with startup key
 additional usb
 - tpm with PIN
-- tpm with startup keyc and PIN
+- tpm with startup key and PIN
 protects against unauthorized data access
 
 with tpm ensures integrity of early boot components and boot configuration
@@ -64,7 +64,9 @@ data is encrypted blockwise with Full Volume Encryption Key (FVEK)
 - AES 256-bit the key is 256-bit of size
 FVEK encrypted with Volume Master Key (VMK) 256 bit
 VMK encrypted by multiple protectors, default configuration:
-- TPM
+% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/tpm-fundamentals
+% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/how-windows-uses-the-tpm#bitlocker-drive-encryption
+- TPM, seal operation
 - Recovery Key
 
 or
