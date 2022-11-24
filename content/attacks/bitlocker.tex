@@ -115,6 +115,10 @@ again hook data mapping
 dislocker validate block
 solves recovery key advancement issue
 
+% execute after NTFS driver by doing it in an ExitBootServices hook
+It is beneficial for us to write our payload to the Windows installation as close to the end of the UEFI environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
+% was muss man beachten bei exitbootservices hooking
+\cite{exitbootservices-hooking}
 hook ExitBootServices
 enable hook
 write payload

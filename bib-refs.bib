@@ -1,3 +1,5 @@
+% UEFI Forum
+
 @misc{uefi-spec,
   author = {UEFI Forum},
   title  = {UEFI Specification, Version 2.9},
@@ -24,6 +26,8 @@
   title  = {UEFI Specifications Overview},
   url = {https://uefi.org/specsandtesttools}
 }
+
+%  Trusted Computing Group
 
 @misc{tcg-efi-platform-spec,
   author = {Trusted Computing Group},
@@ -60,6 +64,8 @@
   year   = {2008}
 }
 
+% TianoCore
+
 @misc{tianocore-edk2-build-spec,
   author = {TianoCore},
   title  = {EDKII Build Specification},
@@ -82,6 +88,8 @@
   url = {https://github.com/tianocore/edk2}
 }
 
+% Microsoft
+
 @misc{microsoft-pe-signature-format,
   author = {Microsoft},
   title  = {Microsoft Windows Authenticode Portable Executable Signature Format, Version 1.0},
@@ -100,11 +108,18 @@
   url    = {https://aka.ms/recoverykeyfaq}
 }
 
-@misc{tpm-sniffing,
-  author = {Denis Andzakovic},
-  title  = {Extracting Bitlocker keys from a TPM},
-  url    = {https://pulsesecurity.co.nz/articles/TPM-sniffing}
+@misc{microsoft-localsystem-account,
+  author = {Microsoft},
+  title  = {LocalSystem Account},
+  url    = {https://learn.microsoft.com/en-us/windows/win32/services/localsystem-account}
 }
+
+@misc{microsoft-whoami,
+  author = {Microsoft},
+  title  = {whoami},
+  url    = {https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/whoami}
+}
+
 
 @misc{techtarget,
   author = {Techtarget},
@@ -123,6 +138,22 @@
   title  = {Rootkit Malware},
   url    = {https://www.crowdstrike.com/cybersecurity-101/malware/rootkits/}
 }
+
+% used methods
+
+@misc{tpm-sniffing,
+  author = {Denis Andzakovic},
+  title  = {Extracting Bitlocker keys from a TPM},
+  url    = {https://pulsesecurity.co.nz/articles/TPM-sniffing}
+}
+
+@misc{exitbootservices-hooking,
+  author = {User71491},
+  title  = {ExitBootServices Hooking},
+  url    = {https://wikileaks.org/ciav7p1/cms/page_36896783.html}
+}
+
+% software and repos
 
 @misc{uefitool,
   author = {LongSoft},
@@ -154,25 +185,48 @@
   url    = {https://github.com/Aorimn/dislocker}
 }
 
-@misc{exitbootservices-hooking,
-  author = {User71491},
-  title  = {ExitBootServices Hooking},
-  url    = {https://wikileaks.org/ciav7p1/cms/page_36896783.html}
-}
-
-
-
 
 % https://uefi.org/learning_center/papers
 
 @book{beyond-bios,
-url = {https://doi.org/10.1515/9781501505690},
-title = {Beyond BIOS},
-title = {Developing with the Unified Extensible Firmware Interface, Third Edition},
-author = {Vincent Zimmer and Michael Rothman and Suresh Marisetty},
-publisher = {De|G Press},
-address = {Berlin, Boston},
-doi = {doi:10.1515/9781501505690},
-isbn = {9781501505690},
-year = {2017}
+  url = {https://doi.org/10.1515/9781501505690},
+  title = {Beyond BIOS},
+  title = {Developing with the Unified Extensible Firmware Interface, Third Edition},
+  author = {Vincent Zimmer and Michael Rothman and Suresh Marisetty},
+  publisher = {De|G Press},
+  address = {Berlin, Boston},
+  doi = {doi:10.1515/9781501505690},
+  isbn = {9781501505690},
+  year = {2017}
 }
+
+% windows internals
+
+@book{windows-internals-5,
+  title     = {Windows Internals},
+  author    = {Mark E. Russinovich, David A. Solomon and Alex Ionescu},
+  publisher = {Microsoft Press},
+  edition   =  {5},
+  month     =  {june},
+  year      =  {2009}
+}
+
+@book{windows-internals-7-part1,
+  title     = {Windows Internals, Part 1},
+  author    = {Pavel Yosifovich, Alex Ionescu, Mark E. Russinovich and David A. Solomon},
+  publisher = {Microsoft Press},
+  edition   =  {7},
+  month     =  {may},
+  year      =  {2017}
+}
+
+@book{windows-internals-7-part1,
+  title     = {Windows Internals, Part 2},
+  author    = {Andrea Allievi, Alex Ionescu, Mark E. Russinovich and David A. Solomon},
+  publisher = {Pearson Education, Inc.},
+  series    = {Developer Reference},
+  edition   =  {7},
+  month     =  {sept},
+  year      =  {2021}
+}
+
