@@ -59,16 +59,32 @@ To implement such a keylogger we have to alter the code execution that happens w
 % find out which one is used
 The UEFI specification defines two protocols which are used to abstract keyboard input these are the \lstinline{{SimpleTextInputProtocol} and the \lstinline{{SimpleTextInputExProtocol} \cite[12.2, 12.3]{uefi-spec}. To figure out if the recovery prompt uses these to read key strokes we can just add some print statements to the \lstinline{ReadKeyStroke} and \lstinline{ReadKeyStrokeEx} functions of their implementations in the edk2 OVMF package. On the next boot when typing we find that our \lstinline{ReadKeyStrokeEx} print statements from the \lstinline{{SimpleTextInputExProtocol} are triggered.
 
-Now that we know that the BitLocker recovery prompt is shown by an application running in the UEFI boottime environment, we can leverage this environment to implement our keylogger.
+Now, knowing that the BitLocker recovery prompt is shown by an application running in the UEFI boottime environment, we can leverage this environment to implement our keylogger.
 
-explain more in depth how protocols are returned to the end user
-one instance per controller/handle
+% explain more in depth how protocols are returned to the end user
+% one instance per controller/handle
+\TODO{how are protocols returned to the end user}
+% explain basic back to the caller. This method is called function hooking
+% explain how we retain information of the hook in question
+% map protocol pointer to hook information
+% keylog recovery key
+To alter the code execution when performing a key stroke we can just iterate over all instances of the \lstinline{{SimpleTextInputExProtocol} and reassign the \lstinline{ReadKeyStrokeEx} entry of the struct, which is a function pointer. We will save each protocol instances' original function address and instead have it point to an intermediary function. This intermediary calls the original function and performs logging of the key stroke result before relaying the result to the caller. This method is called function hooking and is intransparent to consumer of a protocol.
 
-explain basic hooking
-explain how we retain information of the hook in question
-map protocol pointer to hook information
-keylog recovery key
-key input advancment is weird and makes tracking tricky
+%  show whole protocol
+% WaitForKeyEx event
+% wait for event
+% query which key it was
+
+\TODO{how is the SimpleTextInputEx Protocol used}
+
+So far we are able to track each keystroke that queried via the \lstinline{ReadKeyStrokeEx} function, which in our testing is only done during the recovery prompt, but may be used by BIOS interactive menu.
+
+\TODO{key input advancment is weird and makes tracking tricky}
+F keys
+block validity
+only divisable by 11
+cursor can move out of incomplete or valid blocks
+up and down increments or decrements the cursor position
 
 alternatively screen shot
 still need hook to find when enter is pressed
