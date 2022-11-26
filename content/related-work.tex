@@ -7,13 +7,36 @@
 scholar ranking
 bootkits and rootkits often share the same attack vector towards windows because they are executed prior and during windows boot
 
+UEFI threats can be catigorized by their attack vector into two groups: storage based and memory based attacks. Storage based attacks mostly gain access independent of the current state of the operating system by only modifying the disk's content before the operating system access these files. These attacks are often performed before any parts of the operating system are executed. Memory based attacks instead hook into the operating system's boot process to install their payload alongside operating system in memory.
+
 \section{Storage based}
 
+% https://github.com/hackedteam/vector-edk
+
 \subsection{LoJax}
+
 % https://www.welivesecurity.com/wp-content/uploads/2018/09/ESET-LoJax.pdf
+
+rootkit
+documentation about firmware infection
+remove previous NTFS driver
+add malicious DXE driver
+has NTFS driver
+payload
+registry editor
+\lstinline{C:/Windows/SysWOW64/autoche.exe} is not executed with elevated privileges (can't update TPM values)
+
+\lstinline{EFI_EVENT_GROUP_READY_TO_BOOT} (too early for BitLogger)
+
 
 \subsection{MosaicRegressor}
 % https://securelist.com/mosaicregressor/98849/
+% https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2020/10/07080558/MosaicRegressor_Technical-details.pdf
+
+rootkit
+has NTFS driver
+\lstinline{C:/ProgramData/Microsoft/Windows/Start Menu/Programs/Startup}
+no registry editing, also not privileged
 
 \section{Memory based}
 
