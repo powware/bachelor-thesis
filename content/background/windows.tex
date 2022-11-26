@@ -2,6 +2,7 @@
 
 \section{Windows}
 
+\subsection{Installation}
 uefi begins with windows installation
 creates at least four partitions
 FAT EFI system partition
@@ -13,15 +14,28 @@ unformatted reserved partition for temporary stuff
 NTFS boot partition with windows installation
 \cite[12. The UEFI boot]{windows-internals-7-part2}
 
-uefi bootflow
+\subsection{Windows Boot Manager \lstinline{bootmgrfw.efi}}
 retrieve relative path of own executable and load options boot variable
-verifies its own integrity
-uses the optional of boot entry data to store the GUID of the BCD object that describes itself
-\cite[12. The Windows Boot Manager]{windows-internals-7-part2}
-\lstinline{Windload.efi}
 reads the BCD
-manages TPM unseal for bitlocker
-shows recovery prompt
+uses the optional load option data of boot entry to store the GUID of the BCD object that describes itself
+BCD is registry hive later mapped (BCD contains recovery message and URL!!)
+if not disabled in BCD (nointegritycheck or testsigning) verifies its own integrity
+opens its own file from the hard disk and validates signature
+if enabled works with secure boot
+if hibernation is enabled launches \lstinline{Winresume.efi} which reads hibernation file and resumes kernel
+checks BCD for boot entries, if target device is encrypted, decrypt and read os loader LoadeImage call (with secure boot functionality) \lstinline{Windload.efi}
+tries to TPM unseal
+if fails show recovery prompt
+if succeeds make sure TPM cant be used to unseal further things
+StartImage os loader, only returns in error case
+if so start Windows Recovery Sequence
+\cite[12. The Windows Boot Manager]{windows-internals-7-part2}
+
+hier weiter machen
+\cite[12. Measured Boot]{windows-internals-7-part2}
+
+\subsection{Windows OS Loader \lstinline{Windload.efi}}
+
 
 
 % https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning

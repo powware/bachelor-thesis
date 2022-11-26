@@ -12,6 +12,13 @@ deviate the boot flow
 access to the hard drive from the UEFI Environment
 deploy payload so that it is executed
 
+% deviate the boot flow
+rename original Windows Boot Manager
+replace with bootkit
+
+when loading original bootloader load options have to be transfered as well as loaded path have to be transfered
+
+
 % UEFI does not support NTFS
 Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}, thus we need to use an NTFS driver to access the Windows installation.
 % windows uses NTFS
@@ -48,7 +55,7 @@ For now driver loading and filesystem navigation are of relevance.
 The UEFI shell can be part of the boot options or requires the user to supply the executable via a removable medium such as a USB stick.
 
 % explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output that is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
+Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
 
 \includegraphics[width=\textwidth]{attacks/neither/01_uefi_shell.png}
 
