@@ -6,9 +6,20 @@ mostly comes with default keys OEM
 expectation:
 not to boot
 observation:
+doesnt boot
+
+add DXE Drivers to the DXE Volume.
+% how to achieve assumption/requirement
+This can be achieved by having read/write access to the SPI flash or using the Signed Capsule Update. Gaining read/write access to the SPI Flash is possible either through physical access to the device by using an SPI clamp on the chip itself or through exploits like for example the
+% see SMM multi threaded exploit
+. Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
+% ref lenovo vantage for distributed example
+% network boot maybe
+
 no difference
 % ref to paper default policy
 secure boot default policy snippet
+% https://github.com/tianocore/edk2/blob/f3da13461cbed699e54b1d7ef3fba5144cc3b3b4/SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.c#L1704
 option roms and bootloader
 % ref background firmware update
 instead relies on Signed Capsule Updates
@@ -16,10 +27,5 @@ assumes integrity
 
 \cite[32.3]{uefi-spec}
 
-evil maid can disable secure boot
-mitigate with bios password
-
 policy defined
 \cite[32.5.3.3 Authorization Process]{uefi-spec}
-
-% https://github.com/tianocore/edk2/blob/f3da13461cbed699e54b1d7ef3fba5144cc3b3b4/SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.c#L1704

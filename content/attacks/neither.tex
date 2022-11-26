@@ -1,11 +1,21 @@
 % !TeX root = ../../thesis.tex
 
 \section{Neither Secure Boot nor Bitlocker}
-% first aim harddrive access
-\TODO{whats any security mechanisms}
-The first attack is performed without enabling any security mechanisms (e.g. Secure Boot, BitLocker). Our first step is to gain unrestricted access to the hard drive from the UEFI environment, so that we can install payload.
+
+% premise of attack
+The first attack is performed without enabling any additional security mechanisms (e.g. Secure Boot, BitLocker).
+
+\subsection{Bootkit}
+
+% general concept
+deviate the boot flow
+access to the hard drive from the UEFI Environment
+deploy payload so that it is executed
+
+% UEFI does not support NTFS
+Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}, thus we need to use an NTFS driver to access the Windows installation.
 % windows uses NTFS
-Since Windows uses NTFS formatting for their hard drive volumes we need to use an NTFS driver, UEFI is not required to support NTFS and as such edk2 does not come with an NTFS driver.
+The UEFI specification mandates compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}, since this does not include NTFS edk2 does not come with an NTFS driver.
 
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI

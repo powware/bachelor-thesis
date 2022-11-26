@@ -1,18 +1,55 @@
 % !TeX root = ../thesis.tex
 
-% https://www.enago.com/thesis-editing/blog/how-to-write-your-thesis-discussion-section
 % https://www.scribbr.com/research-paper/discussion/
+
+meaning, importance, and relevance of your results
+explaining and evaluating what you found, showing how it relates to your literature review
 
 \chapter{Discussion}
 
+we achieved a boot and rootkit with unrestricted disk access which results in elevated execution on the target OS
+persistence with rootkit/none with bootkit
+bootkit delivery:
+usb stick, from windows
+rootkit delivery:
+spi clamp, firmware delivery process, maybe windows with exploit
+
+we didnt try to be undetectable
+windows is very vulnerable with unrestricted disk access
+secure boot is very limited
+secure boot can easily be disabled without bios password
+TPM does its job in detecting PCR change
+% attack assumption reflected to real world aplicability
+bitlocker reocvery prompt can raise suspicion
+very effective if part of the delivery process or in general present before os installation
+BitLogger somewhat last resort
+social engineering aspect
+
+
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures#bootkits-and-rootkits
-attack assumption reflected to real world aplicability
-
-social engineering aspekt
-
-driver vorhanden und was mitbringen, debloating
 
 boottime vs runtime rootkit
+
+\section{Rootkit classification}
+
+statisken zu bilocker und secureboot auf systemen
+
+industrie standard zur system security in firmen
+
+\section{Mitigations}
+
+bios password against secure boot removal
+
+windows cant assume what the implementation of ReadKeyStrokeEx looks like (normally function patching might have a jump etc, which we dont even have here)
+
+hardware validated boot
+
+inaccessible spi flash
+
+tpm + pin/usb detectability
+
+\subsection{User awareness}
+
 
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan
 
@@ -38,30 +75,11 @@ what does the recovery screen say
 % https://learn.microsoft.com/en-us/microsoft-desktop-optimization-pack/mbam-v25/
 Enables end users to recover encrypted devices independently by using the Self-Service Portal
 
-\section{Rootkit classification}
-
-statisken zu bilocker und secureboot auf systemen
-
-industrie standard zur system security in firmen
-
-\section{Mitigations}
-
-windows cant assume what the implementation of ReadKeyStrokeEx looks like (normally function patching might have a jump etc, which we dont even have here)
-
-hardware validated boot
-
-inaccessible spi flash
-
-tpm + pin detectability
-
 googeln wie legitime recovery key prompt reaktion aussieht
 
 enterprise policy recovery key einschraenkbar?
 
 enterprise policy on recovery key loss
-
-
-\subsection{User awareness}
 
 vermitteln was das prompt bedeuten koennte
 
@@ -78,5 +96,6 @@ without hardware chain of trust a compromised system can patch/change any softwa
 phishing prompts on their own
 
 \section{Future work}
-exploit in tpm measruement chain that rsults in not being measured
+exploit in tpm measruement chain that results in not being measured
 can exploit the tg2 hook directly to retrieve the vmk
+memory based rootkit

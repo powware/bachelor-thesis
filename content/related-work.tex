@@ -3,6 +3,7 @@
 \chapter{Related Work}
 
 % https://www.blackhat.com/docs/asia-17/materials/asia-17-Matrosov-The-UEFI-Firmware-Rootkits-Myths-And-Reality.pdf
+% https://www.researchgate.net/profile/Anton-Sergeev-2/publication/269310822_Too_young_to_be_secure_Analysis_of_UEFI_threats_and_vulnerabilities/links/551306b50cf23203199aa237/Too-young-to-be-secure-Analysis-of-UEFI-threats-and-vulnerabilities.pdf
 
 scholar ranking
 bootkits and rootkits often share the same attack vector towards windows because they are executed prior and during windows boot
@@ -40,16 +41,26 @@ no registry editing, also not privileged
 
 \section{Memory based}
 
-\subsection{ESPecter}
-% https://www.welivesecurity.com/2021/10/05/uefi-threats-moving-esp-introducing-especter-bootkit/
-
-bootkit
+% https://github.com/quarkslab/dreamboot
+% https://github.com/Mattiwatti/EfiGuard
+% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
 
 \subsection{FinSpy}
 
 % https://securelist.com/finspy-unseen-findings/104322/
 
 bootkit
+bootmgfw.efi replaced and orignal moved
+original bootloader patched in memory
+patches "function of the OS loader that transfers execution to the kernel"
+hooks the kernel's PsCreateSystemThread and which then creates an addtional thread decrypting the next stage and loading it
+
+
+\subsection{ESPecter}
+% https://www.welivesecurity.com/2021/10/05/uefi-threats-moving-esp-introducing-especter-bootkit/
+
+bootkit
+
 
 \subsection{MoonBounce}
 % https://securelist.com/moonbounce-the-dark-side-of-uefi-firmware/105468/
