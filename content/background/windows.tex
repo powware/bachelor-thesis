@@ -1,10 +1,32 @@
 % !TeX root = ../../thesis.tex
 
 \section{Windows}
+
+uefi begins with windows installation
+creates at least four partitions
+FAT EFI system partition
+where it installs Windows Boot Manager \lstinline{bootmgrfw.efi} under \lstinline{EFI\\Microsoft\\Boot} alongside boot configuration data (BCD)
+adds boot option variable \lstinline{Boot000X} for Windows Boot Manager
+places copy of it as \lstinline{EFI\\Boot\\bootx64.efi} so that booting from that hard drive, boots into windows if the windows boot option where to be missing on the system
+NTFS recovery partition for recovery if startup fails
+unformatted reserved partition for temporary stuff
+NTFS boot partition with windows installation
+\cite[12. The UEFI boot]{windows-internals-7-part2}
+
+uefi bootflow
+retrieve relative path of own executable and load options boot variable
+verifies its own integrity
+uses the optional of boot entry data to store the GUID of the BCD object that describes itself
+\cite[12. The Windows Boot Manager]{windows-internals-7-part2}
+\lstinline{Windload.efi}
+reads the BCD
+manages TPM unseal for bitlocker
+shows recovery prompt
+
+
 % https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
 % \subsection{User Access Control (UAC)}
 % https://learn.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
-% \subsection{Windows Trusted Boot}
 
 \subsection{Trusted Boot}
 % https://learn.microsoft.com/en-us/windows/security/information-protection/secure-the-windows-10-boot-process

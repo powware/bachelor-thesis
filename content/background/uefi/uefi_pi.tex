@@ -251,9 +251,6 @@ unloaded on error
 memory marked as code and data
 jump to entry point
 
-what is the boot manager
-boot manager = bds
-
 \subsubsection{\acs{UEFI} Applications}
 
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/readme.7/371_applications
@@ -314,6 +311,32 @@ boot services provide function to install, locate, open, close and monitor proto
 identified with guids
 \subsubsection{Boottime Services}
 \subsubsection{Runtime Services}
+\subsubsection{Variables}
+key/value pairs
+store arbirtary data passed between UEFI environment and applications/os loaders
+type of data is defined through usage
+storage implementation is not specify but must support non volatility if demanded to be able to be retained after reboots
+variables are defined by their Vendor GUID, Name and attributes such as: their scope (boot time, run time, non-volatile), whether writes require authentication or result in appending data instead of overriding
+\cite[8.2]{uefi-spec}
+\TODO{deep dive in authenticated variables}
+architecually defined variables are called Globally Defined Variables where vendor GUID is defined with the macro \lstinline{EFI_GLOBAL_VARIABLE}
+\cite[3.3]{uefi-spec}
+relevant for secure boot and boot manager
+
+\subsection{Boot Manager}
+what is the boot manager
+firmware policy engine
+configured by non volatile variables
+\cite[3.1]{uefi-spec}
+boot manager = bds
+boot behavior
+boot options variables
+boot options (network, simple file system protocol, load file)
+default boot behavior for simple file system protocol
+
+EFI boot variable must contain a short description of the boot entry, the complete
+device and file path of the Boot Manager, and some optional data
+\cite{windows-internals-7-part2}
 
 
 \subsection{edk2}
