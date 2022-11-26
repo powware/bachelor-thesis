@@ -15,15 +15,15 @@ deploy payload so that it is executed
 % UEFI does not support NTFS
 Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}, thus we need to use an NTFS driver to access the Windows installation.
 % windows uses NTFS
-The UEFI specification mandates compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}, since this does not include NTFS edk2 does not come with an NTFS driver.
+The UEFI specification mandates compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}, since this does not include NTFS, EDK II does not come with an NTFS driver.
 
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
-Luckily open source NTFS drivers are readily available such as ntfs-3g from tuxera \cite{ntfs-3g} which allow for read and write access, on top of that there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
+NTFS drivers are readily available such as ntfs-3g from tuxera \cite{ntfs-3g} which allow for read and write access, on top of that there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
 
 % compile
 % spits out .efi file
-We can compile this driver with edk2 following the listed steps and receive a .efi executable file.
+We can compile this driver with EDK II following the listed steps and receive a .efi executable file.
 
 % try in EFI shell
 % what is the EFI shell
@@ -57,18 +57,10 @@ Upon invocation, the shell application performs an initialization during which i
 % consistent device mapping, comparable to partition names in windows
 The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The UEFI shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters. \cite[Appendix A]{uefi-shell}
 
-% blk and fs
-\cite[13.3.2 Partition Disocvery]{uefi-spec}
 \TODO{find in spec what precise mapping mechanism}
 When we inspect the mapping table we can see FSx and BLKx aliases, FSx maps to file systems and BLKx to block devices. This identification is performed via instances of the Simple File System Protocol and \TODO{double check} Block I/O Protocol which present the interfaces to access the devices they are installed to.
 % explain Simple File System Protocol
-\TODO{explain file system indepent abstraction better}
-\TODO{explain block devices}
 The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spec} provides, together with the File Protocol, file-type access to the device it is installed on. The two protocols are independent of the underlying file system the media is formatted with.
-\TODO{UEFI supported file systems}
-By default UEFI supports FAT32
-
-Drivers providing these protocols use the Block I/O Protocol to access the underlying media.
 
 
 % load NtfsDxe.efi
@@ -158,9 +150,9 @@ When the rootkit is executed it starts by reading the payload into memory, this 
 % write payload
 % seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
 % search for windows installation
-% iterate over all SimpleFileSystem Protocols
+% iterate over all Simple File System Protocols
 % open volume
-The write operation is performed by calling \lstinline{LocateHandleBuffer} again, this time to query all protocol instances of the \lstinline{SimpleFileSystemProtocol}. We iterate over all instances and open their respective volumes, opening a volume returns an instance of the File Protocol. This represents the root directory of the volume, we can now attempt to open a path that is part of the Windows installation, this will fail on volumes not containing a Windows installation, which we just skip. Eventually the volume containing Windows will be found.
+The write operation is performed by calling \lstinline{LocateHandleBuffer} again, this time to query all protocol instances of the Simple File System Protocol. We iterate over all instances and open their respective volumes, opening a volume returns an instance of the File Protocol. This represents the root directory of the volume, we can now attempt to open a path that is part of the Windows installation, this will fail on volumes not containing a Windows installation, which we just skip. Eventually the volume containing Windows will be found.
 
 % but no automatic execution nor elevated privileges
 % So far we achieved unrestricted file access on a Windows installation from within the UEFI environment, the replacement of the notepad executable is a very limited attack and does not achieve automatic execution nor elevated privileges. When we attempt to override more privileged executables within the Windows installation with a version containing altered bytes in non-relevant portions of the executable, we are promptly greeted with a Blue Screen Of Death which was due to our modification of signed executables \TODO{WINDOWS CODE SIGNING}.
@@ -211,7 +203,7 @@ This process boils down to providing semantically equivalent definitions of exte
 Memory allocation maps to the MemoryAllocationLib, memory manipulation to BaseMemoryLib, basic string manipulation to BaseLib, stdout to PrintLib (only relevant for print debugging).
 
 % cstdio is non trivial and has to be implemented by calling protocols on the right volume
-Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to UEFI protocols like \lstinline{SimpleFileSystemProtocol} and \lstinline{FileProtocol}.
+Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to UEFI protocols like Simple File System Protocol and \lstinline{FileProtocol}.
 
 \TODO{no need to change reged source code}
 

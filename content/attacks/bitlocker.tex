@@ -108,12 +108,20 @@ read and write access
 dual boot in vm
 enter recovery key and it works
 port to uefi
+
 bitlocker encrypts block-wise
+
+% blk and fs
+\TODO{explain block devices}
+\TODO{explain file system indepent abstraction better}
 uefi protocol stack
+\TODO{diagram of block io, disk io, simple filesystem and file protocol interaction (with hindsight of adding dislocker beneath block io)}
+\cite[13.3.2 Partition Disocvery]{uefi-spec}
+Drivers providing Simple File System Protocol use the Block I/O Protocol to access the underlying media.
+
+
 hook block io
 again hook data mapping
-dislocker validate block
-solves recovery key advancement issue
 
 % execute after NTFS driver by doing it in an ExitBootServices hook
 It is beneficial for us to write our payload to the Windows installation as close to the end of the UEFI environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
@@ -125,7 +133,7 @@ write payload
 import registry key
 disable hook
 
-next boot would require to input tpm values again
+next boot would require to recovery key again
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-use-bitlocker-drive-encryption-tools-to-manage-bitlocker
 update tpm values in payload
 caveat pin? look into this

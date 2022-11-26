@@ -1,0 +1,9 @@
+The driver that produces the EFI_SECURITY_ARCH_PROTOCOL may also optionally install the EFI_SECURITY_POLICY_PROTOCOL_GUID onto a new handle with a NULL interface. The existence of this GUID in the protocol database means that the GUIDed Section Extraction Protocol should authenticate the contents of an Authentication Section. The expectation is that the GUIDed Section Extraction protocol will look for the existence of the EFI_SECURITY_POLICY_PROTOCOL_GUID in the protocol database. If it exists, then the publication thereof is taken as an injunction to attempt an authentication of any section wrapped in an Authentication Section. See the Platform Initialization Specification, Volume 3, for details on the GUIDed Section Extraction Protocol and Authentication Sections.
+
+If the section being extracted contains authentication information (the section's GuidedSectionHeader.Attributes field has the EFI_GUIDED_SECTION_AUTH_STATUS_VALID bit set), the values returned in AuthenticationStatus must reflect the results of the authentication operation. Depending on the algorithm and size of the encapsulated data, the time that is required to do a full authentication may be prohibitively long for some classes of systems. To indicate this, use EFI_SECURITY_POLICY_PROTOCOL_GUID, which may be published by the security policy driver (see the Platform Initialization Driver Execution Environment Core Interface Specification for more details and the GUID definition). If the EFI_SECURITY_POLICY_PROTOCOL_GUID exists in the handle database, then, if possible, full authentication should be skipped and the section contents simply returned in the OutputBuffer. In this case, the EFI_AUTH_STATUS_PLATFORM_OVERRIDE bit AuthenticationStatus must be set on return
+
+Platform Initialization Specification, Volume 3
+
+EFI_SECURITY_POLICY_PROTOCOL_GUID
+
+Platform Initialization Driver Execution Environment Core Interface Specification
