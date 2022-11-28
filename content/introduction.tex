@@ -7,27 +7,12 @@
 \chapter{Introduction}
 
 
-what is UEFI
-"reader can imagine the boot libraries as a special kind of basic hardware abstraction layer (HAL) for the
-Boot Manager and boot applications" \cite{windows-internals-7-part2}
+% what is UEFI
+As the first piece of software that is run on your computer, UEFI holds an immense amount of responsibility during system initialization, attacks targeting your operating system from this environment are executed long before
+
 what does it different than bios
 this helps write platform independent code
 uefi threats:
-bootkits and rootkits
-in recent years root and bootkits have popped up in the wild and been analysed
-we will discuss their commonalities
-implement one ourselves
-discuss security mechanisms we encounter
-reflect their weaknesses
-how to potentially evade them
-
-% state the general topic and give some background
-UEFI + threats against windows
-what are root and bootkits
-
-As the first piece of software that is run on your computer, UEFI holds an immense amount of responsibility during system initialization, attacks targeting your operating system from this environment are executed long before
-
-
 % definition of rootkit and bootkit
 A rootkit is a collection of software designed to grant a threat actor control over a system, typically with malicious intend.
 Rootkits set up a backdoor exploit and may deliver additional malware while leveraging their privileges to remain hidden.
@@ -36,35 +21,23 @@ There are different types of rootkits such as User Mode, Kernel Mode, Bootkits (
 \TODO{consult abstract for similar definition, how easy uefi makes it to write hardware independent payload}
 Firmware rootkits targets the software running during the boot process, which is responsible for the system initialization. This is done before the operating system is executed making them particularly hard to find, they are also persistent across operating system installation or hard drive replacements.
 \cite{crowdstrike}
-bootkit definition
-% motiviation
-% problem statement
-goals
 
-% provide a review of the literature related to the topic
-% define the terms and scope of the topic
-% outline the current situation
-% evaluate the current situation (advantages/ disadvantages) and identify the gap
-% identify the importance of the proposed research
-% state the research problem/ questions
-% state the research aims and/or research objectives
-% state the hypotheses
-% outline the order of information in the thesis
-% outline the methodology
 
+look at UEFI + threats against windows
 danger of uefi infection
-root-/bootkits
+in recent years root and bootkits have popped up in the wild and been analysed
+differences of root-/bootkits
+reason about infection scenarios
+we will discuss their commonalities
 attack vectors:
 - storage based
 - memory based
+implement a storage based ourselves
 analyse security mechanism to prevent these attacks by attempting an attack itself
+discuss security mechanisms we encounter
 increasing security mechanisms
-
-We start off introducing all background information necessary to understand this thesis in Chapter 2. With this knowledge we then look at analyses of previously discovered UEFI threats in Chapter 3. In Chapter 4 we start our practical approach by implementing a UEFI attack of our own to analyse security mechanism faced when attempting attacks from the UEFI environment. Afterwards we dicuss the impact of our findings as well as potential mitigation techniques in Chapter 5. Chapter 6 concludes ...
-
-- revise and catagorize previously analysed UEFI threats
-- implement a uefi threat
-- reason about infection scenarios
+reflect their weaknesses
+how to potentially evade them
 - analyse countermeasures against UEFI threats
 - Trusted Boot: KMCI from windows
 - Secure Boot
@@ -72,3 +45,7 @@ We start off introducing all background information necessary to understand this
 - Bitlocker
 - firmware lock + signed capsule update
 -
+
+
+
+We start off introducing all background information necessary to understand this thesis in Chapter 2. With this knowledge we then look at analyses of previously discovered UEFI threats in Chapter 3. In Chapter 4 we start our practical approach by implementing a UEFI attack of our own to analyse security mechanism faced when attempting attacks from the UEFI environment. Afterwards we dicuss the impact of our findings as well as potential mitigation techniques in Chapter 5. Chapter 6 concludes ...
