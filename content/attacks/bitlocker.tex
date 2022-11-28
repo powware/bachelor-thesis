@@ -1,4 +1,4 @@
-\section{Secure Boot and Bitlocker}
+\section{Bitlocker}
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
 % assumptions:
@@ -6,7 +6,7 @@
 % bitlocker enabled with TPM auto decryption, no PIN, no startup key
 For our third attack we will enable BitLocker, this prevents us from trivially accessing any data before Windows has successfully booted.
 % secure boot or not
-As we have learned from our second attack Secure Boot does not matter for our attack vector thus we can assume Secure Boot being enabled for this scenario.
+\TODO{rewrite for rootkit/bookit split} As we have learned from our second attack Secure Boot does not matter for our attack vector thus we can assume Secure Boot being enabled for this scenario.
 \TODO{secure boot and bitlocker standard and cant do much more?}
 
 % how to enable bitlocker with TPM

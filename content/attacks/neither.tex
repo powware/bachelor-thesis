@@ -10,7 +10,9 @@ Our first attack is performed without enabling the optional security mechanisms 
 % deploy payload so that it is executed
 We implement a bootkit, that deviates the regular boot flow to access the Windows installation and deploy payload that is automatically executed upon Windows boot.
 
-\subsection{Installation}
+\subsection{Bootkit}
+
+\subsubsection{Infection}
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
@@ -25,14 +27,12 @@ backup and replace windows boot manager
 
 place necessary resources such as payload nearby to be loaded later
 
-
-\subsection{Bootkit}
-
 when loading original bootloader load options have to be transfered as well as loaded path have to be transfered
 
+\subsubsection{Approach}
 
 % UEFI does not support NTFS
-Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}, thus we need to use an NTFS driver to access the Windows installation.
+Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}\TODO{maybe a better citation}, thus we need to use an NTFS driver to access the Windows installation.
 % windows uses NTFS
 The UEFI specification mandates compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}, since this does not include NTFS, EDK II does not come with an NTFS driver.
 
@@ -111,34 +111,6 @@ We now navigate into the Windows folder to test whether we have unrestricted rea
 Upon debugging the NTFS driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode. Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the NTFS driver to not fallback when encountering this file.
 
 We now know that provided we get to load the NTFS driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives. Since our rootkit will not use the UEFI shell we need to have the NTFS driver load as part of the boot process.
-% try to package in firmware image instead of loading from external medium
-We can put the NTFS driver into the DXE Volume where the DXE Dispatcher of the DXE Core will automatically try to load it.
-
-% for hardware use spi clamp to  dump image
-For this, we have to read out the firmware image, modify the contents and write the new image back to hardware. This can be done by using a spi flash programmer and clamping the physical chip.
-% for qemu we can build it ourselves
-If we want to use emulation we can build the Open Virtual Machine Firmware (OVMF) Package from edk2 which is a firmware image for virtual machines.
-
-% we can open image with UEFITool
-Now that we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}.
-In UEFITool we navigate to the DXE Volume containing the DXE Core and DXE drivers.
-% remove previous NTFS driver if present, for full control, might be read only etc
-% in UEFITool search for string
-Before adding our driver we remove any other NTFS driver packed in the image by OEMs, because they might be read only or otherwise restricted and would inhibit our NTFS driver from controlling a device. UEFITool offers a search through the entire firmware image. We can search for "NTFS" as a case insenstive string, since most drivers either have a User Interface Section which contains a human-readable name for tools like UEFITool\cite[Vol 3, 3.2.5]{pi-spec} or support the optional Component Name Protocol which is part of the UEFI Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}. If this would not suffice it would be possible to search for the NTFS magic number indicating that a volume is formatted with NTFS, this number is ascii encoded NTFS followed by four white spaces.
-
-% since files are part of file sections we cant drop in the .efi
-If we now want to add our NTFS driver .efi file with UEFITool we notice that it is displayed as having an unknown subtype, this is because added a file without file sections, a DXE driver has three mandatory sections: PE32 executable, version and DEPEX section \cite[Vol 3, 2.1.4.1.4]{pi-spec}.
-% compile dxe driver within ovmf
-% generate unused volume to receive .ffs file with version, depex, user interface and pe section
-For these files to be generated it is easiest to simply build the NTFS driver as part of the edk2 OVMF and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the DXE volume, for real hardware we can use the output of the build process which is a .ffs file. The .ffs file contains the PE32, version, DEPEX and an optional user interface section.
-% add in NTFS driver .ffs file
-% on hardware use write access with clamp
-% qemu just use path to modified image
-We can now simply insert the .ffs file into the target firmware image with UEFITool and overwrite the SPI flash with modified image by using the programmer again.
-
-% now upon opening uefi shell
-% we instantly see the filesystem
-If we now boot up the UEFI shell the splash screen immediately lists the NTFS formatted device in the mapping table indicating that the driver was successfully loaded during DXE dispatch.
 
 % access to all drivers etc
 \TODO{why did we choose dxe stage}
@@ -152,8 +124,8 @@ The next step is to now use theblo NTFS driver programmatically by writing a DXE
 % This is our first rootkit iteration and is not a driver that conforms to the UEFI Driver Model \TODO{make sure UEFI driver model has been explained} as it does not need to install a Driver Binding Protocol instance onto its image handle and instead does all the work within the entry point.
 
 % pack executable binary as uefi module
-% edk2 produces freeform image with one raw section
-For the rootkit to write a payload to disk it needs to know what to write, we can create an edk2 module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
+% EDK II produces freeform image with one raw section
+For the rootkit to write a payload to disk it needs to know what to write, we can create an EDK II module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
 
 % read payload into RAM
 % iterate over FirmwareVolume2 protocol instances
@@ -217,7 +189,7 @@ This overrides the executable path of task's action and when booting into Window
 % port to uefi
 The next step is to port the reged utiliy so that it works in the UEFI environment as a DXE driver, that our rootkit can interact with. We will call this driver RegedDxe from now on.
 % most stdlib stuff is just mapping to UEFIlib stuff with equivalents or using gcc implementations
-This process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Definitions can often be translated to UEFI equivalents, EDK2 has libraries offering implementations of commonly used abstraction.
+This process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Definitions can often be translated to UEFI equivalents, EDK II has libraries offering implementations of commonly used abstraction.
 % memory allocation (malloc, calloc, realloc), memory manipulation (memset, memcpy) string manipulation (sscanf, strtol), stdout (printf), abort, exit
 Memory allocation maps to the MemoryAllocationLib, memory manipulation to BaseMemoryLib, basic string manipulation to BaseLib, stdout to PrintLib (only relevant for print debugging).
 
@@ -235,8 +207,58 @@ RegedDxe unlike the original linux utility reged is not an application that is e
 % modify so that registry key can differ and found via matching values
 When importing a registry key the target path for the key is read from the registry key file, cached task's registry keys do not follow a strict naming sheme and are instead named by GUIDs, thus they may differ from device to device. To combat this, we change the import mechanism, so that instead of importing a key into its exact path it iterates over the children of the target's parent key. We can then match for our target key with a value that correctly identifies the target key, such as the value representing the path of the XML, that was initially used to load the task.
 
+At last we need to hand over execution to the original Windows Boot Manager
+EFI Loaded Image Protocol \cite[9.1]{uefi-spec} and EFI Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
+need to reflect what is normally expected
+pass on load options from boot entry
+override device path with the one from our bootkit, otherwise it will point to Windows Boot Manager backup location
 
 
+\subsection{Rootkit}
 
+general approach doesn't differ much
 
+main executable is now dxe driver instead of an application
+dxe drivers are now automatically loaded from the DXE dispatcher
 
+\subsubsection{Infection}
+
+retrieve current firmware image
+modify image by adding our DXE drivers to the DXE volume
+rewrite the image
+
+% for hardware use spi clamp to  dump image
+For this, we have to read out the firmware image, modify the contents and write the new image back to hardware. This can be done by using a spi flash programmer and clamping the physical chip. Or using an SPI chip emulator. \TODO{properly list the options}
+% for qemu we can build it ourselves
+If we want to use emulation we can build the Open Virtual Machine Firmware (OVMF) Package from EDK II which is a firmware image for virtual machines.
+
+% we can open image with UEFITool
+Now that we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the UEFI PI spec \cite{uefitool}.
+In UEFITool we navigate to the DXE Volume containing the DXE Core and DXE drivers.
+
+% remove previous NTFS driver if present, for full control, might be read only etc
+% in UEFITool search for string
+Before adding our driver we remove any other NTFS driver packed in the image by OEMs, because they might be read-only or otherwise restricted and would inhibit our NTFS driver from installing onto a device, if it were to load earlier. UEFITool offers a search through the entire firmware image. We can search for "NTFS" as a case insenstive string, since most drivers either have a User Interface Section which contains a human-readable name for inspection tools like UEFITool \cite[Vol 3, 3.2.5]{pi-spec} or support the optional Component Name Protocol which is part of the UEFI Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}. If this would not suffice it is possible to search for the NTFS magic number indicating that a volume is formatted with NTFS, this number is ascii encoded NTFS followed by four white spaces and likely contained by an NTFS driver.
+
+% since files are part of file sections we cant drop in the .efi
+If we now want to add our NTFS driver .efi file with UEFITool we cannot do this directly, because DXE drivers have three mandatory sections: PE32 executable, version and DEPEX section \cite[Vol 3, 2.1.4.1.4]{pi-spec} and these are not autmoatically generated.
+
+% compile dxe driver within ovmf
+% generate unused volume to receive .ffs file with version, depex, user interface and pe section
+For these files to be generated it is easiest to simply build the NTFS driver as part of the EDK II OVMF and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the DXE volume, for real hardware we can use the output of the build process which is a .ffs file. The .ffs file contains the PE32, version, DEPEX and an optional user interface section.
+% add in NTFS driver .ffs file
+% on hardware use write access with clamp
+% qemu just use path to modified image
+We can now simply insert the .ffs file into the target firmware image with UEFITool.
+
+overwrite the SPI flash with modified image by using the programmer again.
+
+\subsubsection{Approach}
+
+payload has to also reside in the firmware image, EDK II binary module
+
+different protocol to load the payload
+
+we dont have to load the other drivers now as this is done by the DXE Dispatcher
+
+we dont have to load the windows boot manager as this is still done by the UEFI Boot Manager

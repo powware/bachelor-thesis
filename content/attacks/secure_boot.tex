@@ -3,10 +3,27 @@
 \section{Secure Boot}
 % how does one enable it
 mostly comes with default keys OEM
+
+\subsection{Bootkit}
+
+\subsubsection{Infection}
+
+booting into usb installer doesnt work without disabling secure boot, if you already have access to the device and have to change the boot order to include removal media, you could very well also disable secure boot
+have to assume that bios is password protected
+what happens when removable media is still before windows
+
+windows installer executable should still work without any difference
+
+\subsubsection{Approach}
+
 expectation:
 not to boot
 observation:
 doesnt boot
+
+\subsection{Rootkit}
+
+\subsubsection{Infection}
 
 add DXE Drivers to the DXE Volume.
 % how to achieve assumption/requirement
@@ -15,6 +32,8 @@ This can be achieved by having read/write access to the SPI flash or using the S
 . Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
 % ref lenovo vantage for distributed example
 % network boot maybe
+
+\subsubsection{Approach}
 
 no difference
 % ref to paper default policy

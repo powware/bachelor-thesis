@@ -14,6 +14,32 @@ usb stick, from windows
 rootkit delivery:
 spi clamp, firmware delivery process, maybe windows with exploit
 
+bootkit vs rootkit
+bootkit:
+installation is much easier:
+windows installer
+physical presence with bootable usb stick
+defeated by secure boot
+in case of physical presence it may require to change boot order
+bios password mitigates that
+if no password present we can disable secure boot
+not entirely persistent
+fresh reinstallation with partition removal and general hard drive replacements defeat it
+
+rootkit:
+barrier of entry is higher
+physical access is more difficult than just booting from a usb stick
+exploit to override spi flash or be delivered with supply chain difficult
+but high payoff
+persistence across reinstallations or hard drive replacements
+can prevent further bios updates and be unremovable
+secure boot does not include internal DXE drivers
+option ROM rootkit is defeated by secure boot
+spi reflash may disable secure boot by changing variable anyways
+SMM rootkit very powerful, complete control over the system
+% \cite{}  https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
+
+
 we didnt try to be undetectable
 windows is very vulnerable with unrestricted disk access
 secure boot is very limited
