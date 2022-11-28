@@ -13,6 +13,7 @@ For our third attack we will enable BitLocker, this prevents us from trivially a
 % sometimes in bios tpm needs to be enabled
 % full drive encryption or used space
 We configure BitLocker to use automatic TPM decryption without any additional PIN or Startup Key.
+\cite{microsoft-bitlocker-basic-deployment}
 
 % observation:
 % recovery key prompt
@@ -21,7 +22,7 @@ When booting the system with our rootkit we are greeted with a screen prompting 
 \includegraphics[width=\textwidth]{attacks/bitlocker/01_recovery_prompt.png}
 
 % tpm values different
-This happens due to TPM PCR values differing from what was initially used to seal the VMK, leaving the Windows bootloader unable to retrieve an unencrypted VMK from the TPM and as a result unable to decrypt the Windows installation. \TODO{the two different bitlocker volumes}
+This happens due to TPM PCR values differing from what was initially used to seal the VMK, leaving the Windows bootloader unable to retrieve an unencrypted VMK from the TPM and as a result unable to decrypt the Windows installation. \cite[12.]{windows-internals-7-part2}
 
 % bitlocker auto decryption fails
 % boot execution differs from executing rootkit
@@ -77,8 +78,9 @@ To alter the code execution when performing a key stroke we can just iterate ove
 
 \TODO{how is the SimpleTextInputEx Protocol used}
 
-So far we are able to track each keystroke that queried via the \lstinline{ReadKeyStrokeEx} function, which in our testing is only done during the recovery prompt, but may be used by BIOS interactive menu.
+So far we are able to track each keystroke that queried via the \lstinline{ReadKeyStrokeEx} function, which in our testing is only done during the recovery prompt, but may be used by the interactive boot menu.
 
+The BitLocker recovery prompt does not allow the user to input any
 \TODO{key input advancment is weird and makes tracking tricky}
 F keys
 block validity

@@ -50,11 +50,6 @@ hier weiter machen
 \subsubsection{HVCI}
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
 \subsection{BitLocker}
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-overview
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/ts-bitlocker-decode-measured-boot-logs
-% https://pulsesecurity.co.nz/articles/TPM-sniffing
 
 % fun thing to try
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#bkmk-configurepreboot
@@ -74,8 +69,6 @@ supports removable data drives
 maximum protection with TPM 1.2 or later
 alternatively USB startup key or password, not system integrity verification
 optionally PIN or USB startup key required to unlock
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-how-to-enable-network-unlock
-also network unlock and pin as fallback
 
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures#pre-boot-authentication
 - tpm only
@@ -89,11 +82,13 @@ protects against unauthorized data access
 
 with tpm ensures integrity of early boot components and boot configuration
 
+% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/how-windows-uses-the-tpm
 
 system requirement
 include support for TCG-specified Static Root of Trust Measurement
 
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
+\cite{microsoft-bitlocker-device-encryption}
+
 bitlocker device encryption if supported automatically enabled
 after clean install encrypted with clear key (bitlocker suspended state)
 non domain account -> recovery key uploaded to microsoft account
