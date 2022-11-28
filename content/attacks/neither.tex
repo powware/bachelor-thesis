@@ -3,18 +3,30 @@
 \section{Neither Secure Boot nor Bitlocker}
 
 % premise of attack
-The first attack is performed without enabling any additional security mechanisms (e.g. Secure Boot, BitLocker).
+Our first attack is performed without enabling the optional security mechanisms Secure Boot and BitLocker.
+% general concept
+% deviate the boot flow
+% access to the hard drive from the UEFI Environment
+% deploy payload so that it is executed
+We implement a bootkit, that deviates the regular boot flow to access the Windows installation and deploy payload that is automatically executed upon Windows boot.
+
+\subsection{Installation}
+
+% https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
+% https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
+
+- Windows admin executable
+
+- boot into USB stick with Installer
+
+search for EFI partition containing the windows boot manager
+
+backup and replace windows boot manager
+
+place necessary resources such as payload nearby to be loaded later
+
 
 \subsection{Bootkit}
-
-% general concept
-deviate the boot flow
-access to the hard drive from the UEFI Environment
-deploy payload so that it is executed
-
-% deviate the boot flow
-rename original Windows Boot Manager
-replace with bootkit
 
 when loading original bootloader load options have to be transfered as well as loaded path have to be transfered
 
