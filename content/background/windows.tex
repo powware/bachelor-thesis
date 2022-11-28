@@ -59,8 +59,15 @@ hier weiter machen
 % fun thing to try
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#bkmk-configurepreboot
 
-\cite[8.4 BitLocker Drive encryption]{windows-internals-5}
+operating system can only protect when it's active
+bitlocker protects system files and data against physical access attacks or generally outside of operating system
+windows supports Encrypting File System (EFS) but it cant be used for registry hives
+\cite[9. BitLocker Drive encryption]{windows-internals-6-part2}
+
+\cite{microsoft-bitlocker-overview}
+\cite{microsoft-bitlocker-device-encryption}
 BitLocker Drive Encryption (BDE) integrates with operating system
+fixed disk or BitLocker To Go
 encryption enabled per volume
 encrypt os and data drives
 supports removable data drives
@@ -78,6 +85,7 @@ additional usb
 - tpm with PIN
 - tpm with startup key and PIN
 protects against unauthorized data access
+\cite{microsoft-bitlocker-countermeasures}
 
 with tpm ensures integrity of early boot components and boot configuration
 
