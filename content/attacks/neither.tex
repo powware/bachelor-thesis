@@ -8,7 +8,7 @@ Our first attack is performed without enabling the optional security mechanisms 
 % deviate the boot flow
 % access to the hard drive from the UEFI Environment
 % deploy payload so that it is executed
-We implement a bootkit, that deviates the regular boot flow to access the Windows installation and deploy payload that is automatically executed upon Windows boot.
+We implement a bootkit and a rootkit, that deviate the regular boot flow to access the Windows installation and deploy payload that is automatically executed upon Windows boot.
 
 \subsection{Bootkit}
 
@@ -21,50 +21,36 @@ We implement a bootkit, that deviates the regular boot flow to access the Window
 
 - boot into USB stick with Installer
 
+installer does:
 search for EFI partition containing the windows boot manager
-
 backup and replace windows boot manager
-
 place necessary resources such as payload nearby to be loaded later
-
-when loading original bootloader load options have to be transfered as well as loaded path have to be transfered
 
 \subsubsection{Approach}
 
+\TODO{dump a windows boot entry}
+Now our bootkit is in place of the Windows Boot Manager and through the Windows boot entry still pointing to the orignal file path will be loaded by the UEFI Boot Manager instead of the Windows Boot Manager.
+
 % UEFI does not support NTFS
-Windows uses NTFS formatting for its primary file system \cite{microsoft-ntfs-overview}\TODO{maybe a better citation}, thus we need to use an NTFS driver to access the Windows installation.
-% windows uses NTFS
-The UEFI specification mandates compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}, since this does not include NTFS, EDK II does not come with an NTFS driver.
+To access the Windows installation we require an additional NTFS driver, which is not guaranteed to be present due to the UEFI specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. EDK II does not provide an implementation either.
 
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
-NTFS drivers are readily available such as ntfs-3g from tuxera \cite{ntfs-3g} which allow for read and write access, on top of that there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
+For this we can use the open source NTFS driver ntfs-3g from Tuxera \cite{ntfs-3g} which supports read and write access, there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
 
 % compile
 % spits out .efi file
-We can compile this driver with EDK II following the listed steps and receive a .efi executable file.
+We can compile this driver with EDK II to receive a \lstinline{.efi} executable file.
 
 % try in EFI shell
 % what is the EFI shell
 \TODO{better summary of UEFI shell}
-Part of the UEFI specifications is a shell specification which is a feature rich UEFI shell application to interact with the UEFI environment.
-% https://docstore.mik.ua/manuals/hp-ux/en/5991-1247B/ch04s13.html
-\TODO{better listing of capabilities}
-It offers commands for
-boot,
-configuration,
-device, driver, handle
-filesystem
-network
-memory
-scripting.
-For now driver loading and filesystem navigation are of relevance.
+Part of the family of UEFI specifications is a shell specification which defines a feature rich UEFI shell application to interact with the UEFI environment \cite[1.1]{uefi-shell-spec}. It offers commands related to boot and general configuration, device and driver management, filesystem access, networking \cite[5.1]{uefi-shell-spec} and supports scripting \cite[4]{uefi-shell-spec}. We can use the filesystem related commands to test the NTFS driver.
 
 % how to use uefi shell
-\TODO{look up official guideline to booting into console}
 % we are trying in qemu where the shell is available in boot options
 % real hardware might require the uefi shell application .efi from the user via usb stick
-The UEFI shell can be part of the boot options or requires the user to supply the executable via a removable medium such as a USB stick.
+The UEFI shell may already be part of the boot options but can always be supplied
 
 % explain shell screen
 Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
@@ -150,7 +136,7 @@ The write operation is performed by calling \lstinline{LocateHandleBuffer} again
 
 \TODO{Windows File Permissions}
 % ref to background UAC signed
-Now the question arises as to where to write our payload to, we want autmoatic and elevated execution. Earlier we discovered that the NTFS DXE driver disregards the file access permission model so we are not restricted in the same way an unprivileged user would be. MosaicRegressor writes its payload to the Windows startup folder, a folder whose contents are automatically exectuted at system startup. The programs within the startup folder are unfortunatly not automatically run at an elevated level.
+Now the question arises as to where to write our payload to, we want autmoatic and elevated execution. Earlier we discovered that the NTFS DXE driver disregards the file access permission model so we are not restricted in the same way an unprivileged user would be. MosaicRegressor writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunatly not automatically run at an elevated level.
 
 \TODO{modifying Windows Executables KMCI}
 
@@ -210,6 +196,7 @@ When importing a registry key the target path for the key is read from the regis
 At last we need to hand over execution to the original Windows Boot Manager
 EFI Loaded Image Protocol \cite[9.1]{uefi-spec} and EFI Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
 need to reflect what is normally expected
+\TODO{dump a windows boot entry}
 pass on load options from boot entry
 override device path with the one from our bootkit, otherwise it will point to Windows Boot Manager backup location
 
