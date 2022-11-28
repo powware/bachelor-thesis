@@ -10,11 +10,22 @@ bootkits and rootkits often share the same attack vector towards windows because
 
 UEFI threats can be catigorized by their attack vector into two groups: storage based and memory based attacks. Storage based attacks mostly gain access independent of the current state of the operating system by only modifying the disk's content before the operating system access these files. These attacks are often performed before any parts of the operating system are executed. Memory based attacks instead hook into the operating system's boot process to install their payload alongside operating system in memory.
 
-\section{Storage based}
+\section{Infection}
+
+https://arstechnica.com/information-technology/2022/04/bugs-in-100-lenovo-models-fixed-to-prevent-unremovable-infections/
+
+\subsection{Bootkit}
+
+\subsection{Rootkit}
+
+\section{Approach}
+\subsection{Storage based}
+
+vector-edk
 
 % https://github.com/hackedteam/vector-edk
 
-\subsection{LoJax}
+LoJax
 
 % https://www.welivesecurity.com/wp-content/uploads/2018/09/ESET-LoJax.pdf
 
@@ -30,7 +41,8 @@ registry editor
 \lstinline{EFI_EVENT_GROUP_READY_TO_BOOT} (too early for BitLogger)
 
 
-\subsection{MosaicRegressor}
+MosaicRegressor
+
 % https://securelist.com/mosaicregressor/98849/
 % https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2020/10/07080558/MosaicRegressor_Technical-details.pdf
 
@@ -39,13 +51,13 @@ has NTFS driver
 \lstinline{C:/ProgramData/Microsoft/Windows/Start Menu/Programs/Startup}
 no registry editing, also not privileged
 
-\section{Memory based}
+\subsection{Memory based}
 
 % https://github.com/quarkslab/dreamboot
 % https://github.com/Mattiwatti/EfiGuard
 % https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
 
-\subsection{FinSpy}
+FinSpy
 
 % https://securelist.com/finspy-unseen-findings/104322/
 
@@ -56,14 +68,16 @@ patches "function of the OS loader that transfers execution to the kernel"
 hooks the kernel's PsCreateSystemThread and which then creates an addtional thread decrypting the next stage and loading it
 
 
-\subsection{ESPecter}
+ESPecter
 % https://www.welivesecurity.com/2021/10/05/uefi-threats-moving-esp-introducing-especter-bootkit/
 
 bootkit
 
 
-\subsection{MoonBounce}
+MoonBounce
+
 % https://securelist.com/moonbounce-the-dark-side-of-uefi-firmware/105468/
 
-\subsection{CosmicStrand}
+CosmicStrand
+
 % https://securelist.com/cosmicstrand-uefi-firmware-rootkit/106973/
