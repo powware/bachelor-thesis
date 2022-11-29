@@ -16,27 +16,18 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
-
-- Windows admin executable
-
-- boot into USB stick with Installer
-
-installer does:
-search for EFI partition containing the windows boot manager
-backup and replace windows boot manager
-place necessary resources such as payload nearby to be loaded later
+We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin priveleges.
+The installation process is identicial for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
 
 \subsubsection{Approach}
 
 \TODO{dump a windows boot entry}
-Now our bootkit is in place of the Windows Boot Manager and through the Windows boot entry still pointing to the orignal file path will be loaded by the UEFI Boot Manager instead of the Windows Boot Manager.
-
+Now that our bootkit is in place of the Windows Boot Manager, when the UEFI Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager the contained file path \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi} will cause our bootkit to be executed.
 % UEFI does not support NTFS
-To access the Windows installation we require an additional NTFS driver, which is not guaranteed to be present due to the UEFI specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. EDK II does not provide an implementation either.
-
+For our storage based approach we now need to access the Windows installation from within the UEFI environment to deploy our payload. We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional NTFS driver due to the UEFI specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. The EDK II reference implementation does not provide an \ac{NTFS} driver either.
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
-For this we can use the open source NTFS driver ntfs-3g from Tuxera \cite{ntfs-3g} which supports read and write access, there already exists a port to UEFI created by pbatard \cite{ntfs-3g-uefi}.
+We can use a fork of the open source NTFS driver ntfs-3g from Tuxera \cite{ntfs-3g}, that was ported to the UEFI environment by pbatard \cite{ntfs-3g-uefi}.
 
 % compile
 % spits out .efi file
@@ -50,7 +41,7 @@ Part of the family of UEFI specifications is a shell specification which defines
 % how to use uefi shell
 % we are trying in qemu where the shell is available in boot options
 % real hardware might require the uefi shell application .efi from the user via usb stick
-The UEFI shell may already be part of the boot options but can always be supplied
+The UEFI shell may already be part of the boot options but can always be supplied on a USB stick in the default boot path.
 
 % explain shell screen
 Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
@@ -63,26 +54,24 @@ Upon invocation, the shell application performs an initialization during which i
 The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The UEFI shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters. \cite[Appendix A]{uefi-shell}
 
 \TODO{find in spec what precise mapping mechanism}
-When we inspect the mapping table we can see FSx and BLKx aliases, FSx maps to file systems and BLKx to block devices. This identification is performed via instances of the Simple File System Protocol and \TODO{double check} Block I/O Protocol which present the interfaces to access the devices they are installed to.
+When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices. This identification is performed via instances of the Simple File System Protocol and \TODO{double check} Block I/O Protocol.
 % explain Simple File System Protocol
-The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spec} provides, together with the File Protocol, file-type access to the device it is installed on. The two protocols are independent of the underlying file system the media is formatted with.
+The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spec} provides, together with the File Protocol, file-type access to the device it is installed on \cite[13.5 File Protocol]{uefi-spec}. The two protocols are independent of the underlying filesystem the media is formatted with.
 
 
 % load NtfsDxe.efi
-Our NTFS UEFI Driver is one such abstraction and needs to be loaded now, this is done by first entering the alias, for the file system containing the NtfsDxe.efi, followed by a colon.
-\TODO{alias for fs eingeben was macht das}
-This effectively switches the console's working directory to be the root of the entered file system, now we caninvoke load with the path to the executable. The output indicates whether loading the driver was successful.
+Our NTFS UEFI Driver is one such abstraction and needs to be loaded, this is done by first entering the alias, for the file system containing the NtfsDxe.efi.
+This effectively switches the console's working directory to be the root of the entered file system, now we can invoke \lstinline{load} with the path to the executable. The output indicates whether loading the driver was successful.
 % drivers
 % We can now list
-\TODO{maybe better command here}
 With the command drivers, we can list all currently loaded drivers and some basic information about them, such as number of devices managed. We can see that the NTFS driver already manages devices.
 
 % map -r "reset all the default mappings in a system this option is useful if the system configuration has changed since the last boot"
 % new mapping and fs ontop of old blk
-\TODO{reword maybe move the block device stuff up}
-We can now reset all default mappings with the map -r command to receive an updated list including the file system now provided by the NTFS driver. The mapping also shows us that the file system now sits on top of a device which previously was only listed as a block device indicating that the NTFS driver uses this block-wise access to offer the Simple File System Protocol.
+We can now reset all default mappings with the map -r command to receive an updated list including the file systems now provided by the NTFS driver. The mapping also shows us that the file system now sits on top of a device which previously was only listed as a block device.
 
-As done before we now type the alias of the new file system followed with a colon to switch to NTFS formatted file system. With ls we can list the current directory's content and confirm by the presence of the Windows folder that we are on the volume containing the Windows installation.
+As done before we now type the alias of the new file system to switch to NTFS formatted file system. With \lstinline{ls} we can list the current directory's content and confirm by the presence of the Windows folder that we are on the volume containing the Windows installation.
+\TODO{maybe vol} % With \lstinline{vol} we can query information about the current volume, this shows us that our d
 
 
 % navigate to Windows folder
@@ -98,40 +87,18 @@ Upon debugging the NTFS driver it appears to be that the drivers falls back to r
 
 We now know that provided we get to load the NTFS driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives. Since our rootkit will not use the UEFI shell we need to have the NTFS driver load as part of the boot process.
 
-% access to all drivers etc
-\TODO{why did we choose dxe stage}
-
 % try to use ntfs-driver in code
 % this is our first rootkit iteration
 % payload will also be DXE driver
 % package payload in firmware image
-The next step is to now use theblo NTFS driver programmatically by writing a DXE driver that leverages the new file system access to write an executable to the Windows installation.
-
-% This is our first rootkit iteration and is not a driver that conforms to the UEFI Driver Model \TODO{make sure UEFI driver model has been explained} as it does not need to install a Driver Binding Protocol instance onto its image handle and instead does all the work within the entry point.
-
-% pack executable binary as uefi module
-% EDK II produces freeform image with one raw section
-For the rootkit to write a payload to disk it needs to know what to write, we can create an EDK II module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
-
-% read payload into RAM
-% iterate over FirmwareVolume2 protocol instances
-% boottime services offer a function LocateHandleBuffer which returns all handles having a given protocol attached to them
-% iterate over all handles and open the protocol
-% call ReadSection with payload guid, to read raw section
-% check size match was necessary on hardware
-% when compiling payload a post build script generates a header for the rootkit dxe containing the size on disk for the payload
-When the rootkit is executed it starts by reading the payload into memory, this is done by calling the boot service function \lstinline{LocateHandleBuffer} with the option \lstinline{ByProtocol} and the GUID for \lstinline{gEfiFirmwareVolume2ProtocolGuid} which returns all handles that have a protocol instance associated with \lstinline{gEfiFirmwareVolume2ProtocolGuid} installed onto them \cite[7.3]{uefi-spec}. We can now iterate over all protocol instances, open the protocol and query the firmware volume for the GUID of our binary payload, we then read the content of the raw section into a buffer. \TODO{maybe size match on hardware}
-
-
-
+The next step is for our bootkit to use the NTFS driver to gain file system access and write our payload to the Windows installation. During our bootkit infection process we place the NTFS driver on the \ac{EPS}, so that our bootkit can load it. In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[9.1 EFI Loaded Image Protocol]{uefi-spec}. This handle can then be used to call the Boot Services \lstinline{LoadImage} and \lstinline{StartImage} to load and execute the NTFS driver. Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the Simple Filesystem Protocol on their handles. Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the Simple Filesystem Protocol installed onto the \ac{EPS}, we can then call the \lstinline{OpenVolume} resulting in an instance of the File Protocol representing the root folder of the volume \cite[13.4]{uefi-spec}. This instance can then be used to open and read our payload with the absolute path on the \ac{EPS} into memory.
 % write payload
 % seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
 % search for windows installation
 % iterate over all Simple File System Protocols
 % open volume
-The write operation is performed by calling \lstinline{LocateHandleBuffer} again, this time to query all protocol instances of the Simple File System Protocol. We iterate over all instances and open their respective volumes, opening a volume returns an instance of the File Protocol. This represents the root directory of the volume, we can now attempt to open a path that is part of the Windows installation, this will fail on volumes not containing a Windows installation, which we just skip. Eventually the volume containing Windows will be found.
+To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the Simple File System Protocol, this includes volumes such as the \ac{EPS} but also the Windows recovery parition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
 
-% but no automatic execution nor elevated privileges
 % So far we achieved unrestricted file access on a Windows installation from within the UEFI environment, the replacement of the notepad executable is a very limited attack and does not achieve automatic execution nor elevated privileges. When we attempt to override more privileged executables within the Windows installation with a version containing altered bytes in non-relevant portions of the executable, we are promptly greeted with a Blue Screen Of Death which was due to our modification of signed executables \TODO{WINDOWS CODE SIGNING}.
 
 \TODO{Windows File Permissions}
@@ -235,6 +202,11 @@ If we now want to add our NTFS driver .efi file with UEFITool we cannot do this 
 % compile dxe driver within ovmf
 % generate unused volume to receive .ffs file with version, depex, user interface and pe section
 For these files to be generated it is easiest to simply build the NTFS driver as part of the EDK II OVMF and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the DXE volume, for real hardware we can use the output of the build process which is a .ffs file. The .ffs file contains the PE32, version, DEPEX and an optional user interface section.
+
+% pack executable binary as uefi module
+% EDK II produces freeform image with one raw section
+For the rootkit to write a payload to disk it needs to know what to write, we can create an EDK II module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
+
 % add in NTFS driver .ffs file
 % on hardware use write access with clamp
 % qemu just use path to modified image
@@ -243,6 +215,15 @@ We can now simply insert the .ffs file into the target firmware image with UEFIT
 overwrite the SPI flash with modified image by using the programmer again.
 
 \subsubsection{Approach}
+
+% read payload into RAM
+% iterate over FirmwareVolume2 protocol instances
+% boottime services offer a function LocateHandleBuffer which returns all handles having a given protocol attached to them
+% iterate over all handles and open the protocol
+% call ReadSection with payload guid, to read raw section
+% check size match was necessary on hardware
+% when compiling payload a post build script generates a header for the rootkit dxe containing the size on disk for the payload
+When the rootkit is executed it starts by reading the payload into memory, this is done by calling the boot service function \lstinline{LocateHandleBuffer} with the option \lstinline{ByProtocol} and the GUID for \lstinline{gEfiFirmwareVolume2ProtocolGuid} which returns all handles that have a protocol instance associated with \lstinline{gEfiFirmwareVolume2ProtocolGuid} installed onto them \cite[7.3]{uefi-spec}. We can now iterate over all protocol instances, open the protocol and query the firmware volume for the GUID of our binary payload, we then read the content of the raw section into a buffer. \TODO{maybe size match on hardware}
 
 payload has to also reside in the firmware image, EDK II binary module
 
