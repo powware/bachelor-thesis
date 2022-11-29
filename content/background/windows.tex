@@ -2,39 +2,37 @@
 
 \section{Windows}
 
+
+
 \subsection{Installation}
-uefi begins with windows installation
-creates at least four partitions
-FAT EFI system partition
-where it installs Windows Boot Manager \lstinline{bootmgrfw.efi} under \lstinline{EFI\\Microsoft\\Boot} alongside boot configuration data (BCD)
-adds boot option variable \lstinline{Boot000X} for Windows Boot Manager
-places copy of it as \lstinline{EFI\\Boot\\bootx64.efi} so that booting from that hard drive, boots into windows if the windows boot option where to be missing on the system
-NTFS recovery partition for recovery if startup fails
-unformatted reserved partition for temporary stuff
-NTFS boot partition with windows installation
-\cite[12. The UEFI boot]{windows-internals-7-part2}
 
-\subsection{Windows Boot Manager \lstinline{bootmgrfw.efi}}
-retrieve relative path of own executable and load options boot variable
-reads the BCD
-uses the optional load option data of boot entry to store the GUID of the BCD object that describes itself
-BCD is registry hive later mapped (BCD contains recovery message and URL!!)
-if not disabled in BCD (nointegritycheck or testsigning) verifies its own integrity
-opens its own file from the hard disk and validates signature
-if enabled works with secure boot
-if hibernation is enabled launches \lstinline{Winresume.efi} which reads hibernation file and resumes kernel
-checks BCD for boot entries, if target device is encrypted, decrypt and read os loader LoadeImage call (with secure boot functionality) \lstinline{Windload.efi}
-tries to TPM unseal
-if fails show recovery prompt
-if succeeds make sure TPM cant be used to unseal further things
-StartImage os loader, only returns in error case
-if so start Windows Recovery Sequence
-\cite[12. The Windows Boot Manager]{windows-internals-7-part2}
+For us to understand how UEFI threats act towards Windows we need to understand how the layout of the Windows installation integrates into the UEFI environment.
+% uefi begins with windows installation
+This begins with the installation process and the partitioning of the hard drive Windows is installed onto.
+% creates at least four partitions
+When the Windows Installer is launched, it creates at least four partitions on the target hard drive.
+The \acf{ESP}, a recovery partition, a partition reserved for temporary storage and the boot partition containing the system files.
+Two copies of the Windows Boot Manager \lstinline{bootmgrfw.efi} are placed on the \ac{ESP}, one under \lstinline{EFI\\Boot\\bootx64.efi} for the default boot behavior the installed hard drive and one under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi} alongside boot resources such as the \ac{BCD}. The path of the latter boot manager is saved in a boot load option variable entry \lstinline{Boot####}, which is then added to the \lstinline{BootOrder} list variable. The boot load option contains optional data consiting of a GUID identifying the Windows Boot Manager entry in the \ac{BCD}. The \ac{BCD}, as its name suggests, contains arguments used to configure various steps of the boot process \cite[12. The Windows Boot Manager]{windows-internals-7-part2}. The boot partition is the primary Windows partition and is formatted with the \ac{NTFS} file system containing the Windows installation. This is also the location of the final step of the Windows UEFI boot process, \lstinline{Windload.efi}, the application repsonsible for loading the kernel into memory \cite[12. The Windows OS Loader]{windows-internals-7-part2}.
 
-hier weiter machen
-\cite[12. Measured Boot]{windows-internals-7-part2}
+\subsection{Boot Process}
 
-\subsection{Windows OS Loader \lstinline{Windload.efi}}
+Now that we established the basic structure of the Windows UEFI boot environment, we can discuss the boot process. The Windows boot process begins after the UEFI Boot Manager launches the Windows Boot Manager, which starts by retrieving its own executable path and the \ac{BCD} entry GUID from the boot load options. Then it loads the \ac{BCD} and access its entry. If not disabled in the \ac{BCD} it loads its own executable into memory for integrity verification \cite[12. The Windows Boot Manager]{windows-internals-7-part2}. Depending on what hibernation status is set within the \ac{BCD} it may launch the \lstinline{Winresume.efi} application, which reads the hibernation file and resumes kernel execution \cite[12. Launching a boot application]{windows-internals-7-part2}. On a full boot it checks the \ac{BCD} for boot entries, if the entry points to a BitLocker encrypted drive, it attempts decryption. If this faile it will show a reocvery prompt, otherwise it proceeds to load the \lstinline{Windload.efi} \ac{OS} loader \cite[12. Launching a boot application]{windows-internals-7-part2}.
+
+% tries to TPM unseal
+% url and message are read from BCD
+% if succeeds make sure TPM cant be used to unseal further things
+% StartImage os loader, only returns in error case
+% if so start Windows Recovery Sequence
+\TODO{TPM interaction}
+\cite[12. Launching a boot application]{windows-internals-7-part2}
+
+
+\subsection{Registry}
+
+A crucial part to the whole Windows ecosystem is the Registry, it is a system database containing information required to boot, such as what drivers to load, general system wide configuration as well as application configuration.
+\cite[1. Registry]{windows-internals-7-part1}
+The Registry is a hierachical database containing keys and values, keys can contain other keys or values, forming a tree structure. Values store data through various data types.
+It is comparable to a filesystem structure with keys behaving like directories and values like files \cite[10. The registry - Registry data types]{windows-internals-7-part2}. At the top level it has 9 different keys \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Normally Windows users are not required to change Registry values directly and instead interact with it through applications providing setting abstractions. Though some more advanced options may not be exposed and can be accessed through the \lstinline{regedit.exe} application which provides a graphical user interface to travere and modify the Registry \cite[10. The registry - Viewing and changing the registry]{windows-internals-7-part2}. It also supports ex- and importing registry keys along their subkeys and contained values. Internally the registry is not a single large file but instead a set of file called hives, each hive contains one tree, that is mapped into the Registry as a whole. There is no one to one mapping of registry root keys and hive files, the \ac{BCD} file for example is also a hive file and during boot mapped to into the Registry under \lstinline{HKEY_LOCAL_MACHINE\BCD00000000} \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
 
 
 
@@ -51,8 +49,8 @@ hier weiter machen
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
 \subsection{BitLocker}
 
-% fun thing to try
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#bkmk-configurepreboot
+\cite{microsoft-how-windows-uses-the-tpm}
+
 
 operating system can only protect when it's active
 bitlocker protects system files and data against physical access attacks or generally outside of operating system
@@ -70,7 +68,6 @@ maximum protection with TPM 1.2 or later
 alternatively USB startup key or password, not system integrity verification
 optionally PIN or USB startup key required to unlock
 
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-countermeasures#pre-boot-authentication
 - tpm only
 no additional user interaction
 - tpm with startup key

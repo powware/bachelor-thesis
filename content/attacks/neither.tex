@@ -148,8 +148,10 @@ There is a better mechanism used for the automatic execution of privileged progr
 % cached in registry
 Tasks are defined in XML files under \lstinline{Windows/System32/Tasks}, they are initially read into memory and cached into registry keys. Subsequent startups operate on the cached registry keys.
 \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive
-\lstinline{Microsoft/Windows NT/CurrentVersion/Schedule/TaskCache/Tasks/}
-\TODO{explain what the registry is}
+Windows stores systemwide configuration information that is not relevant for booting as well as third-party applications systemwide settings
+\cite[10. The registry - Registry logical structure - HKEY_LOCAL_MACHINE]{windows-internals-7-part2}
+
+\lstinline{HKLM/Software/Microsoft/Windows NT/CurrentVersion/Schedule/TaskCache/Tasks/}
 
 \cite{windows-internals-7-part2}
 
