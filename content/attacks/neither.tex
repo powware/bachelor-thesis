@@ -45,14 +45,14 @@ Part of the family of \ac{UEFI} specifications is a shell specification which de
 The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
 
 % explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
+Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell-spec}. \lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell-spec}.
 
 \includegraphics[width=\textwidth]{attacks/neither/01_uefi_shell.png}
 
 
 % showing mapping, also available with map command
 % consistent device mapping, comparable to partition names in windows
-The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell}.
+The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell-spec}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
 
 \TODO{find in spec what precise mapping mechanism}
 When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices. This identification is performed via instances of the Simple File System Protocol and \TODO{double check} Block I/O Protocol.
@@ -98,7 +98,7 @@ The next step is for our bootkit to use the NTFS driver to gain file system acce
 % search for windows installation
 % iterate over all Simple File System Protocols
 % open volume
-To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the Simple File System Protocol, this includes volumes such as the \ac{EPS} but also the Windows recovery partition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
+To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \emph{Simple File System Protocol}, this includes volumes such as the \ac{EPS} but also the Windows recovery partition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
 
 % So far we achieved unrestricted file access on a Windows installation from within the UEFI environment, the replacement of the notepad executable is a very limited attack and does not achieve automatic execution nor elevated privileges. When we attempt to override more privileged executables within the Windows installation with a version containing altered bytes in non-relevant portions of the executable, we are promptly greeted with a Blue Screen Of Death which was due to our modification of signed executables \TODO{WINDOWS CODE SIGNING}.
 
@@ -114,7 +114,7 @@ There is a better mechanism used for the automatic execution of privileged progr
 \TODO{which privileges are possible}
 % defined in xml
 % cached in registry
-Tasks are defined in XML files under \lstinline{Windows/System32/Tasks}, they are initially read into memory and cached into registry keys. Subsequent startups operate on the cached registry keys.
+Tasks are defined in \ac{XML} files under \lstinline{Windows/System32/Tasks}, they are initially read into memory and cached into registry keys. Subsequent startups operate on the cached registry keys.
 \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive
 Windows stores system-wide configuration information that is not relevant for booting as well as third-party applications system-wide settings \cite[10. The registry - Registry logical structure - \lstinline{HKEY_LOCAL_MACHINE}]{windows-internals-7-part2}.
 
