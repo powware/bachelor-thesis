@@ -8,7 +8,7 @@ Our first attack is performed without enabling the optional security mechanisms 
 % deviate the boot flow
 % access to the hard drive from the UEFI Environment
 % deploy payload so that it is executed
-We implement a bootkit and a rootkit, that deviate the regular boot flow to access the Windows installation and deploy payload that is automatically executed upon Windows boot.
+We implement a bootkit and a rootkit, that deviate the regular boot flow to access the Windows installation and deploy a payload that is automatically executed upon Windows boot.
 
 \subsection{Bootkit}
 
@@ -16,51 +16,52 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
-We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin priveleges.
-The installation process is identicial for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
+We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin privileges.
+The installation process is identical for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
 
 \subsubsection{Approach}
 
 \TODO{dump a windows boot entry}
-Now that our bootkit is in place of the Windows Boot Manager, when the UEFI Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager the contained file path \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi} will cause our bootkit to be executed.
+Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi} will cause our bootkit to be executed.
 % UEFI does not support NTFS
-For our storage based approach we now need to access the Windows installation from within the UEFI environment to deploy our payload. We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional NTFS driver due to the UEFI specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. The EDK II reference implementation does not provide an \ac{NTFS} driver either.
+For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload. We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional \ac{NTFS} driver due to the \ac{UEFI} specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. The \ac{EDK} II reference implementation does not provide an \ac{NTFS} driver either.
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
-We can use a fork of the open source NTFS driver ntfs-3g from Tuxera \cite{ntfs-3g}, that was ported to the UEFI environment by pbatard \cite{ntfs-3g-uefi}.
+We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
 
 % compile
 % spits out .efi file
-We can compile this driver with EDK II to receive a \lstinline{.efi} executable file.
+We can compile this driver with \ac{EDK} II to receive a \lstinline{.efi} executable file.
 
 % try in EFI shell
 % what is the EFI shell
 \TODO{better summary of UEFI shell}
-Part of the family of UEFI specifications is a shell specification which defines a feature rich UEFI shell application to interact with the UEFI environment \cite[1.1]{uefi-shell-spec}. It offers commands related to boot and general configuration, device and driver management, filesystem access, networking \cite[5.1]{uefi-shell-spec} and supports scripting \cite[4]{uefi-shell-spec}. We can use the filesystem related commands to test the NTFS driver.
+Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment \cite[1.1]{uefi-shell-spec}. It offers commands related to boot and general configuration, device and driver management, file system access, networking \cite[5.1]{uefi-shell-spec} and supports scripting \cite[4]{uefi-shell-spec}. We can use the file system related commands to test the \ac{NTFS} driver.
+\autoref{fig:uefi-shell} depicts an exemplary output of an EDK II UEFI shell emulated under QEMU.
 
 % how to use uefi shell
 % we are trying in qemu where the shell is available in boot options
 % real hardware might require the uefi shell application .efi from the user via usb stick
-The UEFI shell may already be part of the boot options but can always be supplied on a USB stick in the default boot path.
+The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
 
 % explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the UEFI specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
+Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell}. \lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell}.
 
 \includegraphics[width=\textwidth]{attacks/neither/01_uefi_shell.png}
 
 
 % showing mapping, also available with map command
 % consistent device mapping, comparable to partition names in windows
-The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The UEFI shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters. \cite[Appendix A]{uefi-shell}
+The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles. The aliases can be used instead of a device path when submitting commands via the command line interface. The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell}. These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell}.
 
 \TODO{find in spec what precise mapping mechanism}
 When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices. This identification is performed via instances of the Simple File System Protocol and \TODO{double check} Block I/O Protocol.
 % explain Simple File System Protocol
-The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spec} provides, together with the File Protocol, file-type access to the device it is installed on \cite[13.5 File Protocol]{uefi-spec}. The two protocols are independent of the underlying filesystem the media is formatted with.
+The Simple File System Protocol \cite[13.4 Simple File System Protocol]{uefi-spec} provides, together with the File Protocol, file-type access to the device it is installed on \cite[13.5 File Protocol]{uefi-spec}. The two protocols are independent of the underlying file system the media is formatted with.
 
 
 % load NtfsDxe.efi
-Our NTFS UEFI Driver is one such abstraction and needs to be loaded, this is done by first entering the alias, for the file system containing the NtfsDxe.efi.
+Our \ac{NTFS} \ac{UEFI} Driver is one such abstraction and needs to be loaded, this is done by first entering the alias, for the file system containing the \lstinline{NtfsDxe.efi}.
 This effectively switches the console's working directory to be the root of the entered file system, now we can invoke \lstinline{load} with the path to the executable. The output indicates whether loading the driver was successful.
 % drivers
 % We can now list
@@ -68,7 +69,7 @@ With the command drivers, we can list all currently loaded drivers and some basi
 
 % map -r "reset all the default mappings in a system this option is useful if the system configuration has changed since the last boot"
 % new mapping and fs ontop of old blk
-We can now reset all default mappings with the map -r command to receive an updated list including the file systems now provided by the NTFS driver. The mapping also shows us that the file system now sits on top of a device which previously was only listed as a block device.
+We can now reset all default mappings with the map -r command to receive an updated list including the file systems now provided by the \ac{NTFS} driver. The mapping also shows us that the file system now sits on top of a device which previously was only listed as a block device.
 
 As done before we now type the alias of the new file system to switch to NTFS formatted file system. With \lstinline{ls} we can list the current directory's content and confirm by the presence of the Windows folder that we are on the volume containing the Windows installation.
 \TODO{maybe vol} % With \lstinline{vol} we can query information about the current volume, this shows us that our d
@@ -83,9 +84,9 @@ We now navigate into the Windows folder to test whether we have unrestricted rea
 % debug why it failed
 % find out its from windows having hibernation enabled by default
 % change source code to not fallback to read only when encountering hibernation file
-Upon debugging the NTFS driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode. Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the NTFS driver to not fallback when encountering this file.
+Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode. Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file.
 
-We now know that provided we get to load the NTFS driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives. Since our rootkit will not use the UEFI shell we need to have the NTFS driver load as part of the boot process.
+We now know that provided we get to load the \ac{NTFS} driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives. Since our rootkit will not use the UEFI shell we need to have the NTFS driver load as part of the boot process.
 
 % try to use ntfs-driver in code
 % this is our first rootkit iteration
@@ -97,26 +98,25 @@ The next step is for our bootkit to use the NTFS driver to gain file system acce
 % search for windows installation
 % iterate over all Simple File System Protocols
 % open volume
-To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the Simple File System Protocol, this includes volumes such as the \ac{EPS} but also the Windows recovery parition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
+To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the Simple File System Protocol, this includes volumes such as the \ac{EPS} but also the Windows recovery partition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
 
 % So far we achieved unrestricted file access on a Windows installation from within the UEFI environment, the replacement of the notepad executable is a very limited attack and does not achieve automatic execution nor elevated privileges. When we attempt to override more privileged executables within the Windows installation with a version containing altered bytes in non-relevant portions of the executable, we are promptly greeted with a Blue Screen Of Death which was due to our modification of signed executables \TODO{WINDOWS CODE SIGNING}.
 
 \TODO{Windows File Permissions}
 % ref to background UAC signed
-Now the question arises as to where to write our payload to, we want autmoatic and elevated execution. Earlier we discovered that the NTFS DXE driver disregards the file access permission model so we are not restricted in the same way an unprivileged user would be. MosaicRegressor writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunatly not automatically run at an elevated level.
+Now the question arises as to where to write our payload to, we want automatic and elevated execution. Earlier we discovered that the NTFS DXE driver disregards the file access permission model so we are not restricted in the same way an unprivileged user would be. MosaicRegressor writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunately not automatically run at an elevated level.
 
 \TODO{modifying Windows Executables KMCI}
 
 
 % Task Scheduler
 There is a better mechanism used for the automatic execution of privileged programs, the Task Scheduler. It can be used to schedule task execution at a variety of different conditions, examples are disk fragmentation or antivirus scans.
-\TODO{which priveleges are possible}
+\TODO{which privileges are possible}
 % defined in xml
 % cached in registry
 Tasks are defined in XML files under \lstinline{Windows/System32/Tasks}, they are initially read into memory and cached into registry keys. Subsequent startups operate on the cached registry keys.
 \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive
-Windows stores systemwide configuration information that is not relevant for booting as well as third-party applications systemwide settings
-\cite[10. The registry - Registry logical structure - HKEY_LOCAL_MACHINE]{windows-internals-7-part2}
+Windows stores system-wide configuration information that is not relevant for booting as well as third-party applications system-wide settings \cite[10. The registry - Registry logical structure - \lstinline{HKEY_LOCAL_MACHINE}]{windows-internals-7-part2}.
 
 \lstinline{HKLM/Software/Microsoft/Windows NT/CurrentVersion/Schedule/TaskCache/Tasks/}
 
@@ -128,42 +128,42 @@ We can modify an existing task that is scheduled to execute with elevated privil
 
 % edit with start cmd.exe and trigger manually
 % whoami
-We can modfiy the action it performs to run our payload instead, to verify the privieleges our payload is executed with, we can save the output of the \lstinline{whoami} into a file. The \lstinline{whoami} command shows the current user and privileges \cite{windows-whoami}. After manually triggering the task we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+We can modify the action it performs to run our payload instead, to verify the privileges our payload is executed with, we can save the output of the \lstinline{whoami} into a file. The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}. After manually triggering the task we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
 
 % chntpw and reged
 % edit Task in machine under Control
-We can export this modified registry key and as part of our attack import it on our victim's system. To import the key we can use a linux utility called chntpw whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}. The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called reged.
+We can export this modified registry key and as part of our attack import it on our victim's system. To import the key we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}. The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
 
 % test
 % dual boot
-We can test the Linux tool when dualbooting a Linux and a Windows installation. We place our payload in the Windows installation and then boot into Linux, where we can simply open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive with reged and import our modified registry key.
+We can test the Linux tool when dual-booting a Linux and a Windows installation. We place our payload in the Windows installation and then boot into Linux, where we can simply open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive with \lstinline{reged} and import our modified registry key.
 % import and override registry key on target machine
 This overrides the executable path of task's action and when booting into Windows our payload is now executed.
 
 
 % port to uefi
-The next step is to port the reged utiliy so that it works in the UEFI environment as a DXE driver, that our rootkit can interact with. We will call this driver RegedDxe from now on.
+The next step is to port the \lstinline{reged} utility so that it works in the UEFI environment as a DXE driver, that our rootkit can interact with. We will call this driver \lstinline{RegedDxe} from now on.
 % most stdlib stuff is just mapping to UEFIlib stuff with equivalents or using gcc implementations
-This process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Definitions can often be translated to UEFI equivalents, EDK II has libraries offering implementations of commonly used abstraction.
+This process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Definitions can often be translated to \ac{UEFI} equivalents, \ac{EDK} II has libraries offering implementations of commonly used abstraction.
 % memory allocation (malloc, calloc, realloc), memory manipulation (memset, memcpy) string manipulation (sscanf, strtol), stdout (printf), abort, exit
 Memory allocation maps to the MemoryAllocationLib, memory manipulation to BaseMemoryLib, basic string manipulation to BaseLib, stdout to PrintLib (only relevant for print debugging).
 
 % cstdio is non trivial and has to be implemented by calling protocols on the right volume
-Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to UEFI protocols like Simple File System Protocol and \lstinline{FileProtocol}.
+Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to \ac{UEFI} protocols like Simple File System Protocol and \lstinline{FileProtocol}.
 
 \TODO{no need to change reged source code}
 
-RegedDxe unlike the original linux utility reged is not an application that is executed within a working directory, it is instead a DXE driver offering a protocol for other drivers to call.
+\lstinline{RegedDxe} unlike the original Linux utility \lstinline{reged} is not an application that is executed within a working directory. Instead, it is a \ac{DXE} driver offering a protocol for other drivers to call.
 
 % reged protocol
 % The process to tackle this is by first isolating the functionality that is demanded by the regist driver, this is done through designing the protocol with which our main rootkit will interact with. The protocol is very simple, we only need a single function that imports a registry key into a hive.
 
 
 % modify so that registry key can differ and found via matching values
-When importing a registry key the target path for the key is read from the registry key file, cached task's registry keys do not follow a strict naming sheme and are instead named by GUIDs, thus they may differ from device to device. To combat this, we change the import mechanism, so that instead of importing a key into its exact path it iterates over the children of the target's parent key. We can then match for our target key with a value that correctly identifies the target key, such as the value representing the path of the XML, that was initially used to load the task.
+When importing a registry key the target path for the key is read from the registry key file, cached task's registry keys do not follow a strict naming scheme and are instead named by \acp{GUID}, thus they may differ from device to device. To combat this, we change the import mechanism, so that instead of importing a key into its exact path it iterates over the children of the target's parent key. We can then match for our target key with a value that correctly identifies the target key, such as the value representing the path of the \ac{XML}, that was initially used to load the task.
 
 At last we need to hand over execution to the original Windows Boot Manager
-EFI Loaded Image Protocol \cite[9.1]{uefi-spec} and EFI Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
+\ac{EFI} Loaded Image Protocol \cite[9.1]{uefi-spec} and \ac{EFI} Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
 need to reflect what is normally expected
 \TODO{dump a windows boot entry}
 pass on load options from boot entry
@@ -194,18 +194,18 @@ In UEFITool we navigate to the DXE Volume containing the DXE Core and DXE driver
 
 % remove previous NTFS driver if present, for full control, might be read only etc
 % in UEFITool search for string
-Before adding our driver we remove any other NTFS driver packed in the image by OEMs, because they might be read-only or otherwise restricted and would inhibit our NTFS driver from installing onto a device, if it were to load earlier. UEFITool offers a search through the entire firmware image. We can search for "NTFS" as a case insenstive string, since most drivers either have a User Interface Section which contains a human-readable name for inspection tools like UEFITool \cite[Vol 3, 3.2.5]{pi-spec} or support the optional Component Name Protocol which is part of the UEFI Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}. If this would not suffice it is possible to search for the NTFS magic number indicating that a volume is formatted with NTFS, this number is ascii encoded NTFS followed by four white spaces and likely contained by an NTFS driver.
+Before adding our driver we remove any other NTFS driver packed in the image by OEMs, because they might be read-only or otherwise restricted and would inhibit our NTFS driver from installing onto a device, if it were to load earlier. UEFITool offers a search through the entire firmware image. We can search for "NTFS" as a case-insensitive string, since most drivers either have a User Interface Section which contains a human-readable name for inspection tools like UEFITool \cite[Vol 3, 3.2.5]{pi-spec} or support the optional Component Name Protocol which is part of the UEFI Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}. If this would not suffice it is possible to search for the NTFS magic number indicating that a volume is formatted with NTFS, this number is ASCII encoded NTFS followed by four white spaces and likely contained by an NTFS driver.
 
 % since files are part of file sections we cant drop in the .efi
-If we now want to add our NTFS driver .efi file with UEFITool we cannot do this directly, because DXE drivers have three mandatory sections: PE32 executable, version and DEPEX section \cite[Vol 3, 2.1.4.1.4]{pi-spec} and these are not autmoatically generated.
+If we now want to add our NTFS driver .efi file with UEFITool we cannot do this directly, because DXE drivers have three mandatory sections: PE32 executable, version and DEPEX section \cite[Vol 3, 2.1.4.1.4]{pi-spec} and these are not automatically generated.
 
 % compile dxe driver within ovmf
 % generate unused volume to receive .ffs file with version, depex, user interface and pe section
-For these files to be generated it is easiest to simply build the NTFS driver as part of the EDK II OVMF and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the DXE volume, for real hardware we can use the output of the build process which is a .ffs file. The .ffs file contains the PE32, version, DEPEX and an optional user interface section.
+For these files to be generated it is easiest to simply build the \ac{NTFS} driver as part of the \ac{EDK} II \ac{OVMF} and have it packaged in a firmware volume. This can be an unused volume or for debugging purposes the \ac{DXE} volume, for real hardware we can use the output of the build process which is a \lstinline{.ffs} file. The \lstinline{.ffs} file contains the \ac{PE32}, version, \ac{DEPEX} and an optional user interface section.
 
 % pack executable binary as uefi module
 % EDK II produces freeform image with one raw section
-For the rootkit to write a payload to disk it needs to know what to write, we can create an EDK II module with a Windows targeted executable and have it packaged as a binary, this produces a .ffs file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
+For the rootkit to write a payload to disk it needs to know what to write, we can create an \ac{EDK} II module with a Windows targeted executable and have it packaged as a binary, this produces a \lstinline{.ffs} file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, which puts no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}. The output contains only one file section of type \lstinline{EFI_SECTION_RAW} which contains the binary payload.
 
 % add in NTFS driver .ffs file
 % on hardware use write access with clamp
@@ -223,7 +223,7 @@ overwrite the SPI flash with modified image by using the programmer again.
 % call ReadSection with payload guid, to read raw section
 % check size match was necessary on hardware
 % when compiling payload a post build script generates a header for the rootkit dxe containing the size on disk for the payload
-When the rootkit is executed it starts by reading the payload into memory, this is done by calling the boot service function \lstinline{LocateHandleBuffer} with the option \lstinline{ByProtocol} and the GUID for \lstinline{gEfiFirmwareVolume2ProtocolGuid} which returns all handles that have a protocol instance associated with \lstinline{gEfiFirmwareVolume2ProtocolGuid} installed onto them \cite[7.3]{uefi-spec}. We can now iterate over all protocol instances, open the protocol and query the firmware volume for the GUID of our binary payload, we then read the content of the raw section into a buffer. \TODO{maybe size match on hardware}
+When the rootkit is executed it starts by reading the payload into memory, this is done by calling the boot service function \lstinline{LocateHandleBuffer} with the option \lstinline{ByProtocol} and the \ac{GUID} for \lstinline{gEfiFirmwareVolume2ProtocolGuid} which returns all handles that have a protocol instance associated with \lstinline{gEfiFirmwareVolume2ProtocolGuid} installed onto them \cite[7.3]{uefi-spec}. We can now iterate over all protocol instances, open the protocol and query the firmware volume for the \ac{GUID} of our binary payload, we then read the content of the raw section into a buffer. \TODO{maybe size match on hardware}
 
 payload has to also reside in the firmware image, EDK II binary module
 

@@ -12,7 +12,7 @@ For our third attack we will enable BitLocker, this prevents us from trivially a
 % how to enable bitlocker with TPM
 % sometimes in bios tpm needs to be enabled
 % full drive encryption or used space
-We configure BitLocker to use automatic TPM decryption without any additional PIN or Startup Key.
+We configure BitLocker to use automatic \ac{TPM} decryption without any additional PIN or startup key.
 \cite{microsoft-bitlocker-basic-deployment}
 
 % observation:
@@ -22,7 +22,7 @@ When booting the system with our rootkit we are greeted with a screen prompting 
 \includegraphics[width=\textwidth]{attacks/bitlocker/01_recovery_prompt.png}
 
 % tpm values different
-This happens due to TPM PCR values differing from what was initially used to seal the VMK, leaving the Windows bootloader unable to retrieve an unencrypted VMK from the TPM and as a result unable to decrypt the Windows installation. \cite[12.]{windows-internals-7-part2}
+This happens due to \ac{TPM} \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve an unencrypted \ac{VMK} from the \ac{TPM} and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
 
 % bitlocker auto decryption fails
 % boot execution differs from executing rootkit
@@ -30,12 +30,12 @@ This happens due to TPM PCR values differing from what was initially used to sea
 \TODO{which ones are altered by the rootkit being present}
 
 
-In theory this is as far as we get, BitLocker in combination of TPM measurements successfully mitigates UEFI attacks by disovering a deviation in the boot flow.
+In theory this is as far as we get, BitLocker in combination of \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks by discovering a deviation in the boot flow.
 % what is the reaction of the average user
 In practice we have to ask ourselves the question how a user reacts to seeing the BitLocker recovery prompt and the consequences to the action the user takes. As an immediate reaction the user has two options: entering the recovery key into the prompt or not entering the recovery key.
 % motivation behind user decision
-What decision the user makes is dependent on their tech saviness and influenced by a variety of factors such as urgency of booting into Windows, knowing alternatives to what the prompt tells them.
-It is reasonable to assume that the average user is willingly entering their recovery key in response to the prompt as the prompt does not suggest any malicious causes or any negative reprocussions in following the instructions. The link mentioned in the prompt also only aids in locating the reocvery key \cite{microsoft-recovery-key-faq}.
+What decision the user makes is dependent on their tech savviness and influenced by a variety of factors such as urgency of booting into Windows, knowing alternatives to what the prompt tells them.
+It is reasonable to assume that the average user is willingly entering their recovery key in response to the prompt as the prompt does not suggest any malicious causes or any negative repercussions in following the instructions. The link mentioned in the prompt also only aids in locating the recovery key \cite{microsoft-recovery-key-faq}.
 \TODO{mention microsofts reasons for the prompt to be triggered}
 \TODO{what is the actual alternative}
 % does the user trust the system
@@ -44,11 +44,11 @@ It is reasonable to assume that the average user is willingly entering their rec
 % type in recovery password
 % alternative would be to remove drive and insert into safe device
 
-Having the user enter their recovery key does not directly benefit our endevaours as BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
+Having the user enter their recovery key does not directly benefit our endeavours as BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
 
 What we can do is try to record the keystrokes performed by the user while entering their recovery key and use it at some later point to gain control over the hard drive. A program designed to perform this type of attack is called a keylogger.
 
-To implement such a keylogger we have to alter the code execution that happens when the recovery prompt is shown. For this our first step is to find our what execution environment or UEFI stage we are in, is Windows already using separate drivers for keyboard access or still relying on the UEFI environment and its protocols.
+To implement such a keylogger we have to alter the code execution that happens when the recovery prompt is shown. For this our first step is to find our what execution environment or \ac{UEFI} stage we are in, is Windows already using separate drivers for keyboard access or still relying on the \ac{UEFI} environment and its protocols.
 
 % ref to background os loader
 % prompt is done by the OS Loader
@@ -58,9 +58,9 @@ To implement such a keylogger we have to alter the code execution that happens w
 % such as SimpleTextInputEx Protocol
 % go over the two different input protocols
 % find out which one is used
-The UEFI specification defines two protocols which are used to abstract keyboard input these are the \lstinline{{SimpleTextInputProtocol} and the \lstinline{{SimpleTextInputExProtocol} \cite[12.2, 12.3]{uefi-spec}. To figure out if the recovery prompt uses these to read key strokes we can just add some print statements to the \lstinline{ReadKeyStroke} and \lstinline{ReadKeyStrokeEx} functions of their implementations in the edk2 OVMF package. On the next boot when typing we find that our \lstinline{ReadKeyStrokeEx} print statements from the \lstinline{{SimpleTextInputExProtocol} are triggered.
+The \ac{UEFI} specification defines two protocols which are used to abstract keyboard input these are the \lstinline{{SimpleTextInputProtocol} and the \lstinline{{SimpleTextInputExProtocol} \cite[12.2, 12.3]{uefi-spec}. To figure out if the recovery prompt uses these to read key strokes we can just add some print statements to the \lstinline{ReadKeyStroke} and \lstinline{ReadKeyStrokeEx} functions of their implementations in the \ac{EDK} II \ac{OVMF} package. On the next boot when typing we find that our \lstinline{ReadKeyStrokeEx} print statements from the \lstinline{{SimpleTextInputExProtocol} are triggered.
 
-Now, knowing that the BitLocker recovery prompt is shown by an application running in the UEFI boottime environment, we can leverage this environment to implement our keylogger.
+Now, knowing that the BitLocker recovery prompt is shown by an application running in the \ac{UEFI} boot environment, we can leverage this environment to implement our keylogger.
 
 % explain more in depth how protocols are returned to the end user
 % one instance per controller/handle
@@ -81,7 +81,7 @@ To alter the code execution when performing a key stroke we can just iterate ove
 So far we are able to track each keystroke that queried via the \lstinline{ReadKeyStrokeEx} function, which in our testing is only done during the recovery prompt, but may be used by the interactive boot menu.
 
 The BitLocker recovery prompt does not allow the user to input any
-\TODO{key input advancment is weird and makes tracking tricky}
+\TODO{key input advancement is weird and makes tracking tricky}
 F keys
 block validity
 only divisable by 11
@@ -109,15 +109,15 @@ mount encrypted drive with decryption mean
 read and write access
 dual boot in vm
 enter recovery key and it works
-port to uefi
+port to\ac{UEFI}
 
 bitlocker encrypts block-wise
 
 % blk and fs
 \TODO{explain block devices}
-\TODO{explain file system indepent abstraction better}
-uefi protocol stack
-\TODO{diagram of block io, disk io, simple filesystem and file protocol interaction (with hindsight of adding dislocker beneath block io)}
+\TODO{explain file system independent abstraction better}
+\ac{UEFI} protocol stack
+\TODO{diagram of block io, disk io, simple file system and file protocol interaction (with hindsight of adding dislocker beneath block io)}
 \cite[13.3.2 Partition Disocvery]{uefi-spec}
 Drivers providing Simple File System Protocol use the Block I/O Protocol to access the underlying media.
 
@@ -126,7 +126,7 @@ hook block io
 again hook data mapping
 
 % execute after NTFS driver by doing it in an ExitBootServices hook
-It is beneficial for us to write our payload to the Windows installation as close to the end of the UEFI environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
+It is beneficial for us to write our payload to the Windows installation as close to the end of the \ac{UEFI} environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
 % was muss man beachten bei exitbootservices hooking
 \cite{exitbootservices-hooking}
 hook ExitBootServices
@@ -145,11 +145,10 @@ caveat pin? look into this
 persistence when part of root of trust
 fresh install / tpm update values
 % paper von betreuern
-hook Trusted Copmuting Group 2 (TCG2) Protocol
-TPM communication
-\cite[6.7.3]{tcg-efi-platform-spec}
+hook \ac{TCG2} Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
+\ac{TPM} communication
 % \cite[12.7 TPM_Unseal]{tcg-tpm-library-part3-commands}
-receive bitlocker vmk key and send to dislocker
+receive bitlocker \ac{VMK} key and send to dislocker
 \cite{bde-format-spec}
 \cite{tpm-sniffing}
 

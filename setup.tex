@@ -11,7 +11,7 @@
 % **************************************************
 % Information and Commands for Reuse
 % **************************************************
-\newcommand{\thesisTitle}{A Practical Analysis of UEFI threats against Windows~11}
+\newcommand{\thesisTitle}{A Practical Analysis of UEFI Threats Against Windows~11}
 \newcommand{\thesisName}{Joshua Machauer}
 \newcommand{\thesisSubject}{Bachelor's Thesis}
 \newcommand{\thesisDate}{June 21, 2022}
@@ -62,8 +62,11 @@
     configurebiblatex=true,%
     bibsys=biber,%
     bibfile=bib-refs,%
-    bibstyle=alphabetic,%
-    bibsorting=nty,%
+    %bibstyle=alphabetic,%			-> citations with alphabetic enumeration
+	%bibstyle=numeric-comp,%		-> citations with numeric compressed numeric sorting
+	bibstyle=ieee-alphabetic,%		-> citations with IEEE transactions-like style with numeric labels
+    %bibsorting=nty,% 
+	bibsorting=none,%				-> sorted in the order of the citations from start to finish
 }{cleanthesis}
 \usepackage{cleanthesis}
 
