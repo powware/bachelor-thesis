@@ -131,36 +131,26 @@ We can use the Task Scheduler Configuration Tool to modify the target task on a 
 % chntpw and reged
 % edit Task in machine under Control
 We can use this exported key and import it on our victim's system as part of our attack. To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}. The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
-
 % test
 % dual boot
-We can test the Linux tool when dual-booting a Linux and a Windows installation. We place our payload in the Windows installation and then boot into Linux, where we can simply open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive with \lstinline{reged} and import our modified registry key.
+We can test the Linux tool when dual-booting a Linux and a Windows installation. We place our payload in the Windows installation and then boot into Linux, where we can open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive in \lstinline{reged} and import our modified registry key.
 % import and override registry key on target machine
-This overrides the executable path of task's action and when booting into Windows our payload is now executed.
-
+This overrides the task descriptor and when booting into Windows our payload is executed.
 
 % port to uefi
-The next step is to port the \lstinline{reged} utility so that it works in the UEFI environment as a DXE driver, that our rootkit can interact with. We will call this driver \lstinline{RegedDxe} from now on.
+The next step is to port the \lstinline{reged} utility so that it works in the UEFI environment, so we can use it as part of our bootkit.
 % most stdlib stuff is just mapping to UEFIlib stuff with equivalents or using gcc implementations
-This process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Definitions can often be translated to \ac{UEFI} equivalents, \ac{EDK} II has libraries offering implementations of commonly used abstraction.
+The porting process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against. Declarations and macros are still supplied by the local compiler's system headers. Function definitions can often be translated to \ac{UEFI} equivalents, \ac{EDK} II has libraries offering implementations of commonly used abstraction.
 % memory allocation (malloc, calloc, realloc), memory manipulation (memset, memcpy) string manipulation (sscanf, strtol), stdout (printf), abort, exit
 Memory allocation maps to the MemoryAllocationLib, memory manipulation to BaseMemoryLib, basic string manipulation to BaseLib, stdout to PrintLib (only relevant for print debugging).
-
 % cstdio is non trivial and has to be implemented by calling protocols on the right volume
-Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to \ac{UEFI} protocols like \emph{Simple File System Protocol} and \lstinline{FileProtocol}.
-
-\TODO{no need to change reged source code}
-
-\lstinline{RegedDxe} unlike the original Linux utility \lstinline{reged} is not an application that is executed within a working directory. Instead, it is a \ac{DXE} driver offering a protocol for other drivers to call.
-
-% reged protocol
-% The process to tackle this is by first isolating the functionality that is demanded by the regist driver, this is done through designing the protocol with which our main rootkit will interact with. The protocol is very simple, we only need a single function that imports a registry key into a hive.
-
-
+Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to the \ac{UEFI} protocols \emph{Simple File System Protocol} and \emph{File Protocol}. Luckily the author of \lstinline{reged} used distinct functions to access the hive file and registry file, making it possible to keep the original source code unmodified.
 % modify so that registry key can differ and found via matching values
-When importing a registry key the target path for the key is read from the registry key file, cached task's registry keys do not follow a strict naming scheme and are instead named by \acp{GUID}, thus they may differ from device to device. To combat this, we change the import mechanism, so that instead of importing a key into its exact path it iterates over the children of the target's parent key. We can then match for our target key with a value that correctly identifies the target key, such as the value representing the path of the \ac{XML}, that was initially used to load the task.
+Except for a change in the import behavior. The name of a task master key is the task's \ac{GUID}, which may differ from device to device, thus we cannot import a key into its exact path, we instead iterate over the subkeys of the target's parent key. We then match for the name value of the key.
 
-At last we need to hand over execution to the original Windows Boot Manager
+Now that we modified the Windows installation to execute our payload upon boot, we need to transfer execution from the bootkit to the original Windows Boot Manager.
+
+
 \ac{EFI} Loaded Image Protocol \cite[9.1]{uefi-spec} and \ac{EFI} Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
 need to reflect what is normally expected
 \TODO{dump a windows boot entry}
