@@ -18,12 +18,12 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
 \TODO{write more careful about what we have and what we do not have}
 We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin privileges.
-The installation process is identical for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
+The installation process is identical for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
 
 \subsubsection{Approach}
 
 \TODO{dump a windows boot entry}
-Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi} will cause our bootkit to be executed.
+Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed.
 % UEFI does not support NTFS
 For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload. We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional \ac{NTFS} driver due to the \ac{UEFI} specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. The \ac{EDK} II reference implementation does not provide an \ac{NTFS} driver either.
 % search for UEFI NTFS driver with write access
@@ -103,11 +103,8 @@ To perform the write operation we now need a handle we did not yet interact with
 
 Now the question arises as to where to write our payload to, we want automatic and elevated execution. Earlier we discovered that the \ac{NTFS} \ac{DXE} driver disregards the file access permission model \TODO{Windows File Permissions} so we are not restricted in the same way an unprivileged user would be when accessing the disk. \emph{MosaicRegressor} writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunately not automatically run at an elevated level, so this isn't a suitable target location.
 
-
-
 \TODO{DLL proxy loading}
 \TODO{modifying Windows Executables KMCI}
-
 
 % Task Scheduler
 The Task Scheduler is a Windows service responsible for managing the automatic execution of background tasks \cite[10. The Task Scheduler]{windows-internals-7-part2}. Tasks are performed on certain triggers, which may be time-based (periodically or on a specific time) or event-based, for example on user logon or system boot\cite{microsoft-task-scheduler-triggers}. A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, but we will focus on command execution. Most tasks will simply execute other programs as their action, this execution is performed under specified a security context \cite{microsoft-task-scheduler-security-contexts}. The idea of our attack is to have a task, that performs its action with a high privelege level, execute our payload. The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the command
