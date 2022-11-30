@@ -35,7 +35,6 @@ The Registry is a hierachical database containing keys and values, keys can cont
 It is comparable to a file system structure with keys behaving like directories and values like files \cite[10. The registry - Registry data types]{windows-internals-7-part2}. At the top level it has 9 different keys \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Normally Windows users are not required to change Registry values directly and instead interact with it through applications providing setting abstractions. Though some more advanced options may not be exposed and can be accessed through the \lstinline{regedit.exe} application which provides a graphical user interface to travere and modify the Registry \cite[10. The registry - Viewing and changing the registry]{windows-internals-7-part2}. It also supports ex- and importing registry keys along their subkeys and contained values. Internally the registry is not a single large file but instead a set of file called hives, each hive contains one tree, that is mapped into the Registry as a whole. There is no one to one mapping of registry root key to hive file, the \ac{BCD} file for example is also a hive file and is mapped into the Registry under \lstinline{HKEY_LOCAL_MACHINE\BCD00000000} \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
 
 
-
 % https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
 % \subsection{User Access Control (UAC)}
 % https://learn.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
@@ -47,8 +46,9 @@ It is comparable to a file system structure with keys behaving like directories 
 \subsubsection{KMCI}
 \subsubsection{HVCI}
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
-\subsection{BitLocker}
 
+\subsection{BitLocker}
+\TODO{write me}
 \cite{microsoft-how-windows-uses-the-tpm}
 
 
@@ -124,13 +124,13 @@ block is converted to a 16-bit value making up a 128-bit key
 
 \subsubsection{Clear Key}
 % https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#25-clear-key
-unprotected 256-bit key stored on the volume t decrypt vmk
+unprotected 256-bit key stored on the volume to decrypt vmk
 
 \subsubsection{Startup Key}
 % https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#26-startup-key
 stored in a .bek file with GUID name equaling key identifier in bitlocker meta data
 multiple possible for a single bitlocked volume
 
-\subsubsection{Startup Key}
+\subsubsection{User Key}
 % https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#27-user-key
 password with max 49 characters

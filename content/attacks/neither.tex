@@ -16,6 +16,7 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
+\TODO{write more careful about what we have and what we do not have}
 We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin privileges.
 The installation process is identical for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgrfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
 
@@ -100,39 +101,36 @@ The next step is for our bootkit to use the NTFS driver to gain file system acce
 % open volume
 To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \emph{Simple File System Protocol}, this includes volumes such as the \ac{ESP} but also the Windows recovery partition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
 
-% So far we achieved unrestricted file access on a Windows installation from within the UEFI environment, the replacement of the notepad executable is a very limited attack and does not achieve automatic execution nor elevated privileges. When we attempt to override more privileged executables within the Windows installation with a version containing altered bytes in non-relevant portions of the executable, we are promptly greeted with a Blue Screen Of Death which was due to our modification of signed executables \TODO{WINDOWS CODE SIGNING}.
+Now the question arises as to where to write our payload to, we want automatic and elevated execution. Earlier we discovered that the \ac{NTFS} \ac{DXE} driver disregards the file access permission model \TODO{Windows File Permissions} so we are not restricted in the same way an unprivileged user would be when accessing the disk. \emph{MosaicRegressor} writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunately not automatically run at an elevated level, so this isn't a suitable target location.
 
-\TODO{Windows File Permissions}
-% ref to background UAC signed
-Now the question arises as to where to write our payload to, we want automatic and elevated execution. Earlier we discovered that the NTFS DXE driver disregards the file access permission model so we are not restricted in the same way an unprivileged user would be. MosaicRegressor writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunately not automatically run at an elevated level.
 
+
+\TODO{DLL proxy loading}
 \TODO{modifying Windows Executables KMCI}
 
 
 % Task Scheduler
-There is a better mechanism used for the automatic execution of privileged programs, the Task Scheduler. It can be used to schedule task execution at a variety of different conditions, examples are disk fragmentation or antivirus scans.
-\TODO{which privileges are possible}
-% defined in xml
-% cached in registry
-Tasks are defined in \ac{XML} files under \lstinline{Windows/System32/Tasks}, they are initially read into memory and cached into registry keys. Subsequent startups operate on the cached registry keys.
-\lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive
-Windows stores system-wide configuration information that is not relevant for booting as well as third-party applications system-wide settings \cite[10. The registry - Registry logical structure - \lstinline{HKEY_LOCAL_MACHINE}]{windows-internals-7-part2}.
+The Task Scheduler is a Windows service responsible for managing the automatic execution of background tasks \cite[10. The Task Scheduler]{windows-internals-7-part2}. Tasks are performed on certain triggers, which may be time-based (periodically or on a specific time) or event-based, for example on user logon or system boot\cite{microsoft-task-scheduler-triggers}. A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, but we will focus on command execution. Most tasks will simply execute other programs as their action, this execution is performed under specified a security context \cite{microsoft-task-scheduler-security-contexts}. The idea of our attack is to have a task, that performs its action with a high privelege level, execute our payload. The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the command
 
-\lstinline{HKLM/Software/Microsoft/Windows NT/CurrentVersion/Schedule/TaskCache/Tasks/}
+\begin{lstlisting}
+%windir%\system32\rundll32.exe /d acproxy.dll,PerformAutochkOperations
+\end{lstlisting}
 
-\cite{windows-internals-7-part2}
+30 minutes after system boot, the executable \lstinline{rundll32.exe} loads the \ac{DLL} \lstinline{acproxy.dll} and invokes the exported function \lstinline{PerformAutochkOperations} \cite{microsoft-rundll32}. The function name as well as the task name suggest the performed action relates to the Windows utility \emph{autochk} which verifies the integrity of \ac{NTFS} file systems \cite{microsoft-autochk}. The Task Scheduler keeps book of its active tasks in the registry under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache}, grouped by four subkeys Boot, logon, plain and Maintenance. These entries consist only of a \ac{GUID} that is used to look up the task descriptor saved under their respective task master (registry) keys, these task master keys are located under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks} \cite[10. The Task Scheduler - Initialization]{windows-internals-7-part2}. There also exist a secondary copy of the task descriptors, on the regular file system under \lstinline{%windir%\system32\Task}, stored as \ac{XML} files.
 
-We can modify an existing task that is scheduled to execute with elevated privileges and have it execute our payload instead of the original. A fitting task is the Proxy in the Autochk folder
+We can use the Task Scheduler Configuration Tool to modify the target task on a system under our control, we change the executable path as well as remove the configured delay. We then use the Windows registry editor \lstinline{reged.exe} to navigate to the task descriptor store, there we search for the for the task master key belonging to our task and export this key.
 
 \includegraphics[width=\textwidth]{attacks/neither/05_taskscheduler_autochk.png}
 
 % edit with start cmd.exe and trigger manually
 % whoami
-We can modify the action it performs to run our payload instead, to verify the privileges our payload is executed with, we can save the output of the \lstinline{whoami} into a file. The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}. After manually triggering the task we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+% We modify the task's action, to run our payload instead. To verify the privileges our payload is executed with, we can save the output of \lstinline{whoami /all} into a file. The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}. After manually triggering the task through the configuration tool, we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+
+% \TODO{whoami /all snippet}
 
 % chntpw and reged
 % edit Task in machine under Control
-We can export this modified registry key and as part of our attack import it on our victim's system. To import the key we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}. The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
+We can use this exported key and import it on our victim's system as part of our attack. To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}. The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
 
 % test
 % dual boot
