@@ -1,34 +1,22 @@
 \section{Bitlocker}
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
-% assumptions:
+Our final attack will be targeted against systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 an no additional PIN or startup key. This leaves the Windows boot partition encrypted, the \ac{ESP} is left unencrypted, thus not affecting the bootkit installation process. Secure Boot can be enabled in combination of BitLocker having the same effects on this attack as described in the second attack \autoref{sec:attack_secure_boot}. Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two. We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
 
-% bitlocker enabled with TPM auto decryption, no PIN, no startup key
-For our third attack we will enable BitLocker, this prevents us from trivially accessing any data before Windows has successfully booted.
-% secure boot or not
-\TODO{rewrite for rootkit/bookit split} As we have learned from our second attack Secure Boot does not matter for our attack vector thus we can assume Secure Boot being enabled for this scenario.
-\TODO{secure boot and bitlocker standard and cant do much more?}
+\subsection{Infection}
 
-% how to enable bitlocker with TPM
-% sometimes in bios tpm needs to be enabled
-% full drive encryption or used space
-We configure BitLocker to use automatic \ac{TPM} decryption without any additional PIN or startup key.
-\cite{microsoft-bitlocker-basic-deployment}
-
-% observation:
-% recovery key prompt
-When booting the system with our rootkit we are greeted with a screen prompting us to enter the BitLocker recovery key.
-
-\includegraphics[width=\textwidth]{attacks/bitlocker/01_recovery_prompt.png}
-
-% tpm values different
+For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected. When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}. Resulting in an inability to further deploy the Windows payload on the target system. Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
+% tpm values differ
+% measured pcrs
+% not unsealing vmk with tpm
 This happens due to \ac{TPM} \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve an unencrypted \ac{VMK} from the \ac{TPM} and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
 
-% bitlocker auto decryption fails
-% boot execution differs from executing rootkit
-\TODO{which measurements are used for sealing and unsealing}
-\TODO{which ones are altered by the rootkit being present}
-
+\begin{figure}[htb]%
+    \centering
+    \includegraphics[width=1.0\textwidth]{attacks/bitlocker/bitlocker_recovery_prompt.png}%
+    \caption{BitLocker Recovery Prompt}%
+    \label{fig:bitlocker-recovery-prompt}%
+\end{figure}
 
 In theory this is as far as we get, BitLocker in combination of \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks by discovering a deviation in the boot flow.
 % what is the reaction of the average user
@@ -44,7 +32,11 @@ It is reasonable to assume that the average user is willingly entering their rec
 % type in recovery password
 % alternative would be to remove drive and insert into safe device
 
-Having the user enter their recovery key does not directly benefit our endeavours as BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
+
+
+\subsection{Approach}
+
+Even when assuming that the user enters their recovery key, we are still unable to access the Windows installation, as the BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
 
 What we can do is try to record the keystrokes performed by the user while entering their recovery key and use it at some later point to gain control over the hard drive. A program designed to perform this type of attack is called a keylogger.
 
@@ -85,6 +77,7 @@ The BitLocker recovery prompt does not allow the user to input any
 F keys
 block validity
 only divisable by 11
+\cite[9. BitLocker Key Recovery]{windows-internals-6-part2}
 cursor can move out of incomplete or valid blocks
 up and down increments or decrements the cursor position
 
@@ -141,6 +134,8 @@ update tpm values in payload
 \cite{microsoft-bitlocker-manage-bde}
 caveat pin? look into this
 
+
+\subsubsection{BitLocker post Infection}
 % reference to rootkit definition
 persistence when part of root of trust
 fresh install / tpm update values

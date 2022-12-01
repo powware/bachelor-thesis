@@ -3,7 +3,7 @@
 \section{Neither Secure Boot nor Bitlocker}
 
 % premise of attack
-Our first attack is performed without enabling the optional security mechanisms Secure Boot and BitLocker.
+Our first attack is performed on a system without Secure Boot or BitLocker enabled.
 % general concept
 % deviate the boot flow
 % access to the hard drive from the UEFI Environment
@@ -150,12 +150,10 @@ Now that we modified the Windows installation to execute our payload upon boot, 
 
 \subsection{Rootkit}
 
-general approach doesn't differ much
-
-main executable is now dxe driver instead of an application
-dxe drivers are now automatically loaded from the DXE dispatcher
+Performing the same attack in the form of a rootkit is very similar. The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of an application, so that it is loaded when the \ac{DXE} Dispatcher iterates over the \ac{FV} it is contained within.
 
 \subsubsection{Infection}
+
 
 retrieve current firmware image
 modify image by adding our DXE drivers to the DXE volume

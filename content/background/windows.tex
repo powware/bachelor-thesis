@@ -34,6 +34,10 @@ A crucial part to the whole Windows ecosystem is the Registry, it is a system da
 The Registry is a hierachical database containing keys and values, keys can contain other keys or values, forming a tree structure. Values store data through various data types.
 It is comparable to a file system structure with keys behaving like directories and values like files \cite[10. The registry - Registry data types]{windows-internals-7-part2}. At the top level it has 9 different keys \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Normally Windows users are not required to change Registry values directly and instead interact with it through applications providing setting abstractions. Though some more advanced options may not be exposed and can be accessed through the \lstinline{regedit.exe} application which provides a graphical user interface to travere and modify the Registry \cite[10. The registry - Viewing and changing the registry]{windows-internals-7-part2}. It also supports ex- and importing registry keys along their subkeys and contained values. Internally the registry is not a single large file but instead a set of file called hives, each hive contains one tree, that is mapped into the Registry as a whole. There is no one to one mapping of registry root key to hive file, the \ac{BCD} file for example is also a hive file and is mapped into the Registry under \lstinline{HKEY_LOCAL_MACHINE\BCD00000000} \cite[10. The registry - Registry logical structure]{windows-internals-7-part2}. Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
 
+\TODO{maybe fun fact that EFS cant encrypt hives}
+windows also has a feature called Encrypting File System (EFS) with file system level encryption but it cant be used for registry hives
+\cite[9. BitLocker Drive encryption]{windows-internals-6-part2}
+
 
 % https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
 % \subsection{User Access Control (UAC)}
@@ -47,90 +51,48 @@ It is comparable to a file system structure with keys behaving like directories 
 \subsubsection{HVCI}
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
 
-\subsection{BitLocker}
-\TODO{write me}
-\cite{microsoft-how-windows-uses-the-tpm}
+\subsection{\acf{BDE}}
+Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}. Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest\cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}. The en- and decryption of the volume is done by a filter driver beneath the \ac{NFTS} driver as shown in \autoref{fig:bitlocker_filter_driver}. The \ac{NFTS} driver translates file and directory access into block-wise operations on the volume \TODO{CITE}, the filter driver receives the block operations, encrypting blocks on write and decrypting blocks on read while they pass through. This leaves the en- and decryption entirely transparent to the \ac{NTFS} driver, making the underlying volume appear decrypted \cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}. The encryption of each block is done using a modified version of the \ac{AES}128 and \ac{AES}256 cypher \cite[9. Encryption Keys]{windows-internals-6-part2}. A \ac{FVEK} is used in combination with the block index as input for the algorithm, resulting in an entirely different output for two blocks with identical data \cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}. The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multiple protectors, these encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the volume \cite[9. Encryption Keys]{windows-internals-6-part2}. The \ac{VMK} is encrypted by the following protectors:
+
+\begin{itemize}
+    \item[Startup key] stored in a \lstinline{.bek} file with a \ac{GUID} name equaling key identifier in bitlocker meta data
+        \cite[2.6. Startup key]{bde-format-spec}
+    \item[TPM]
+        - tpm only
+        no additional user interaction
+        - tpm with startup key
+        additional usb
+        - tpm with PIN
+        - tpm with startup key and PIN
+        \cite{microsoft-bitlocker-countermeasures}
+        with tpm ensures integrity of early boot components and boot configuration
+        tpm usage requires \ac{TCG} compliant \ac{UEFI} firmware \cite[9. TPM]{windows-internals-6-part2}
+
+        tpm is used to \emph{seal} and \emph{unseal} \ac{VMK}
+        \TODO{PCR table either here or at TPM section}
+        platform validation profile
+        default \acp{PCR} are 0, 2, 4, 5, 8, 9, 10 and 11
+        11 is required
+    \item[Recovery key] recovery key 48 digits of 8 blocks
+        block is converted to a 16-bit value making up a 128-bit key
+        \cite[2.4. Recovery key]{bde-format-spec}
+        % how to obtain
+        when enabling manually, save on non encrypted medium
+        \cite{microsoft-bitlocker-basic-deployment}
+
+        bitlocker device encryption if supported automatically enabled
+        after clean install encrypted with clear key (bitlocker suspended state)
+        non domain account -> recovery key uploaded to microsoft account
+        domain account -> recovery key backed up to active directory domain services (AD DS)
+        clear key removed
+        \cite{microsoft-bitlocker-device-encryption}
+
+    \item[User key] password with max 49 characters
+        \cite[2.7. User key]{bde-format-spec}
+    \item[Clear key] unprotected 256-bit key stored on the volume to decrypt vmk
+        \cite[2.5. Clear key]{bde-format-spec}
+        used for suspension
 
 
-operating system can only protect when it's active
-bitlocker protects system files and data against physical access attacks or generally outside of operating system
-windows supports Encrypting File System (EFS) but it cant be used for registry hives
-\cite[9. BitLocker Drive encryption]{windows-internals-6-part2}
-
-\cite{microsoft-bitlocker-overview}
-\cite{microsoft-bitlocker-device-encryption}
-BitLocker Drive Encryption (BDE) integrates with operating system
-fixed disk or BitLocker To Go
-encryption enabled per volume
-encrypt os and data drives
-supports removable data drives
-maximum protection with TPM 1.2 or later
-alternatively USB startup key or password, not system integrity verification
-optionally PIN or USB startup key required to unlock
-
-- tpm only
-no additional user interaction
-- tpm with startup key
-additional usb
-- tpm with PIN
-- tpm with startup key and PIN
-protects against unauthorized data access
-\cite{microsoft-bitlocker-countermeasures}
-
-with tpm ensures integrity of early boot components and boot configuration
-
-% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/how-windows-uses-the-tpm
-
-system requirement
-include support for TCG-specified Static Root of Trust Measurement
-
-\cite{microsoft-bitlocker-device-encryption}
-
-bitlocker device encryption if supported automatically enabled
-after clean install encrypted with clear key (bitlocker suspended state)
-non domain account -> recovery key uploaded to microsoft account
-domain account -> recovery key backed up to active directory domain services (AD DS)
-clear key removed
-
-encryption on used disk space only or whole drive
-former security risk if turned on after drive was already in use, deleted data accessible with disk recovery tools
-latter the following is recommended
-% https://learn.microsoft.com/en-us/windows/security/information-protection/encrypted-hard-drive
-encrypted hard drive support
-
-% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc
-% how does it work
-two partitions
-- operating system partition with os and support files, all system files on the volume, including the paging files and hibernation files, bitlocker encrypted, ntfs
-- system partition with windows boot manager and minimal software required for decryption of the os, fat32, unencrypted, files needed
-
-data is encrypted blockwise with Full Volume Encryption Key (FVEK)
-- AES 128-bit the key is 128-bit of size
-- AES 256-bit the key is 256-bit of size
-FVEK encrypted with Volume Master Key (VMK) 256 bit
-VMK encrypted by multiple protectors, default configuration:
-% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/tpm-fundamentals
-% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/how-windows-uses-the-tpm#bitlocker-drive-encryption
-- TPM, seal operation
-- Recovery Key
-
-or
-- startup key/external key
-
-\subsubsection{Recovery Key}
-% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#24-recovery-key
-recovery key 48 digits of 8 blocks
-block is converted to a 16-bit value making up a 128-bit key
-
-\subsubsection{Clear Key}
-% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#25-clear-key
-unprotected 256-bit key stored on the volume to decrypt vmk
-
-\subsubsection{Startup Key}
-% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#26-startup-key
-stored in a .bek file with GUID name equaling key identifier in bitlocker meta data
-multiple possible for a single bitlocked volume
-
-\subsubsection{User Key}
-% https://github.com/libyal/libbde/blob/main/documentation/BitLocker%20Drive%20Encryption%20(BDE)%20format.asciidoc#27-user-key
-password with max 49 characters
+        \TODO{decide if we add this} With Windows 11 and Windows 10, administrators can turn on BitLocker and the TPM from within the Windows Pre-installation Environment \cite{microsoft-bitlocker-device-encryption}
+\end{itemize}
