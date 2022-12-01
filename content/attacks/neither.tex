@@ -16,9 +16,9 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
-\TODO{write more careful about what we have and what we do not have}
-We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable that can mount the \ac{ESP} with admin privileges.
-The installation process is identical for both options, we first locate and access the \ac{ESP} and create a copy of the Windows Boot Manager, that is located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}. We then replace the original with our bootkit as well as drop all our payload and other required files on the \ac{ESP}.
+
+We have two ways to infect a system, we can either use a bootable USB stick with a UEFI application installing the bootkit or a Windows executable mounting the \ac{ESP} with admin privileges.
+The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}. We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
 
 \subsubsection{Approach}
 
@@ -145,14 +145,7 @@ Function calls related to standard input and output such as opening, reading and
 % modify so that registry key can differ and found via matching values
 Except for a change in the import behavior. The name of a task master key is the task's \ac{GUID}, which may differ from device to device, thus we cannot import a key into its exact path, we instead iterate over the subkeys of the target's parent key. We then match for the name value of the key.
 
-Now that we modified the Windows installation to execute our payload upon boot, we need to transfer execution from the bootkit to the original Windows Boot Manager.
-
-
-\ac{EFI} Loaded Image Protocol \cite[9.1]{uefi-spec} and \ac{EFI} Loaded Image Device Path Protocol \cite[9.2]{uefi-spec}
-need to reflect what is normally expected
-\TODO{dump a windows boot entry}
-pass on load options from boot entry
-override device path with the one from our bootkit, otherwise it will point to Windows Boot Manager backup location
+Now that we modified the Windows installation to execute our payload upon boot, we need to transfer execution from the bootkit to the original Windows Boot Manager. Loading the original application is inspired by how the UEFI Boot Manger loads boot options, this includes relaying the \lstinline{LoadOptions} and \lstinline{ParentHandle} of the \emph{\ac{EFI} Loaded Image Protocol} \cite[9.1]{uefi-spec} instance installed to our bootkit to the Windows Boot Manager.
 
 
 \subsection{Rootkit}
