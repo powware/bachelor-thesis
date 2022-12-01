@@ -36,7 +36,7 @@ It is reasonable to assume that the average user is willingly entering their rec
 
 \subsection{Approach}
 
-Even when assuming that the user enters their recovery key, we are still unable to access the Windows installation, as the BitLocker does not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
+Even when assuming that the user enters their recovery key, we are still unable to access the Windows installation, as BitLocker never ldoes not en/decrypt the hard drive as a whole upon boot but instead performs these respective action when reading or writing a block of data to or from the hard drive.
 
 What we can do is try to record the keystrokes performed by the user while entering their recovery key and use it at some later point to gain control over the hard drive. A program designed to perform this type of attack is called a keylogger.
 
