@@ -40,10 +40,10 @@ When the user enters their recovery key the Windows Boot Manager uses the recove
 
 \subsubsection{BitLogger}
 
-If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, the \ac{FVEK} and in turn the drive ourselves. We can simply log the keystrokes performed by the user when entering the key during the recovery prompt. Since we still are in the \ac{UEFI} boottime environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input. \ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \emph{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{print} statement to the implementation in the \ac{OVMF} source code, this change alone triggers the recovery prompt bcause of \ac{PCR} value changes. A keystroke now shows us that the \emph{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}. The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending keypress. The protocol offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service.
+If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, the \ac{FVEK} and in turn the drive ourselves. We can simply log the keystrokes performed by the user when entering the key during the recovery prompt. Since we still are in the \ac{UEFI} boottime environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input. \ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \emph{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{print} statement to the implementation in the \ac{OVMF} source code, this change alone triggers the recovery prompt bcause of \ac{PCR} value changes. A keystroke now shows us that the \emph{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple_text_input_ex_protocol}. The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending keypress. The protocol offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service.
 
 
-\lstinputlisting[language=C,caption={Simple Text Input Ex Protocol Structure},captionpos=b,label=lst:simple-text-input-ex-protocol]{code/simple_text_input_ex_protocol.h}
+\lstinputlisting[language=C,caption={Simple Text Input Ex Protocol Structure},captionpos=b,label=lst:simple_text_input_ex_protocol]{code/simple_text_input_ex_protocol.h}
 
 We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow. \TODO{if we have time talk about downsides of function patching} \ac{UEFI} protocol hooking does not require such an invasive technique. When we take a closer look at how protocols are returned to their user we can see why. The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance, the latter additionally keeps track of the protocol users \cite[7.3. EFI_BOOT_SERVICES.OpenProtocol()]{uefi-spec}, \autoref{lst:handle-protocol} shows how \lstinline{HandleProtocol} can be used to receive the \emph{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[4.3 EFI System Table]{uefi-spec}. The input paremeters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure. When calling \lstinline{HandleProtocol} the value of the pointer is modified to point to the corresponding protocol instance. The protocol instance itself is previously allocated by a driver and installed onto the device handle in their Driver Binding Start function \TODO{Driver binding}. The driver assigns the function fields with functions residing in the driver's image. This is why it is important for a driver's image to remain loaded even after initial execution. The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for this protocol instance, given they use the same device handle. Since our \ac{UEFI} payload is executed before the Windows Boot Manager we can query all instances of the \emph{Simple Text Input Ex Protocol} and change the function pointer of \lstinline{ReadKeyStrokeEx} to point to our function hook. When a user later receives a pointer to the protocol instance, accessing the \lstinline{ReadKeyStrokeEx} field will cause our hook to be called instead of the original function. The hook has to be implemented in a driver, so that it remains loaded until the Windows Boot Manager uses \lstinline{ReadKeyStrokeEx}. We also have to save the original function address, together with a pointer to the protocol instance, so that we can call it later. Multiple different drivers could offer the same protocol, resulting in different functions being called depending on the device, the protocol instance is retrieved from. When our hook is called we start by identifying which original function needs to be called using the protocol instance that is used as the first argument of the \lstinline{ReadKeyStrokeEx} function signature. We then call the original to read the pending keystroke, keeping track of the keystrokes (separately for each protocol instance), before returning the key data back to the caller. We coin this BitLocker specific keylogger \emph{BitLogger}.
 
@@ -62,45 +62,39 @@ up and down increments or decrements the cursor position
 
 To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted paritions under Linux supporting read and write access \cite{dislocker}.
 
-In \autoref{bde} we discussed, how the BitLocker filter driver integrates into the \ac{OS}. Similarily to \autoref{fig:bitlocker_volume_access_stack} we can  \emph{Simple File System Protocol} and \emph{File Protocol} can be used to abstract any underlying filesystem\ac{UEFI}
+In \autoref{bde} we discussed, how the BitLocker filter driver integrates into the Windows. To integrate Dislocker into \ac{UEFI} start by analyzing how the \ac{NTFS} driver works. We can start by checking the \lstinline{.inf} file of the driver, which declares which protocol \acp{GUID} are consumed and produced by the driver. Ignoring ones that are not further used in code have the following list:
 
+\begin{itemize}
+    \item \lstinline{gEfiDevicePathToTextProtocolGuid}
+    \item \lstinline{gEfiDiskIoProtocolGuid}
+    \item \lstinline{gEfiDiskIo2ProtocolGuid}
+    \item \lstinline{gEfiBlockIoProtocolGuid}
+    \item \lstinline{gEfiBlockIo2ProtocolGuid}
+    \item \lstinline{gEfiSimpleFileSystemProtocolGuid}
+\end{itemize}
+
+The \emph{Device Path to Text Protocol} is just a self-explanatory utility protocol and not related to media access, so we can ignore it as well. The \emph{Simple File System Protocol} is only produced, as in installed onto handles it supports and can offer the protocol on. So the only relevant protocols it consumes are the \emph{Disk I/O Protocol} and and the \emph{Block I/O Protocol} as well as their respective asynchronous counterparts. We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}. The same could be said for the \emph{Disk I/O Protocol}, as it abstract the \emph{Block I/O Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block I/O Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted. Keeping in mind the fact, that the \emph{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \emph{File Protocol}, we can depict the \ac{NTFS} protocol stack in \autoref{fig:uefi_volume_access_protocol_stack}.
 
 \begin{figure}[htb]%
     \centering
-    \includesvg{uefi_volume_access_stack.drawio.svg}
+    \includesvg{uefi_volume_access_protocol_stack.drawio.svg}
     \caption{\ac{UEFI} Volume Access Protocol Stack}%
-    \label{fig:uefi_volume_access_stack}%
+    \label{fig:uefi_volume_access_protocol_stack}%
 \end{figure}
+
+It becomes obvious that all file-wise operations are, is multiple layers of abstraction ontop of block-wise access to the media, performed through the \emph{Block I/O Protocol}. Inspired by the BitLocker filter driver in \autoref{fig:bitlocker_volume_access_driver_stack}, which de- and encrypts each block as it passes through, we hook the \emph{Block I/O Protocol} functions \lstinline{ReadBlocks} and \lstinline{WriteBlocks}, their signatures are shown in \autoref{lst:block_io_protocol}. We then perform Dislocker operations on writes and reads \autoref{fig:dislocker_volume_access_protocol_stack}.
+
+\lstinputlisting[language=C,caption={Block I/O Protocol Structure and ReadBlocks/WriteBlocks Function Signature},captionpos=b,label=lst:block_io_protocol]{code/block_io_protocol.h}
 
 \begin{figure}[htb]%
     \centering
-    \includesvg{dislocker_volume_access_stack.drawio.svg}
+    \includesvg{dislocker_volume_access_protocol_stack.drawio.svg}
     \caption{Dislocker Volume Access Protocol Stack}%
-    \label{fig:dislocker_volume_access_stack}%
+    \label{fig:dislocker_volume_access_protocol_stack}%
 \end{figure}
 
+When we look at the Dislocker source code, we find that Dislocker works with two main functions \lstinline{dislock} and \lstinline{enlock}, they each take offset-length paremeters, comparable to the \emph{Disk I/O Protocol} abstraction. \lstinline{dislock} reads and decrypts, while \lstinline{enlock} encrypts and writes. Internally Dislocker uses \lstinline{pread} and \lstinline{pwrite} to access the volume. These operations are always performed on whole blocks, as BitLocker encryption is done block-wise. So the starting offset is rounded down and the offset plus length is rounded up the to next block boundary. We can map \lstinline{pread} and \lstinline{pwrite} to call the original \lstinline{ReadBlocks} and \lstinline{WriteBlocks} functions. Since the two Dislocker functions expect offset-length, we simply multiply the starting block index by the block size to use as starting offset.
 
-dislocker linux utility
-\cite{dislocker}
-mount encrypted drive with decryption mean
-read and write access
-dual boot in vm
-enter recovery key and it works
-port to\ac{UEFI}
-
-bitlocker encrypts block-wise
-
-% blk and fs
-\TODO{explain block devices}
-\TODO{explain file system independent abstraction better}
-\ac{UEFI} protocol stack
-\TODO{diagram of block io, disk io, simple file system and file protocol interaction (with hindsight of adding dislocker beneath block io)}
-\cite[13.3.2 Partition Disocvery]{uefi-spec}
-Drivers providing \emph{Simple File System Protocol} use the \emph{Block I/O Protocol} to access the underlying media.
-
-
-hook block io
-again hook data mapping
 
 % execute after NTFS driver by doing it in an ExitBootServices hook
 It is beneficial for us to write our payload to the Windows installation as close to the end of the \ac{UEFI} environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
