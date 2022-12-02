@@ -335,24 +335,16 @@
 % **************************************************
 \ifct@cthesis@configurelistings
 	\RequirePackage{listings}			% package for listings
-	\lstset{%
-		backgroundcolor=\color{ctcolorgraylighter},
-		linewidth=\textwidth,
-		xleftmargin=10pt,
-		captionpos=b,
-		showspaces=false,
-		showstringspaces=false,
-		showtabs=false,
-		tabsize=2,
-		basicstyle=\footnotesize\ttfamily,
-		frame=leftline,
-		framerule=3pt,
-		framexleftmargin=4pt,
-		rulecolor=\color{ctcolorgraylight},
-		numbers=left,
-		numberstyle=\footnotesize\sffamily\color{ctcolorgray},
-		numbersep=15pt
-	}
+	\lstset{
+    language=C,
+    basicstyle=\small\sffamily,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=tb,
+    columns=fullflexible,
+    showstringspaces=false
+	linewidth=\textwidth,
+}
 \fi
 
 % **************************************************

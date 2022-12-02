@@ -26,6 +26,9 @@ The installation process is identical for both options, we access the \ac{ESP} a
 Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed.
 % UEFI does not support NTFS
 For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload. We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional \ac{NTFS} driver due to the \ac{UEFI} specification only mandating compliant firmware to support FAT12, FAT16 and FAT32 \cite[13.3.1.1]{uefi-spec}. The \ac{EDK} II reference implementation does not provide an \ac{NTFS} driver either.
+
+\subsubsection{File access}
+
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
 We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
@@ -99,6 +102,9 @@ The next step is for our bootkit to use the NTFS driver to gain file system acce
 % search for windows installation
 % iterate over all \emph{Simple File System Protocol} instance
 % open volume
+
+\subsubsection{Payload deployment}
+
 To perform the write operation we now need a handle we did not yet interact with, at least directly. We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \emph{Simple File System Protocol}, this includes volumes such as the \ac{ESP} but also the Windows recovery partition. We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation. This operation fails on volumes not containing a Windows installation which we can just skip. Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
 
 Now the question arises as to where to write our payload to, we want automatic and elevated execution. Earlier we discovered that the \ac{NTFS} \ac{DXE} driver disregards the file access permission model \TODO{Windows File Permissions} so we are not restricted in the same way an unprivileged user would be when accessing the disk. \emph{MosaicRegressor} writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup. The programs within the startup folder are unfortunately not automatically run at an elevated level, so this isn't a suitable target location.
