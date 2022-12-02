@@ -5,7 +5,7 @@ Our final attack will be targeted against systems using BitLocker \ac{FVE} with 
 
 \subsection{Infection}
 
-For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected. When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}. Resulting in an inability to further deploy the Windows payload on the target system. Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
+For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected. When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}. Resulting in an inability to further deploy the Windows payload on the target system. Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker_recovery_prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
 % tpm values differ
 % measured pcrs
 % not unsealing vmk with tpm
@@ -15,7 +15,7 @@ This happens due to \ac{TPM} \ac{PCR} values differing from what was initially u
     \centering
     \includegraphics[width=1.0\textwidth]{attacks/bitlocker/bitlocker_recovery_prompt.png}
     \caption{BitLocker Recovery Prompt}
-    \label{fig:bitlocker-recovery-prompt}
+    \label{fig:bitlocker_recovery_prompt}
 \end{figure}
 
 In theory this is as far as we get, BitLocker in combination of \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks by discovering a deviation in the boot flow.
@@ -60,19 +60,23 @@ up and down increments or decrements the cursor position
 
 \subsubsection{Dislocker}
 
-To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting BitLocker encrypted paritions under Linux for read and write access \cite{dislocker}.
+To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted paritions under Linux supporting read and write access \cite{dislocker}.
+
+In \autoref{bde} we discussed, how the BitLocker filter driver integrates into the \ac{OS}. Similarily to \autoref{fig:bitlocker_volume_access_stack} we can  \emph{Simple File System Protocol} and \emph{File Protocol} can be used to abstract any underlying filesystem\ac{UEFI}
+
+
+\begin{figure}[htb]%
+    \centering
+    \includesvg{uefi_volume_access_stack.drawio.svg}
+    \caption{\ac{UEFI} Volume Access Protocol Stack}%
+    \label{fig:uefi_volume_access_stack}%
+\end{figure}
 
 \begin{figure}[htb]%
     \centering
     \includesvg{dislocker_volume_access_stack.drawio.svg}
     \caption{Dislocker Volume Access Protocol Stack}%
     \label{fig:dislocker_volume_access_stack}%
-\end{figure}
-
-\begin{figure}[htb]%
-    \centering
-    \includesvg{dislocker_volume_access_stack_real.drawio.svg}
-    \caption{Dislocker Volume Access Protocol Stack}%
 \end{figure}
 
 
