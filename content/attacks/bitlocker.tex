@@ -97,7 +97,11 @@ When we look at the Dislocker source code, we find that Dislocker works with two
 
 
 % execute after NTFS driver by doing it in an ExitBootServices hook
-It is beneficial for us to write our payload to the Windows installation as close to the end of the \ac{UEFI} environment as possible, this will maximize the presence of drivers and their offered access to hardware devices. It is also a wise design decision for the attacks following to this one. The call of the function \lstinline{ExitBootServices} marks the point of transitioning from boot time to runtime where the operating system takes over the control of the system, it presents a good opportunity for us to perform the write action of our rootkit.
+For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \lstinline{HKLM\SOFTWARE} registry hive, thus performing the deployment as soon as the \ac{UEFI} payload is executed suffices, as this happens before any Windows boot related actions are performed.
+With BitLocker we have to deploy after our BitLogger was able to obtain the recovery key.
+After initializing Dislocker with the recovery key we enable the transparent \emph{Block I/O Protocol} hook layer, so we can trigger the \ac{NTFS} driver to (re-)evaluate which device handles it supports.
+The BitLocker encrypted drive now appearing unencrypted allows the driver to install its \emph{Simple File System Protocol} instance. This allows us to deploy the payload and import our modified registry key. After doing this we need to disable the Dislocker layer again, as otherwise Windows gets confused, showing a second recovery prompt, but now outside of the \ac{UEFI} environment.
+
 % was muss man beachten bei exitbootservices hooking
 \cite{exitbootservices-hooking}
 hook ExitBootServices
