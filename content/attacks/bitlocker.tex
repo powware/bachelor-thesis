@@ -155,7 +155,8 @@ The BitLocker encrypted drive now appearing unencrypted allows the driver to ins
 This allows us to deploy the payload and import our modified registry key.
 After doing this we need to disable the Dislocker layer again, as otherwise Windows gets confused, showing a second recovery prompt, but now outside of the \ac{UEFI} environment.
 
-% was muss man beachten bei exitbootservices hooking
+% only necessary because the way dislocker currently checks whether the recovery key is correct is slow and impacts the user experience during recovery prompt
+\TODO{if we want we can explain this}
 \cite{exitbootservices-hooking}
 hook ExitBootServices
 enable hook
@@ -163,18 +164,12 @@ write payload
 import registry key
 disable hook
 
-next boot would require to recovery key again
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-use-bitlocker-drive-encryption-tools-to-manage-bitlocker
-update tpm values in payload
-\cite{microsoft-bitlocker-manage-bde}
-caveat pin? look into this
+If we were to attack Windows 10 we would be done now, but Windows 11 will show the recovery prompt every boot because the \ac{UEFI} payload keeps invalidating the \ac{PCR} values. Windows 10 seems to automatically reseal the \ac{VMK}, whereas Windows 11 doesn't, but this is nothing our Windows payload can't fix. We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \cite{microsoft-bitlocker-manage-bde}, deleting the old \ac{TPM} protector and adding a new one.
 
+\subsubsection{BitLocker access as trusted execution}
 
-\subsubsection{BitLocker post Infection}
-% reference to rootkit definition
-persistence when part of root of trust
-fresh install / tpm update values
-% paper von betreuern
+We now cover the scenario where our \ac{UEFI} payload is executed but the BitLocker recovery prompt is not triggered, either through a misconfigured validation profile or the \ac{TPM} protector already including our \ac{UEFI} payload in its \ac{PCR} measurements. This leaves the Windows Boot Manager able to decrypt the driver, but we don't have access to a recovery key and in turn no access to the drive.
+
 hook \ac{TCG2} Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication
 % \cite[12.7 \lstinline{TPM_Unseal}]{tcg-tpm-library-part3-commands}
