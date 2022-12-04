@@ -107,18 +107,33 @@ relevant for secure boot and boot manager
 \subsubsection{Boottime Services}
 \subsubsection{Runtime Services}
 
+\subsection{\acf{GPT}}
+\ac{MBR} boot code, four partitions
+\ac{GUID} for uniquely identifying each partition
+\ac{GUID} for partition type content
+\ac{GPT}
+\ac{LBA}
+legacy \ac{MBR} or protective \ac{MBR}
+
+
+\cite[5]{uefi-spec}
 \subsection{\acf{ESP}}
+\ac{FAT}32 \cite[13.3]{uefi-spec}
+can reside on any media that is supported by EFI Boot Services
+\cite[13.3.1]{uefi-spec}
 
 \subsection{Boot Manager}
 
 \autoref{fig:uefi-boot-sequence}
 
 what is the boot manager
+which drivers and applications and when
 firmware policy engine
 configured by non volatile variables
 \cite[3.1.]{uefi-spec}
 boot manager = bds
 boot behavior
+\subsubsection{Boot Variables}
 boot options variables
 boot options (network, simple file system protocol, load file)
 default boot behavior for simple file system protocol
