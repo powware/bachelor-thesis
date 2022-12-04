@@ -1,8 +1,10 @@
 {
     "cSpell.words": [
+        "bootable",
         "bootkit",
         "bootkits",
         "keylogging",
+        "Tuxera",
         "UEFI"
     ],
     "C_Cpp.clang_format_fallbackStyle": "Visual Studio"
