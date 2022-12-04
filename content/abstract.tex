@@ -9,19 +9,19 @@
 
 \TODO{past tense and rewrite}
 % motivation
-In Computer Security one of the most feared security threats is a rootkit, executing at the beginning of a computers boot chain, before the operating system and accompanying antivirus programs. With the widespread adaption of standardized UEFI firmware these threats have become less machine dependent and can now target a host of systems at once.
+In Computer Security malicious firmware is one of the most feared security threats, executing at the beginning of a computers boot chain, before the operating system and accompanying antivirus programs. With the widespread adaption of standardized \acs{UEFI} firmware these threats have become less machine dependent and can now target a host of systems at once.
 % problem statement
-Past analyses about bootkits have been case studies of their appearances in the wild, this thesis instead aims to be a more practical approach by developing a bootkit and analyzing the challenges doing so.
+Their appearances in the wild are rare as they are very hard to detect by nature, we categorize analyses of past UEFI threats by their attack vector and perform our own attacks against Windows 11.
 % approach
-We restrict our analysis by assuming an attacker has already gained read and write access to the BIOS image and is thus only facing security mechanisms involved during and with execution of the bootkit.
+By performing a deep-dive into the UEFI environment we learn hands on about security mechanisms targeting pre-boot attacks, with the focus on Secure Boot and TPM-assisted BitLocker.
 % results
-Our bootkit was able to achieve elevated execution on Windows 11 by exploiting unrestricted hard drive access to edit Windows Registries, this was also possible on BitLocker encrypted hard drives by keylogging the Recovery Key.
+We were able to achieve system level privileged execution on Windows 11 by exploiting unrestricted hard drive access to deploy our payload and edit the Windows Registry. With BitLocker enabled, our \emph{BitLogger} was able to decrypt and mount the drive using a keylogged Recovery Key.
 % conclusions
-UEFI makes it very easy for an attacker who has gained access to the System Firmware to leverage its powers and gain full control over the system.
+UEFI threats are very powerful and can take away all system integrity, making it impossible to put further trust on the system.
 
 \vspace*{20mm}
 
-{\usekomafont{chapter}Abstract (different language)}
+{\usekomafont{chapter}Abstract (deutsch)}
 \label{sec:abstract-diff}
 
 \blindtext
