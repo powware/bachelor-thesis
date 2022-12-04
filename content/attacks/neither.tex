@@ -47,7 +47,7 @@ We can compile this driver with \ac{EDK} II to receive a \lstinline{.efi} execut
 Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment \cite[1.1]{uefi-shell-spec}.
 It offers commands related to boot and general configuration, device and driver management, file system access, networking \cite[5.1]{uefi-shell-spec} and supports scripting \cite[4]{uefi-shell-spec}.
 We can use the file system related commands to test the \ac{NTFS} driver.
-\autoref{fig:uefi-shell} depicts an exemplary output of an EDK II UEFI shell emulated under QEMU.
+\autoref{fig:uefi-shell} depicts an exemplary output of an \ac{EDK} II \ac{UEFI} shell emulated under QEMU.
 
 % how to use uefi shell
 % we are trying in qemu where the shell is available in boot options
@@ -115,7 +115,7 @@ Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back
 Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file.
 
 We now know that provided we get to load the \ac{NTFS} driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives.
-Since our rootkit will not use the UEFI shell we need to have the NTFS driver load as part of the boot process.
+Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
 
 % try to use ntfs-driver in code
 % this is our first rootkit iteration
@@ -155,7 +155,7 @@ The Task Scheduler is a Windows service responsible for managing the automatic e
 Tasks are performed on certain triggers, which may be time-based (periodically or on a specific time) or event-based, for example on user logon or system boot\cite{microsoft-task-scheduler-triggers}.
 A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, but we will focus on command execution.
 Most tasks will simply execute other programs as their action, this execution is performed under specified a security context \cite{microsoft-task-scheduler-security-contexts}.
-The idea of our attack is to have a task, that performs its action with a high privelege level, execute our payload.
+The idea of our attack is to have a task, that performs its action with a high privilege level, execute our payload.
 The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the command
 
 \begin{lstlisting}
@@ -191,8 +191,8 @@ The library does this by editing the registry of a Windows installation and as s
 % dual boot
 We can test the Linux tool when dual-booting a Linux and a Windows installation.
 We place our payload in the Windows installation and then boot into Linux, where we can open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive in \lstinline{reged} and import our modified registry key.
-% import and override registry key on target machine
-This overrides the task descriptor and when booting into Windows our payload is executed.
+% import and overwrite registry key on target machine
+This overwrite the task descriptor and when booting into Windows our payload is executed.
 
 % port to uefi
 The next step is to port the \lstinline{reged} utility so that it works in the UEFI environment, so we can use it as part of our bootkit.
@@ -215,7 +215,9 @@ Loading the original application is inspired by how the UEFI Boot Manger loads b
 \subsection{Rootkit}
 
 Performing the same attack in the form of a rootkit is very similar and mainly differs in the infection process.
-The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of an application. When placed in the \ac{DXE} volume it is automatically loaded by the \ac{DXE} Dispatcher iterating over the \ac{FV}, loading  drivers whose dependencies are resolved. The core functionality of our \ac{UEFI} payload is identicial with the exception that the we don't have to manually load the \ac{NTFS} driver anymore. Accessing and reading the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the \cite[3.4.1]{pi-spec}, searching for specific files is done with their module's \acp{GUID}, as there are no regular file names.
+The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of an application.
+When placed in the \ac{DXE} volume it is automatically loaded by the \ac{DXE} Dispatcher iterating over the \ac{FV}, loading  drivers whose dependencies are resolved.
+The core functionality of our \ac{UEFI} payload is identical with the exception that we don't have to manually load the \ac{NTFS} driver anymore and accessing the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the \cite[3.4.1]{pi-spec}, instead of \emph{Simple Filesystem Protocol}. There are no traditional file names on a firmware volume, and we have to search for files using the module \acp{GUID}.
 
 \subsubsection{Infection}
 

@@ -46,14 +46,14 @@ The link mentioned in the prompt also only aids in locating the recovery key \ci
 \subsection{Approach}
 
 When the user enters their recovery key the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} meta data entry, that was encrypted using the recovery key when BitLocker was set up.
-It then proceeds to access the bitlocked NTFS drive containing the \lstinline{Windload.efi} \ac{OS} loader.
-This all still happens in the UEFI boottime environment, before \lstinline{ExitBootServices} was called.
+It then proceeds to access the bitlocked \ac{NTFS} drive containing the \lstinline{Windload.efi} \ac{OS} loader.
+This all still happens in the \ac{UEFI} boottime environment, before \lstinline{ExitBootServices} was called.
 Unfortunately we are still unable to access the Windows installation, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
 
 \subsubsection{BitLogger}
 
 If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, the \ac{FVEK} and in turn the drive ourselves.
-We can simply log the keystrokes performed by the user when entering the key during the recovery prompt.
+We can achieve this by logging the keystrokes performed by a user entering the key in the recovery prompt.
 Since we still are in the \ac{UEFI} boottime environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input.
 \ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \emph{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{print} statement to the implementation in the \ac{OVMF} source code, this change alone triggers the recovery prompt bcause of \ac{PCR} value changes.
 A keystroke now shows us that the \emph{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
@@ -84,14 +84,10 @@ We coin this BitLocker specific keylogger \emph{BitLogger}.
 
 \lstinputlisting[language=C,caption={Example usage of the \lstinline{HandleProtocol} Boot service},captionpos=b,label=lst:handle-protocol]{code/handle_protocol.c}
 
-The BitLocker recovery prompt does not allow the user to input any
-\TODO{key input advancement is weird and makes tracking tricky}
-F keys
-block validity
-only divisable by 11
-\cite[9. BitLocker Key Recovery]{windows-internals-6-part2}
-cursor can move out of incomplete or valid blocks
-up and down increments or decrements the cursor position
+The BitLocker recovery prompt does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
+Each block must be divisible by 11 \cite[9. BitLocker Key Recovery]{windows-internals-6-part2}.
+For this reason we have to implement internal tracking of the cursor advancement.
+Another reason for the tracking is the fact, that the cursor can be used to increment and decrement the current digit by using the up and down arrow keys. Another fun fact is that the function keys (F1-F10) are also accepted as input, with F10 mapping to zero.
 
 \subsubsection{Dislocker}
 

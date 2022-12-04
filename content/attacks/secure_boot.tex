@@ -3,50 +3,18 @@
 \section{Secure Boot}
 \label{sec:attack-secure-boot}
 
-% how does one enable it
-mostly comes with default keys OEM
+Our second attack is against systems with Secure Boot enabled.
 
 \subsection{Bootkit}
 
-\subsubsection{Infection}
-
-booting into usb installer doesnt work without disabling secure boot, if you already have access to the device and have to change the boot order to include removal media, you could very well also disable secure boot
-have to assume that bios is password protected
-what happens when removable media is still before windows
-
-windows installer executable should still work without any difference
-
-\subsubsection{Approach}
-
-expectation:
-not to boot
-observation:
-doesnt boot
+For the installation via removable media we have to assume that the \ac{BIOS} menu is password protected, as we otherwise could simply turn off Secure Boot.
+This makes the likelihood of an infection via this method smaller since we now solely rely on the boot order/firmware policy to prefer removable media.
+Even given this assumption we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
+The same denial is observable when using our Windows installer.
+The Windows Boot Manager boot option pointing to our Bootkit is now denied execution, if we were to have overwritten the standard boot entry of the hard drive \lstinline{EFI\Boot\bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
 
 \subsection{Rootkit}
 
-\subsubsection{Infection}
+When installing our rootkit, we observe that Secure Boot is not applying its verification to our \ac{DXE} drivers, as they are still being executed without any restrictions. When we look at the reference implementation in \ac{EDK} II, we can see why. \autoref{lst:dxe-image-verification-handler} shows, that the image origin dictates which policy to apply. Standard policy for images from a \acf{FV} (\lstinline{IMAGE_FROM_FV}) is to always allow execution. This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy: \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here. For example: whether the image is in the system flash \textelp{}}. It seems that not all, if any, \acp{OEM} change this behavior, as we were able to execute the attack on all our test systems \TODO{actually have test systems}.
 
-add DXE Drivers to the DXE Volume.
-% how to achieve assumption/requirement
-This can be achieved by having read/write access to the SPI flash or using the Signed Capsule Update. Gaining read/write access to the SPI Flash is possible either through physical access to the device by using an SPI clamp on the chip itself or through exploits like for example the
-% see SMM multi threaded exploit
-. Signed Capsule Updates can be leveraged with access to private vendor information by signing the payload to make it appear legitimate or by intercepting the distribution process and employing infected firmware.
-% ref lenovo vantage for distributed example
-% network boot maybe
-
-\subsubsection{Approach}
-
-no difference
-% ref to paper default policy
-secure boot default policy snippet
-% https://github.com/tianocore/edk2/blob/f3da13461cbed699e54b1d7ef3fba5144cc3b3b4/SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.c#L1704
-option roms and bootloader
-% ref background firmware update
-instead relies on Signed Capsule Updates
-assumes integrity
-
-\cite[32.3]{uefi-spec}
-
-policy defined
-\cite[32.5.3.3 Authorization Process]{uefi-spec}
+\lstinputlisting[language=C,caption={DxeImageVerificationHandler Reference Implementation},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
