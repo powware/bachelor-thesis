@@ -166,7 +166,7 @@ If we were to attack Windows 10 we would be done now, but Windows 11 will show t
 
 We now cover the scenario where our \ac{UEFI} payload is executed but the BitLocker recovery prompt is not triggered, either through a misconfigured validation profile or the \ac{TPM} protector already including our \ac{UEFI} payload in its \ac{PCR} measurements. This leaves the Windows Boot Manager able to decrypt the driver, but we don't have access to a recovery key and in turn no access to the drive.
 
-hook \ac{TCG2} Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
+hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication
 % \cite[12.7 \lstinline{TPM_Unseal}]{tcg-tpm-library-part3-commands}
 receive bitlocker \ac{VMK} key and send to dislocker

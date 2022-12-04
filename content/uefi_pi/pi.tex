@@ -1,0 +1,217 @@
+% !TeX root = ../thesis.tex
+
+\section{\acf{PI}}
+
+\subsection{Boot Sequence}
+
+% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/23_boot_sequence
+
+focus will be on dxe and transient system load
+\autoref{fig:pi-phases}
+
+
+
+\begin{figure}[htb]%
+    \centering%
+    \includegraphics[width=\textwidth]{pi_boot_sequence}%
+    \caption{\ac{PI} Architecture Firmware Phases \cite[Figure 2-1]{pi-spec}}%
+    \label{fig:pi-phases}%
+\end{figure}
+
+
+\begin{enumerate}
+    \item{\acf{SEC}}
+
+    % The SEC phase is the first phase in the UEFI boot process. It is specified in \cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
+    ref to PSP
+
+    inductive security design
+    integrity of next module checked by the previous module
+
+    handles all platform restart events
+    applying power to system from unpowered state
+    restarting from active state
+    receiving exception conditions
+
+    creates temporary memory store
+    possibly CPU \ac{CAR}
+    cache behaves as linear store of memory
+    no evictions mode
+    every memory access is a hit
+    eviction not supported as main memory is not set up yet and would lead to platform failure
+
+
+    final step
+    Pass handoff information to the \ac{PEI} Foundation
+    % what is the PEI foundation
+    \begin{itemize}
+        \item state of platform
+        \item location and size of the \ac{BFV}
+        \item location and size of the temporary RAM
+        \item location and size of the stack
+        \item optionally one or more \acp{HOB} via the \ac{SEC} \ac{HOB} Data \ac{PPI}
+    \end{itemize}
+
+
+    Part of this process is a so called \ac{HOB} with a function pointer to a procedure to verify PE modules.
+
+    SEC Platform Information PPI
+    information about the health of the processor
+
+    SEC HOB Data PPI
+
+    \item{\acf{PEI}}
+
+    \begin{itemize}
+        \item init permanent memory
+        \item describe memory in \acp{HOB}
+        \item describe \ac{FV} in \acp{HOB}
+        \item pass control to \ac{DXE}
+    \end{itemize}
+
+    crisis recovery (what is this?)
+    resuming from S3 sleep state
+    linear array of RAM
+    \ac{PEIM} provides a framework to allow vendors to supply separate initialization modules for
+    each functionally distinct piece of system hardware that must be initialized prior to the DXE phase \cite{pi-spec}
+
+    % design goals
+    maintenance of chain of trust, protection against unauthorized updates to the PEI phase or modules
+    authentication of the PEI Foundation and its modules
+    provide core PEI module (PEI foundation) processor architecture independent, supports add-in moudles from vendors for processors, chipsets, RAM
+
+    % what it does
+    Locating, validating, and dispatching PEIMs
+    Facilitating communication between PEIMs
+    Providing handoff data to subsequent phases
+
+    \item{\acf{DXE}}
+
+    dxe core/foundation
+    platform independent
+    is implementation of UEFI
+    UEFI Boot Services
+    UEFI Runtime Services
+    DXE Services
+
+    dxe dispatcher
+    discover drivers stored in firmware volumes and execute in proper order
+    apriori file optionally in FV or depex of driver
+    after dispatching all drivers in the dispatch queue hands control over to BDS
+
+    dxe drivers
+    init processor, chipset and platform
+    produce arichtectural protocols and \ac{I/O} abstractions for consoles and boot devices
+
+    % responsibilities
+    initializing the processor, chipset, and platform components
+    providing software abstractions for system services, console devices, and boot devices.
+
+    \item{\acf{BDS}}
+
+    DXE arichtectural protocol
+    one function entry
+    platform boot
+
+    attempts to connect boot devices required to load the os
+    discovers volumes containing new drivers
+    calls DXE dispatcher
+    doesnt return when successfully booting OS
+
+    UEFI itself only specifies the NVRAM variables used in selecting boot options
+    leaves the implementation of the menu system as value added implementation space \cite{uefi-spec}
+
+    \cite{pi-spec}
+
+    \begin{itemize}
+        \item Initializing console devices
+        \item Loading device drivers
+        \item Attempting to load and execute boot selections
+    \end{itemize}
+
+    \item{\acf{TSL}}
+
+    boottime and runtime services/driver
+    bootloader
+    \cite[13.3 System Partition]{uefi-spec}
+    \cite[3.5.1.1]{uefi-spec}
+
+    ExitBootServices()
+
+    \item{\acf{RT}}
+
+    runtime services/driver
+
+    \item{\acf{AL}}
+
+    hibernation
+    sleep
+
+\end{enumerate}
+
+\subsection{\acs{UEFI}/\acs{PI} Firmware Images}
+
+% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
+\cite[Volume 3, 2.1]{pi-spec}
+
+\includegraphics[width=\textwidth]{flash_device}
+\ac{FD}
+persistent
+physical device
+contains firmware code and/or data
+typically flash
+may be divided into smaller pieces to form multiple logical firmware devices
+multiple physical firmware devices may be aggregated into one larger logical firmware device
+
+\acf{FV}
+logical device
+organized into a file system
+attributes such as
+- size
+- formatting
+- read/write access
+
+\acf{FFS}
+organization of files and free space
+no dierectory hierarchy
+all files flat in root dir
+parsing requires walking for beginning to end
+
+firmware files
+types
+% PEI_CORE
+% PEIM
+% DXE_CORE
+% DRIVER
+% FIRMWARE_VOLUME_IMAGE
+% FREEFORM
+
+some file types are sub-divided in file sections
+
+file sections can be either
+encapsulation or leaf
+leaf sections such as
+PE32
+% DXE_DEPEX
+% PEI_DEPEX
+RAW
+VERSION
+TE
+
+dxe drivers files
+contain one PE32 executable section
+may contain version section
+may contain dxe depex section
+
+freeform files
+can contain any combination of sections
+
+PEI phase Service Table
+FfsFindNextFile, FfsFindFileByName and FfsGetFileInfo
+
+DXE phase
+% EFI_FIRMWARE_VOLUME2_PROTOCOL
+
+depex
+
+\cite{tianocore-edk2-build-spec}

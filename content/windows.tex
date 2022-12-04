@@ -1,10 +1,10 @@
-% !TeX root = ../../thesis.tex
+% !TeX root = ../thesis.tex
 
-\section{Windows}
+\chapter{Windows 11}
 
+\TODO{what is 11 compared to 10}
 
-
-\subsection{Installation}
+\section{Installation}
 
 For us to understand how UEFI threats act towards Windows we need to understand how the layout of the Windows installation integrates into the UEFI environment.
 % uefi begins with windows installation
@@ -19,7 +19,7 @@ The \ac{BCD}, as its name suggests, contains arguments used to configure various
 The boot partition is the primary Windows partition and is formatted with the \ac{NTFS} file system containing the Windows installation.
 This is also the location of the final step of the Windows UEFI boot process, \lstinline{Windload.efi}, the application repsonsible for loading the kernel into memory \cite[12. The Windows OS Loader]{windows-internals-7-part2}.
 
-\subsection{Boot Process}
+\section{Boot Process}
 
 Now that we established the basic structure of the Windows UEFI boot environment, we can discuss the boot process.
 The Windows boot process begins after the UEFI Boot Manager launches the Windows Boot Manager, which starts by retrieving its own executable path and the \ac{BCD} entry GUID from the boot load options.
@@ -38,7 +38,7 @@ If this faile it will show a reocvery prompt, otherwise it proceeds to load the 
 \cite[12. Launching a boot application]{windows-internals-7-part2}
 
 
-\subsection{Registry}
+\section{Registry}
 
 A crucial part to the whole Windows ecosystem is the Registry, it is a system database containing information required to boot, such as what drivers to load, general system wide configuration as well as application configuration.
 \cite[1. Registry]{windows-internals-7-part1}
@@ -62,7 +62,7 @@ windows also has a feature called Encrypting File System (EFS) with file system 
 % \subsection{User Access Control (UAC)}
 % https://learn.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 
-\subsection{Trusted Boot}
+\section{Trusted Boot}
 % https://learn.microsoft.com/en-us/windows/security/information-protection/secure-the-windows-10-boot-process
 % https://learn.microsoft.com/en-us/windows/security/trusted-boot
 % https://www.anoopcnair.com/understanding-windows-trusted-boot/
@@ -70,7 +70,7 @@ windows also has a feature called Encrypting File System (EFS) with file system 
 \subsubsection{HVCI}
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
 
-\subsection{\acf{BDE}}
+\section{\acf{BDE}}
 \label{sec:bde}
 Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
 Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
@@ -94,7 +94,7 @@ The \ac{VMK} is encrypted by the following protectors:
         - tpm with startup key and PIN
         \cite{microsoft-bitlocker-countermeasures}
         with tpm ensures integrity of early boot components and boot configuration
-        tpm usage requires \ac{TCG2} compliant \ac{UEFI} firmware \cite[9. TPM]{windows-internals-6-part2}
+        tpm usage requires \ac{TCG}2 compliant \ac{UEFI} firmware \cite[9. TPM]{windows-internals-6-part2}
 
         tpm is used to \emph{seal} and \emph{unseal} \ac{VMK}
         \TODO{PCR table either here or at TPM section}
