@@ -158,7 +158,7 @@ Execution does not trigger the BitLocker recovery prompt anymore.
 
 When either the BitLocker validation profile is misconfigured or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
 But we don't have access to a recovery key and in turn no access to the drive.
-In the cause of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
+In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery keys.
 
 hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication

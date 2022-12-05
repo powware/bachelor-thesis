@@ -180,12 +180,13 @@ To verify the privileges our payload is executed with, we can save the output of
 The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
 After manually triggering the task through the configuration tool, we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
 
-% \TODO{whoami /all snippet}
+\TODO{whoami /all snippet}
 
 % chntpw and reged
 % edit Task in machine under Control
 We can use this exported key and import it on our victim's system as part of our attack.
-To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local windows user accounts \cite{chntpw}.
+This way, instead of modifying a single value of the registry key, the victim's key maintains its integrity as we also overwrite the hash value with correct data.
+To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local Windows user accounts \cite{chntpw}.
 The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
 % test
 % dual boot
