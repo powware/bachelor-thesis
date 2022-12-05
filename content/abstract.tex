@@ -15,7 +15,7 @@ Their appearances in the wild are rare as they are stealthy by nature. We catego
 % approach
 With a deep-dive into the UEFI environment we learn hands on about encountered security mechanisms targeting pre-boot attacks, setting our focus on Secure Boot and TPM-assisted BitLocker.
 % results
-We were able to achieve system level privileged execution on Windows 11 by exploiting unrestricted hard drive access to deploy our payload and modify the Windows Registry. With BitLocker, our \emph{BitLogger} was able to decrypt and mount the drive using a keylogged Recovery Key, or when part of the chain of trust using a VMK sniffed from TPM communication.
+We were able to achieve system level privileged execution on Windows 11 by exploiting unrestricted hard drive access to deploy our payload and modify the Windows Registry. With BitLocker enabled, our \emph{BitLogger} was able to decrypt and mount the drive using a keylogged Recovery Key, or when part of the chain of trust using a VMK sniffed from TPM communication.
 % conclusions
 UEFI threats are very powerful and discredit all system integrity, making it impossible to put any further trust into the system.
 

@@ -16,7 +16,7 @@ Additionally, during execution of the Windows Boot Manager, the BitLocker recove
 % tpm values differ
 % measured pcrs
 % not unsealing vmk with tpm
-This happens due to \ac{TPM} \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve an unencrypted \ac{VMK} from the \ac{TPM} and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
+This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
 
 \begin{figure}[htb]
     \centering
@@ -25,29 +25,23 @@ This happens due to \ac{TPM} \ac{PCR} values differing from what was initially u
     \label{fig:bitlocker-recovery-prompt}
 \end{figure}
 
-In theory this is as far as we get, BitLocker in combination of \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks by discovering a deviation in the boot flow.
-% what is the reaction of the average user
-In practice we have to ask ourselves the question how a user reacts to seeing the BitLocker recovery prompt and the consequences to the action the user takes.
-As an immediate reaction the user has two options: entering the recovery key into the prompt or not entering the recovery key.
-% motivation behind user decision
-What decision the user makes is dependent on their tech savviness and influenced by a variety of factors such as urgency of booting into Windows, knowing alternatives to what the prompt tells them.
-It is reasonable to assume that the average user is willingly entering their recovery key in response to the prompt as the prompt does not suggest any malicious causes or any negative repercussions in following the instructions.
-The link mentioned in the prompt also only aids in locating the recovery key \cite{microsoft-recovery-key-faq}.
-\TODO{mention microsofts reasons for the prompt to be triggered}
-\TODO{what is the actual alternative}
-% does the user trust the system
-% why would they not trust the system
-% (ask admin for recovery password)
-% type in recovery password
-% alternative would be to remove drive and insert into safe device
+BitLocker with \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks and maintains system integrity by discovering deviations in the boot flow.
+But how does the user react to this, after all it is asking them to enter the recovery key to resume booting and not throw out their motherboard.
+There are a few options for a user to proceed, they either trust the system and enter their recovery key, mistrust the operating system or mistrust the entire system.
+If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation.
+In the case of our bootkit this gets rid of the threat, but the rootkit remains in the firmware image and would be part of the chain of trust for the fresh installation.
+If they were to mistrust the whole system, they could recover data from the drive with another system, being careful not to accidentally boot from the drive.
+This would deny both our rootkit and bootkit any further access to any sensitive data.
 
+We can look at how the user is influenced in their decision, taking a closer look at the recovery prompt in \autoref{fig:bitlocker-recovery-prompt}, we see that the message suggests a configuration change might have caused the prompt to appear. It is hinting the user that the removal of a disk or \ac{USB} stick might fix the issue (a bootable medium might change boot behavior, invalidating the \acp{PCR}). Of course this will not resolve anything in the case of an infection, but that is all the information displayed about what might have caused the issue. The rest is only about helping the user to find their recovery key to enter.
+This is ground enough to argue that is very reasonable to assume that the average user will react by entering their recovery key without having any malicious behavior in mind.
 
 
 \subsection{Approach}
 
 When the user enters their recovery key the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} meta data entry, that was encrypted using the recovery key when BitLocker was set up.
 It then proceeds to access the bitlocked \ac{NTFS} drive containing the \lstinline{Windload.efi} \ac{OS} loader.
-This all still happens in the \ac{UEFI} boottime environment, before \lstinline{ExitBootServices} was called.
+This all still happens in the \ac{UEFI} boottime environment, before \lstinline{ExitBootServices} is called.
 Unfortunately we are still unable to access the Windows installation, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
 
 \subsubsection{BitLogger}
@@ -110,18 +104,10 @@ The \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is onl
 So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts.
 We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
 The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
-Keeping in mind the fact, that the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}, we can depict the \ac{NTFS} protocol stack in \autoref{fig:uefi-volume-access-protocol-stack}.
-
-\begin{figure}[htb]%
-    \centering
-    \includesvg{uefi_volume_access_protocol_stack.drawio.svg}
-    \caption{\ac{UEFI} Volume Access Protocol Stack}%
-    \label{fig:uefi-volume-access-protocol-stack}%
-\end{figure}
-
-It becomes obvious that all file-wise operations are, is multiple layers of abstraction ontop of block-wise access to the media, performed through the \emph{Block \ac{I/O} Protocol}.
+Keeping in mind the fact, that the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}.
+It becomes obvious that all file-wise operations are, is multiple layers of abstraction on top of block-wise access to the underlying media, performed through the \emph{Block \ac{I/O} Protocol}.
 Inspired by the BitLocker filter driver in \autoref{fig:bitlocker-volume-access-driver-stack}, which de- and encrypts each block as it passes through, we hook the \emph{Block \ac{I/O} Protocol} functions \lstinline{ReadBlocks} and \lstinline{WriteBlocks}, their signatures are shown in \autoref{lst:block-io-protocol}.
-We then perform Dislocker operations on writes and reads \autoref{fig:dislocker-volume-access-protocol-stack}.
+We can then use Dislocker on read and write operations to implement our own filter driver as shown in \autoref{fig:dislocker-volume-access-protocol-stack}.
 
 
 \begin{figure}[htb]%
@@ -146,7 +132,10 @@ With BitLocker we have to deploy after our BitLogger was able to obtain the reco
 After initializing Dislocker with the recovery key we enable the transparent \emph{Block \ac{I/O} Protocol} hook layer, so we can trigger the \ac{NTFS} driver to (re-)evaluate which device handles it supports.
 The BitLocker encrypted drive now appearing unencrypted allows the driver to install its \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} instance.
 This allows us to deploy the payload and import our modified registry key.
-After doing this we need to disable the Dislocker layer again, as otherwise Windows gets confused, showing a second recovery prompt, but now outside of the \ac{UEFI} environment.
+After doing this we need to disable the Dislocker layer again, as otherwise Windows is unable to boot and instead attempts Windows recovery, showing a second recovery prompt, but now outside the \ac{UEFI} environment with their own device drivers.
+This recovery environment is located on the unencrypted \ac{NTFS} partition created during installation and also accessible when pressing the escape key during the initial \ac{UEFI} environment recovery prompt.
+We want to prevent the user from using this prompt instead of the \ac{UEFI} prompt, as our \emph{BitLogger} would not be able to obtain the recovery key.
+This can be done in our \lstinline{ReadKeyStrokeEx} hook, where when a user presses escape we instead return another key to the Windows Boot Manager.
 
 % only necessary because the way dislocker currently checks whether the recovery key is correct is slow and impacts the user experience during recovery prompt
 \TODO{if we want we can explain this}
@@ -157,11 +146,19 @@ write payload
 import registry key
 disable hook
 
-If we were to attack Windows 10 we would be done now, but Windows 11 will show the recovery prompt every boot because the \ac{UEFI} payload keeps invalidating the \ac{PCR} values. Windows 10 seems to automatically reseal the \ac{VMK}, whereas Windows 11 doesn't, but this is nothing our Windows payload can't fix. We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \cite{microsoft-bitlocker-manage-bde}, deleting the old \ac{TPM} protector and adding a new one.
 
-\subsubsection{BitLocker access as trusted execution}
+% finally update TPM values
+If we were to attack Windows 10 we would be done now, but Windows 11 will show the recovery prompt every boot.
+Windows 10 seems to automatically reseal the \ac{VMK}, whereas Windows 11 doesn't, so our \ac{UEFI} payload keeps invalidating the \ac{PCR} values.
+We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \cite{microsoft-bitlocker-manage-bde} within our Windows payload, deleting the old \ac{TPM} protector and adding a new one.
+Now our \ac{UEFI} payload is part of the measurements and considered trusted.
+Execution does not trigger the BitLocker recovery prompt anymore.
 
-We now cover the scenario where our \ac{UEFI} payload is executed but the BitLocker recovery prompt is not triggered, either through a misconfigured validation profile or the \ac{TPM} protector already including our \ac{UEFI} payload in its \ac{PCR} measurements. This leaves the Windows Boot Manager able to decrypt the driver, but we don't have access to a recovery key and in turn no access to the drive.
+\subsubsection{Access from within the chain of trust}
+
+When either the BitLocker validation profile is misconfigured or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
+But we don't have access to a recovery key and in turn no access to the drive.
+In the cause of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
 
 hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication
@@ -169,5 +166,6 @@ hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 receive bitlocker \ac{VMK} key and send to dislocker
 \cite{bde-format-spec}
 \cite{tpm-sniffing}
-
 % https://labs.withsecure.com/publications/sniff-there-leaks-my-bitlocker-key
+
+This increases the persistence and applicability of our attack immensely.
