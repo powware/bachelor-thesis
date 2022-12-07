@@ -1,21 +1,51 @@
 % !TeX root = ../thesis.tex
 
 \chapter{Test Setup}
-
-\TODO{describe test setup}
-qemu + swtpm
+\label{sec:test-setup}
 
 fresh Windows 11 installation
+
+\section{\ac{QEMU}}
+\label{sec:test-setup:qemu}
+
+qemu + swtpm
+% for qemu we can build it ourselves
+If we want to use emulation we can build the \ac{OVMF} Package from EDK II which is a firmware image for virtual machines.
+% https://projectacrn.github.io/latest/tutorials/waag-secure-boot.html
+later found that only microsoft production Db should be used
+% https://learn.microsoft.com/en-us/troubleshoot/windows-server/deployment/pcr7-configuration-binding-not-possible
+
+\section{Lenovo Ideapad 5 Pro-16ACH6}
+\label{sec:test-setup:lenovo}
 
 Lenovo Ideapad 5 Pro-16ACH6
 
 % https://www.lenovo.com/de/de/laptops/ideapad/500-series/IdeaPad-5-Pro-16ACH6/p/88IPS501619?orgRef=https%253A%252F%252Fwww.google.com%252F
+
+microsoft device guard
+
+secure boot default keys
+
+\section{Flash access}
+
+This can be done by using a spi flash programmer and clamping the physical chip. \TODO{FLASHROM}
+
+\section{ASRock A520M-HVS}
+\label{sec:test-setup:asrock}
+
+\TODO{describe test setup}
+
+
 secure boot und bitlocker
-validation profiles
 
 % https://www.asrock.com/mb/AMD/A520M-HVS/index.asp#BIOS
 
-A520M-HVS 2.30
+A520M-HVS 2.30 latest firmware at time of writing
 Ryzen 5 5600X Zen 3
 
-secure boot und bitlocker
+secure boot default keys
+
+\section{Flash access}
+
+flashrom -p internal
+SPI chip emulator. \TODO{EM100}

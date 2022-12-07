@@ -222,16 +222,11 @@ The core functionality of our \ac{UEFI} payload is identical with the exception 
 
 \subsubsection{Infection}
 
-Infection with the rootkit is has a much higher barrier of entry, as it requires read and write access to the firmware image.
-We have to retrieve the image, insert our payload in the \ac{DXE} volume and deploy the modified image.
+Infection with the rootkit is has a much higher barrier of entry, as it requires read and write access to the firmware image, which often requires physical access.
+\autoref{sec:test-setup} potentially exploit \ac{OEM} specific flash mechanism, signing with stolen private key, part of the supply chain, might also be physical \TODO{LIST ALL OPTIONS}
 
-\TODO{properly list the options}
-This can be done by using a spi flash programmer and clamping the physical chip.
-Or using an SPI chip emulator.
-% for qemu we can build it ourselves
-If we want to use emulation we can build the \ac{OVMF} Package from EDK II which is a firmware image for virtual machines.
-
-Now that we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specificatoin \cite{uefitool}.
+We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
+When we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specification \cite{uefitool}.
 In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
 % remove previous NTFS driver if present, for full control, might be read only etc
 % in UEFITool search for string

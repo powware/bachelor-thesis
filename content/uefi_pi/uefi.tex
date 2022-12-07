@@ -12,6 +12,24 @@ datatables containing platform-related information
 - sharable persistent storage for platform support code
 security
 
+\subsection{\acf{GUID}}
+\ac{GUID}
+
+\subsection{\acf{GPT}}
+\ac{MBR} boot code, four partitions
+\ac{GUID} for uniquely identifying each partition
+\ac{GUID} for partition type content
+\ac{GPT}
+\ac{LBA}
+legacy \ac{MBR} or protective \ac{MBR}
+
+\cite[5]{uefi-spec}
+
+\subsection{\acf{ESP}}
+\ac{FAT}32 \cite[13.3]{uefi-spec}
+can reside on any media that is supported by EFI Boot Services
+\cite[13.3.1]{uefi-spec}
+
 
 \subsection{\acs{UEFI} Images}
 
@@ -123,21 +141,6 @@ system tables offers boot and runtime services
 supplied by drivers implementing arichtectural protocols % how to uefi buch zitat
 \subsubsection{Boottime Services}
 \subsubsection{Runtime Services}
-
-\subsection{\acf{GPT}}
-\ac{MBR} boot code, four partitions
-\ac{GUID} for uniquely identifying each partition
-\ac{GUID} for partition type content
-\ac{GPT}
-\ac{LBA}
-legacy \ac{MBR} or protective \ac{MBR}
-
-
-\cite[5]{uefi-spec}
-\subsection{\acf{ESP}}
-\ac{FAT}32 \cite[13.3]{uefi-spec}
-can reside on any media that is supported by EFI Boot Services
-\cite[13.3.1]{uefi-spec}
 
 \subsection{Boot Manager}
 

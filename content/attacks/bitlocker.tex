@@ -3,7 +3,7 @@
 
 Our final attack will be targeted against systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 an no additional PIN or startup key.
 This leaves the Windows boot partition encrypted, the \ac{ESP} is left unencrypted, thus not affecting the bootkit installation process.
-Secure Boot can be enabled in combination of BitLocker having the same effects on this attack as described in the second attack \autoref{sec:attack-secure-boot}.
+Secure Boot can be enabled in combination of BitLocker having the same effects on this attack as described in the second attack \autoref{sec:attack:secure-boot}.
 Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two.
 We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
 
@@ -51,7 +51,7 @@ We can achieve this by logging the keystrokes performed by a user entering the k
 Since we still are in the \ac{UEFI} boottime environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input.
 \ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{print} statement to the implementation in the \ac{OVMF} source code, this change alone triggers the recovery prompt bcause of \ac{PCR} value changes.
 A keystroke now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
-The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending keypress.
+The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending key press.
 The protocol offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service.
 
 
@@ -76,16 +76,17 @@ We coin this BitLocker specific keylogger \emph{BitLogger}.
 
 \lstinputlisting[language=C,caption={Example usage of the \lstinline{HandleProtocol} Boot service},captionpos=b,label=lst:handle-protocol]{code/handle_protocol.c}
 
-The BitLocker recovery prompt does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
+We want to use the recovery key programmatically, so we can't simply log all key presses in chronological order and evaluate them by hand later.
+The BitLocker recovery prompt has a few rules and does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
 Each block must be divisible by 11 \cite[9. BitLocker Key Recovery]{windows-internals-6-part2}.
-For this reason we have to implement internal tracking of the cursor advancement.
-Another reason for the tracking is the fact, that the cursor can be used to increment and decrement the current digit by using the up and down arrow keys. Another fun fact is that the function keys (F1-F10) are also accepted as input, with F10 mapping to zero.
+For this reason and because the cursor can be used to increment and decrement the current digit by using the up and down arrow keys, we have to implement internal tracking of the cursor advancement.
+The recovery prompt in \autoref{fig:bitlocker-recovery-prompt} also tells us, that the function keys (F1-F10) are accepted as input, with F10 mapping to zero, so we have to log these key presses as well.
 
 \subsubsection{Dislocker}
 
-To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted paritions under Linux supporting read and write access \cite{dislocker}.
+To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted partitions under Linux supporting read and write access \cite{dislocker}.
 
-In \autoref{sec:bde} we discussed, how the BitLocker filter driver integrates into the Windows.
+In \autoref{sec:windows:bde} we discussed, how the BitLocker filter driver integrates into the Windows.
 To integrate Dislocker into \ac{UEFI} start by analyzing how the \ac{NTFS} driver works.
 We can start by checking the \lstinline{.inf} file of the driver, which declares which protocol \acp{GUID} are consumed and produced by the driver.
 Ignoring ones that are not further used in code have the following list:
@@ -101,7 +102,7 @@ Ignoring ones that are not further used in code have the following list:
 
 The \emph{Device Path to Text Protocol} is just a self-explanatory utility protocol and not related to media access, so we can ignore it as well.
 The \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only produced, as in installed onto handles it supports and can offer the protocol on.
-So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts.
+So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts.
 We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
 The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
 Keeping in mind the fact, that the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}.
@@ -155,6 +156,9 @@ Now our \ac{UEFI} payload is part of the measurements and considered trusted.
 Execution does not trigger the BitLocker recovery prompt anymore.
 
 \subsubsection{BitLocker Access without Recovery Prompt}
+
+% https://learn.microsoft.com/en-us/troubleshoot/windows-server/deployment/pcr7-configuration-binding-not-possible
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#allow-secure-boot-for-integrity-validation
 
 When either the BitLocker validation profile is misconfigured or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
 But we don't have access to a recovery key and in turn no access to the drive.
