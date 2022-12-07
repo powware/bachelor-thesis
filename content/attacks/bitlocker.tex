@@ -154,7 +154,7 @@ We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \
 Now our \ac{UEFI} payload is part of the measurements and considered trusted.
 Execution does not trigger the BitLocker recovery prompt anymore.
 
-\subsubsection{Access from within the chain of trust}
+\subsubsection{BitLocker Access without Recovery Prompt}
 
 When either the BitLocker validation profile is misconfigured or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
 But we don't have access to a recovery key and in turn no access to the drive.
