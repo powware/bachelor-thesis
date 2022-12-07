@@ -21,6 +21,50 @@ focus will be on dxe and transient system load
 
 \begin{enumerate}
     \item{\acf{SEC}}
+    The Security phase is the first code executed by the CPU, it is uncompressed and executed directly from flash. It consists of platform specific assembly.
+
+    \begin{itemize}
+        \item  Handles all platform restart events (power on, wakup from sleep, etc)
+        \item  Creates a temporary memory state by configuring the CPU Cache as RAM (CAR) "no evictions mode"
+        \item  Serves as the root of trust in the system
+        \item  Passes handoff information to the Pre-EFI Initialization (PEI) Foundation
+    \end{itemize}
+
+
+    Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
+
+    \begin{itemize}
+        \item Populates Reset Vector Data structure
+        \item Saves Built-in self-test (BIST) status
+        \item Enables protected mode (16 bit -> 32 bit)
+        \item Configures temporary RAM (not only limited in processor cache) by using MTRR to configure CAR.
+    \end{itemize}
+
+    Passing of handoff information to the PEI phase:
+
+    \lstinline{typedef VOID EFIAPI (*EFI_PEI_CORE_ENTRY_POINT)(IN CONST EFI_SEC_PEI_HAND_OFF *SecCoreData, IN CONST EFI_PEI_PPI_DESCRIPTOR *PpiList);}
+
+    SEC Core Data:
+    \begin{itemize}
+        \item Points to a data structure containing information about the operating environment:
+        \item Location and size of the temporary RAM
+        \item Location of the stack (in temporary RAM)
+        \item Location of the Boot Firmware Volume (BFV)
+    \end{itemize}
+
+
+    PPI list:
+    \begin{itemize}
+
+        \item Temporary RAM support PPI
+
+              An optional service that moves temporary RAM contents to permanent RAM.
+
+        \item SEC platform information PPI
+
+              An optional service that abstracts platform-specific information to locate the PEIM dispatch order and maximum stack capabilities.
+    \end{itemize}
+
 
     % The SEC phase is the first phase in the UEFI boot process. It is specified in \cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
     ref to PSP
@@ -61,6 +105,69 @@ focus will be on dxe and transient system load
     SEC HOB Data PPI
 
     \item{\acf{PEI}}
+    Configures a system meeting the minimum prerequisites for the Driver Execution (DXE) phase, which is generally a linear array of RAM large enough for successful execution.
+
+    PEI provides a framework allowing vendors to supply initialization modules for each functionally distinct piece of system hardware which must be initialized before the DXE phase.
+
+    PEI design goals of the PI architecture:
+    \begin{itemize}
+        \item Maintenance of the "chain of trust", includes protection and authorization of PEI modules
+        \item Provide a core PEI module
+        \item Independent developement of intialization modules
+    \end{itemize}
+    The PEI phase consists of the PEI Foundation core and specialized plug-ins known as Pre-EFI Initialization Modules (PEIMs).
+
+    Since the PEI phase is very early in the boot process it can't assume reasonable amounts of RAM so the features are limited:
+    \begin{itemize}
+        \item Locating, validating and dispatching PEIMs
+        \item Communication between PEIMs
+        \item Providing Hand-Off Data for DXE phase
+        \item Initializing some permanent memory complement
+        \item Describing the memory in Hand-Off Blocks (HOBs)
+        \item Describing the firmware volume locations in HOBs
+        \item Passing control into the Driver Execution Environment (DXE) phase
+        \item Discover boot mode and possibly resume from sleep state
+    \end{itemize}
+    PEI Service Table visible to all PEIMs in the system, a pointer to this table is passed as an argument via the PEIM entry point, it is also part of each PEIM-to-PEIM Interface (PPI).
+
+
+    % | Service                  | Description                                                                                                                                 |
+    % | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+    % | PPI Services             | Manages PPIs to facilitate intermodule calls between PEIMs. Interfaces are installed and tracked on a database maintained in temporary RAM. |
+    % | Boot Mode Services       | Manages the boot mode (S3, S5, normal boot, diagnostics, etc.) of the system                                                                |
+    % | HOB Services             | Creates data structures called Hand-Off Blocks (HOBs) that are used to pass information to the next phase of the PI Architecture.           |
+    % | Firmware Volume Services | Finds PEIMs and other firmware files in the firmware volumes                                                                                |
+    % | PEI Memory Services      | Provides a collection of memory management services for use both before and after permanent memory has been discovered                      |
+    % | Status Code Services     | Provides common progress and error code reporting services (for example, port 080h or a serial port for simple text output for debug).      |
+    % | Reset Services           | Provides a common means by which to initiate a warm or cold restart of the system.                                                          |
+
+    % #### PEI Foundation/Core
+
+    PEI Foundation code is portable across all platforms of a given instruction-set. The set of exposed services is the same across different microarchitextures and allows PEIMs to be written in C.
+
+    - Dispatches PEIMs
+    - Maintains boot mode
+    - Initializes permanent memory
+    - Invokes DXE loader
+
+    % #### PEI Dispatcher
+
+    The PEI Dispatcher evaluates dependencies of PEIMs in the firmware volume, these dependencies are PPIs. The Dispatcher holds internal state machines to check dependencies of PEIMs, it starts executing PEIMs whose dependencies are statisfied to build up dependencies of other PEIMs, this is done until the dispatcher cannot invoke any more PEIMs. Then the DXE Initial Program Loader (IPL) PPI is invoked to pass control to the DXE phase.
+
+    % #### Pre-EFI Initialization Modules (PEIMs)
+    PEIMs are specialized drivers that personalize the PEI Foundation to the platform. They are analogus to DXE driver and generally correspond to the components being initialized. It is strongly recommended that PEIMS do only the minimum necessary work to initialize the system to a state that meets the prerequisites of the DXE phase. PEIMs reside in firmware volumes (FVs).
+
+    % #### PEIM-to-PEIM Interfaces (PPIs)
+    PEIMs communicate with each other using a structure called PPI. A PPI is a GUID pointer pair. The GUID is used to identifiy a certain service and the pointer provides access to data structures and services of the PPI.
+
+    % There are two kinds of PPIs:
+    % - Architectural PPIs
+    % - Additional PPIs
+
+    An architectural PPI is described in the PEI Core Interface Specification (CIS) and the GUID is known to the PEI Foundation. They typically provide a common interface to the PEI Foundation to a service with platform specific implementation.
+
+    An additional PPI is important for interoperability but isn't required by the PEI Foundation, they can be classified as mandatory or optional.
+
 
     \begin{itemize}
         \item init permanent memory
@@ -87,6 +194,28 @@ focus will be on dxe and transient system load
 
     \item{\acf{DXE}}
 
+
+    % - DXE Foundation/Core
+    % - DXE Dispatcher
+    % - DXE Drivers
+
+    % #### DXE Foundation
+
+    The DXE Foundation produces a set of Boot, Runtime and DXE Services and exposes them through handle databases in the EFI System Table. It is designed to be completely portable, independent of processor, chipset and platform. The only dependent of the Hand-Off Blocks from the PEI phase, after these are processed the all prior phases can be unloaded.
+
+    % #### DXE Dispatcher
+
+    The DXE Dispatcher discovers DXE drivers within the Firmware Volume (FV) and executes them in the correct order, respecting their dependencies towards each other. The Firmware Volume file format allows the DXE driver images to be packaged with expressions about their dependencies. Since the DXE Drivers are PE/COFF images the dispatcher comes with an apropriate loader to load and execute the image format.
+
+    % #### DXE Drivers
+
+    % - Drivers that execute very early in the DXE phase
+    % - Drivers that comply with the UEFI Driver Model
+
+    The DXE Drivers are responsible for initializing the processor, chipset,
+    and platform components as well as providing software abstractions for console and
+    boot devices in the form of services.
+
     dxe core/foundation
     platform independent
     is implementation of UEFI
@@ -108,6 +237,14 @@ focus will be on dxe and transient system load
     providing software abstractions for system services, console devices, and boot devices.
 
     \item{\acf{BDS}}
+    The DXE Foundation will hand control to the BDS Architectural Protocol after all of the DXE drivers whose dependencies have been satisfied have been loaded and executed by the DXE Dispatcher.
+
+    % - Initializing console devices based on the ConIn, ConOut, and StdErr environment variables
+    % - Loading device drivers listed in the DriverOrder environment variables
+    % - Attempting to load and execute boot selections list from the BootOrder environment variables
+
+    During the BDS phase new Firmware Volumes (FV) might be discovered and control is once again handed to the DXE Dispatcher to load drivers found on these additional volumes.
+
 
     DXE arichtectural protocol
     one function entry
@@ -131,6 +268,10 @@ focus will be on dxe and transient system load
 
     \item{\acf{TSL}}
 
+    The Transient System Load (TSL) is primarily the OS vendor provided boot loader. Both the TSL and the Runtime Services (RT) phases may allow access to persistent content, via UEFI drivers and UEFI applications. Drivers in this category include PCI Option ROMs.
+
+    This phase ends when an OS boot loader calls 'ExitBootServices()'.
+
     boottime and runtime services/driver
     bootloader
     \cite[13.3 System Partition]{uefi-spec}
@@ -139,10 +280,13 @@ focus will be on dxe and transient system load
     ExitBootServices()
 
     \item{\acf{RT}}
+    Boot service drivers have been unloaded and only runtime services are accessible.
+
 
     runtime services/driver
 
     \item{\acf{AL}}
+    The After Life (AL) phase consists of persistent UEFI drivers used for storing the state of the system during the OS orderly shutdown, sleep, hibernate or restart processes.
 
     hibernation
     sleep
@@ -150,6 +294,11 @@ focus will be on dxe and transient system load
 \end{enumerate}
 
 \subsection{\acs{UEFI}/\acs{PI} Firmware Images}
+
+Firmware Images are stored in Flash Devices (FD), a Firmware Volume (FV) serves as file level interface. Usually multiple FVs are present in a single FD but a signle FV can also be distributed via multiple FDs.
+A FV is formatted with a binary file system, typically with Firmware File System (FFS).
+
+In a FFS modules are stored as files, they can be executed at the fixed address from Read Only Memory (ROM) or through relocation in loaded memory. Within a file are multiple sections which then contain the "leaf" images. These are for example PE32 images.
 
 % https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
 \cite[Volume 3, 2.1]{pi-spec}

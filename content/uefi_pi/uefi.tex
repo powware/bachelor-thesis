@@ -16,30 +16,41 @@ security
 \subsection{\acs{UEFI} Images}
 
 % https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
+% files containing executable code
+% subset of PE32+ file format with modified header signature to distinguish from normal PE32 Images
+% + stands for addition of 64-bit relocation fix-up extension
+% relocatable
+% fixed and dynamic address loading
+% loaded fully into memory and reloaction fix ups
+% three different subsystems types: application, boot service driver and runtime service driver
+% boot and runtime memory
 
-files containing executable code
-subset of PE32+ file format with modified header signature to distinguish from normal PE32 Images
-+ stands for addition of 64-bit relocation fix-up extension
+% application vs os loader vs driver
+% memory they reside in
+% unloaded on return
+% unloaded on error
 
-relocatable
-fixed and dynamic address loading
-loaded fully into memory and reloaction fix ups
+% memory marked as code and data
+% jump to entry point
 
-three different subsystems types: application, boot service driver and runtime service driver
-boot and runtime memory
+Images that can be executed in the \ac{UEFI} environment are of the \ac{PE32}+ file format, which is a relocatable, meaning they can either be executed in place or loaded into arbitrary memory addresses.
+They support IA, ARM, RISC-V and x86 CPU architectures.
+There are three different subtypes of executables: applications, boot- and runtime drivers. They mainly differ by their memory type and how it behaves. Loading and transferring execution are two separate steps, so that security policies can be applied before executing a loaded image. Loading and execution of images are two separate steps, at first memory large enough to hold the image is allocated, then relocation fix-ups are \cite[2.1.1]{uefi-spec}
 
-application vs os loader vs driver
-memory they reside in
-unloaded on return
-unloaded on error
 
-memory marked as code and data
-jump to entry point
+UEFI Images are files containting executable code, they use a subset of the PE32+ (Microsoft Portable Executable and Common Object File Format Specification) format with a modified header signature. The format comes with relocation tables, this makes it possible that the images can be loaded at non predetermined addresses.
+
+The images come in three different types:
+- UEFI Applications
+- UEFI Boot Services Drivers
+- UEFI Runtime Drivers
+
+Main differences between these types is  how and where they reside in memory. Applications are always unloaded when they return execution while drivers are only unloaded when they return an error code. Boot Services are unloaded after the bootloader calls `ExitBootServices()` while Runtime Drivers remain.
 
 \subsubsection{\acs{UEFI} Applications}
 
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/readme.7/371_applications
-
+Applications
 example efi shell
 loaded by boot manager or other applications
 return or calling exit specifically
@@ -105,6 +116,8 @@ architecually defined variables are called Globally Defined Variables where vend
 relevant for secure boot and boot manager
 
 \subsection{Systemtable}
+The UEFI System Table is an important data structure, it provides access to system configuration information, boot services, runtime services and protocols.
+
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/33_uefi_system_table
 system tables offers boot and runtime services
 supplied by drivers implementing arichtectural protocols % how to uefi buch zitat
