@@ -1,3 +1,12 @@
 % !TeX root = ../thesis.tex
 
 \chapter{Results}
+
+We were able to implement \ac{UEFI} attacks in the form of a \ac{UEFI} firmware rootkit and a \ac{UEFI} bootloader rootkit (bootkit), with both being able to deploy Windows level payload from within the \ac{UEFI} environment using an \ac{NTFS} drivers.
+Through our \ac{UEFI} port of the \lstinline{reged} utility we were able to modify the Windows registry, so that our Windows payload is executed with the privileges of the built-in local system account.
+The execution is done by the Task Scheduler at system boot.
+With Secure Boot enabled we showed that our bootkit was denied execution, while the execution of our rootkit is left unaffected.
+Although restrictions are applied \ac{SPI} flash access.
+When BitLocker is used with a \ac{TPM} and the default validation profile \lstinline{0, 2, 4, 11} our root- and bootkit trigger the BitLocker recovery prompt, from which we were able to retrieve the recovery key to use it with our \ac{UEFI} port of Dislocker to mount the encrypted drive, allowing us to perform the same attack as on unencrypted drives.
+When our payload is part of the \ac{PCR} values used to encrypt the \ac{VMK} or when a misconfigured validation profile is used, we were able to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with Dislocker.
+We showed that Secure Boot, that Microsoft labels as the preferred configuration, forcing a default validation profile of \lstinline{7, 11} left the system vulnerable to \ac{TPM} sniffing through our rootkit.

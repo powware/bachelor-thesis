@@ -3,17 +3,14 @@
 \chapter{Test Setup}
 \label{sec:test-setup}
 
-fresh Windows 11 installation
+We perform our attacks against Windows 11 on three different setups, as even though all three \ac{UEFI} firmwares used, are \cite{pi-spec} compliant, there still are many things left up to the \acp{OEM} to decide, when implementing a firmware image.
 
-\section{\ac{QEMU}}
+\section{\acs{QEMU}}
 \label{sec:test-setup:qemu}
 
-qemu + swtpm
-% for qemu we can build it ourselves
-If we want to use emulation we can build the \ac{OVMF} Package from EDK II which is a firmware image for virtual machines.
-% https://projectacrn.github.io/latest/tutorials/waag-secure-boot.html
-later found that only microsoft production Db should be used
-% https://learn.microsoft.com/en-us/troubleshoot/windows-server/deployment/pcr7-configuration-binding-not-possible
+Our main development setup is an emulated environment using the emulator \ac{QEMU}\cite{qemu} together with the \ac{OVMF} image, from \ac{EDK}II (\lstinline{edk2-stable202208}).
+For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acs{CA} 2011} as \ac{KEK} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} from Microsoft. The former required for their \ac{UEFI} executables used during the Windows boot process \cite{microsoft-secure-boot-guidance} and the latter reserved for third party executables signed at Microsoft's discretion after manual review \TODO{better source}\cite{microsoft-uefi-signing}.
+In the attacks against BitLocker we use \emph{swtpm} for the emulation of a software \ac{TPM} \cite{swtpm}. Accessing the firmware image with this setup is just done through simple file access.
 
 \section{Lenovo Ideapad 5 Pro-16ACH6}
 \label{sec:test-setup:lenovo}
@@ -26,7 +23,6 @@ microsoft device guard
 
 secure boot default keys
 
-\section{Flash access}
 
 This can be done by using a spi flash programmer and clamping the physical chip. \TODO{FLASHROM}
 
@@ -45,7 +41,6 @@ Ryzen 5 5600X Zen 3
 
 secure boot default keys
 
-\section{Flash access}
 
 flashrom -p internal
 SPI chip emulator. \TODO{EM100}

@@ -110,7 +110,7 @@ The \ac{VMK} is encrypted by the following protectors:
         \TODO{PCR table either here or at TPM section}
         platform validation profile
         % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#allow-secure-boot-for-integrity-validation
-        default \acp{PCR} 0, 2, 4, 11 without PCR7 binding and 7, 11 with
+        defaults are \acp{PCR} \lstinline|{7, 11}| with PCR7 binding  \lstinline|{0, 2, 4, 11}| without PCR7 binding
         11 is required
     \item[Recovery key] recovery key 48 digits of 8 blocks
         block is converted to a 16-bit value making up a 128-bit key

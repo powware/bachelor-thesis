@@ -1,11 +1,15 @@
 \section{Bitlocker}
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
-Our final attack will be targeted against systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 an no additional PIN or startup key.
-This leaves the Windows boot partition encrypted, the \ac{ESP} is left unencrypted, thus not affecting the bootkit installation process.
-Secure Boot can be enabled in combination of BitLocker having the same effects on this attack as described in the second attack \autoref{sec:attack:secure-boot}.
+Our final attack will target systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 and no additional PIN or startup key configured.
+This leaves the Windows boot partition encrypted, the \ac{ESP} is remains unencrypted, thus not affecting the bootkit installation process.
+Secure Boot can be enabled in combination of BitLocker having the effects as observed in \autoref{sec:attack:secure-boot}, as well as additionally dictating the BitLocker default validation profile Windows uses as mentioned in \autoref{sec:windows:bde}.
+We perform our attack against both default profiles, starting with \lstinline|{0, 2, 4, 11}|.
+This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of the presence of a signature \ac{DB} other than \emph{Microsoft Windows Production PCA 2011}.
+The default validation profile \lstinline|{7, 11}| used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
 Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two.
 We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
+
 
 \subsection{Infection}
 
@@ -59,7 +63,7 @@ We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a techni
 \TODO{if we have time talk about downsides of function patching} \ac{UEFI} protocol hooking does not require such an invasive technique.
 When we take a closer look at how protocols are returned to their user we can see why.
 The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance, the latter additionally keeps track of the protocol users \cite[7.3. OpenProtocol]{uefi-spec}, \autoref{lst:handle-protocol} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[4.3. EFI System Table]{uefi-spec}.
-The input paremeters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure.
+The input parameters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure.
 When calling \lstinline{HandleProtocol} the value of the pointer is modified to point to the corresponding protocol instance.
 The protocol instance itself is previously allocated by a driver and installed onto the device handle in their Driver Binding Start function \TODO{Driver binding}.
 The driver assigns the function fields with functions residing in the driver's image.
@@ -156,13 +160,11 @@ Now our \ac{UEFI} payload is part of the measurements and considered trusted.
 Execution does not trigger the BitLocker recovery prompt anymore.
 
 \subsubsection{BitLocker Access without Recovery Prompt}
+\label{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}
 
-% https://learn.microsoft.com/en-us/troubleshoot/windows-server/deployment/pcr7-configuration-binding-not-possible
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#allow-secure-boot-for-integrity-validation
-
-When either the BitLocker validation profile is misconfigured or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
-But we don't have access to a recovery key and in turn no access to the drive.
-In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery keys.
+When either the BitLocker validation profile is misconfigured (for example \lstinline|{7, 11}|) or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
+We are unable to receive a recovery key as none has to be entered and in turn we cannot decrypt the drive.
+In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
 
 hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication
