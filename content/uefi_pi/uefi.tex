@@ -2,6 +2,8 @@
 
 \section{\acf{UEFI}}
 
+\TODO{MEMORY LAYOUT no memory protection, RWE everywhere}
+
 It was designed to replace the legacy \acl{BF} \ac{BIOS} \TODO{which wasnt very standardized}, while also providing backwards compatibility by defining the \acf{CSM} allowing \ac{UEFI} firmware to boot legacy \ac{BIOS} applications.
 
 boot- and runttime service functions for the bootloader and os to call
@@ -154,6 +156,7 @@ configured by non volatile variables
 boot manager = bds
 boot behavior
 \subsubsection{Boot Variables}
+\label{sec:uefi-pi:uefi:boot-manager:boot-variables}
 boot options variables
 boot options (network, simple file system protocol, load file)
 default boot behavior for simple file system protocol

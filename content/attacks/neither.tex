@@ -26,13 +26,11 @@ We then replace the original with our bootkit as well as drop all resources requ
 
 \TODO{dump a windows boot entry}
 Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed.
-% UEFI does not support NTFS
-For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
-We want to access the \ac{NTFS} formatted Windows boot partition, this requires an additional \ac{NTFS} driver due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[13.3.1.1]{uefi-spec}.
-The \ac{EDK} II reference implementation does not provide an \ac{NTFS} driver either.
 
 \subsubsection{File access}
 
+% UEFI does not support NTFS
+For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
 We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
@@ -112,17 +110,18 @@ Accessing folders and viewing their contents is possible but creation of a new f
 % find out its from windows having hibernation enabled by default
 % change source code to not fallback to read only when encountering hibernation file
 Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode.
-Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file.
+Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file. \TODO{this is might not be the hibernation file but something else}
+On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[13.5]{uefi-spec}.
 
-We now know that provided we get to load the \ac{NTFS} driver we can access a Windows installation and subsequently the entire data of unencrypted hard drives.
+We now know that provided we get to load the \ac{NTFS} driver we can now access a Windows installation and subsequently the entire data of unencrypted hard drives.
 Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
 
 % try to use ntfs-driver in code
 % this is our first rootkit iteration
 % payload will also be DXE driver
 % package payload in firmware image
-The next step is for our bootkit to use the NTFS driver to gain file system access and write our payload to the Windows installation.
-During our bootkit infection process we place the NTFS driver on the \ac{ESP}, so that our bootkit can load it.
+The next step is for our bootkit to use the \ac{NTFS} driver to gain file system access and write our payload to the Windows installation.
+During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
 In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[9.1 EFI Loaded Image Protocol]{uefi-spec}.
 This handle can then be used to call the Boot Services \lstinline{LoadImage} and \lstinline{StartImage} to load and execute the NTFS driver.
 Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} on their handles.
@@ -228,12 +227,6 @@ Infection with the rootkit is has a much higher barrier of entry, as it requires
 We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
 When we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specification \cite{uefitool}.
 In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
-% remove previous NTFS driver if present, for full control, might be read only etc
-% in UEFITool search for string
-Before adding our \ac{NTFS} driver we remove any other \ac{NTFS} driver that might already be packed in the image by \acp{OEM}, their version might be read-only or otherwise restricted and would inhibit our \ac{NTFS} driver from installing onto a device, if it were to load prior to ours.
-UEFITool conveniently offers a function to search through the entire firmware image.
-We can search for "NTFS" as a case-insensitive string, since most drivers either have a User Interface Section which contains a human-readable name for inspection tools like UEFITool \cite[Vol 3, 3.2.5]{pi-spec} or support the optional \emph{Component Name Protocol} which is part of the \ac{UEFI} Driver Model and returns the name of a driver \cite[11.5]{uefi-spec}.
-If this were to not suffice it is possible to search for the \ac{NTFS} magic number indicating that a volume is formatted with \ac{NTFS}, this number is the string \ac{NTFS} encoded in \ac{ASCII} followed by four white spaces \lstinline{ 'N', 'T', 'F', 'S', ' ', ' ', ' ', ' '} and likely contained by an \ac{NTFS} driver.
 % since files are part of file sections we cant drop in the .efi
 We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol 3, 2.1.4.1.4]{pi-spec}.
 % compile dxe driver within ovmf

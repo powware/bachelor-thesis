@@ -49,6 +49,8 @@ two parts
 verification of the boot image and verification of updates to the image security database
 \cite{tianocore-understanding-uefi-secure-boot-chain}
 
+Secure Boot uses the content of the SPI flash memory as its root of trust\cite{lojax}
+
 
 \subsubsection{Firmware Protection}
 
@@ -97,27 +99,35 @@ not dynamic and changeable across the boot,
 
 \begin{tabular}{ |c||c|  }
     \hline
-    \acs{PCR} Index & \acs{PCR} Usage                                                                                     \\
+    \acs{PCR} Index & \acs{PCR} Usage                                                                                          \\
     \hline
     \hline
-    0               & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs and PI Drivers                           \\
+    0               & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs and PI Drivers                                \\
     \hline
-    1               & Host Platform Configuration                                                                         \\
+    1               & Host Platform Configuration                                                                              \\
     \hline
-    2               & UEFI driver and application Code                                                                    \\
+    2               & UEFI driver and application Code                                                                         \\
     \hline
-    3               & UEFI driver and application Configuration and Data                                                  \\
+    3               & UEFI driver and application Configuration and Data                                                       \\
     \hline
-    4               & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                          \\
+    4               & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                               \\
     \hline
-    5               & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and GPT/Partition Table \\
+    5               & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and \ac{GPT}/Partition Table \\
     \hline
-    6               & Host Platform Manufacturer Specific                                                                 \\
+    6               & Host Platform Manufacturer Specific                                                                      \\
     \hline
-    7               & Secure Boot Policy                                                                                  \\
+    7               & Secure Boot Policy                                                                                       \\
+    \hline
+    8               & First \ac{NTFS} boot sector (volume boot record)                                                         \\
+    \hline
+    9               & Remaining \ac{NTFS} boot sectors (volume boot record)                                                    \\
+    \hline
+    10              & Boot Manager                                                                                             \\
+    \hline
+    11              & BitLocker Access Control                                                                                 \\
     \hline
 \end{tabular}
-\cite{tcg-pc-client-platform-firmware-profile-spec}
+\cite{tcg-pc-client-platform-firmware-profile-spec, winwos-internals-6-part2}
 
 % https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/media/image2.png
 

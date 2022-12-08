@@ -19,7 +19,8 @@ Rootkits set up a backdoor exploit and may deliver additional malware while leve
 There are different types of rootkits such as User Mode, Kernel Mode, Bootkits (bootloader rootkits), Hypervisor and Firmware rootkits.
 \cite{crowdstrike, techtarget}
 \TODO{consult abstract for similar definition, how easy uefi makes it to write hardware independent payload}
-Firmware rootkits targets the software running during the boot process, which is responsible for the system initialization. This is done before the operating system is executed making them particularly hard to find, they are also persistent across operating system installation or hard drive replacements.
+Firmware rootkits targets the software running during the boot process, which is responsible for the system initialization.
+This is done before the operating system is executed making them particularly hard to find, they are also persistent across operating system installation or hard drive replacements.
 \cite{crowdstrike}
 
 
@@ -36,6 +37,7 @@ implement a storage based ourselves
 analyse security mechanism to prevent these attacks by attempting an attack itself
 discuss security mechanisms we encounter
 increasing security mechanisms
+add onto past threats by attacking bitlocker
 reflect their weaknesses
 how to potentially evade them
 - analyse countermeasures against UEFI threats
@@ -47,7 +49,7 @@ how to potentially evade them
 -
 
 
-\section{Thesis Structure}
+\section{Overview}
 
 We start off in Chapter 2 by introducing all necessary knowledge about the \ac{UEFI} environment, defined by the \ac{UEFI} and \ac{PI} specifications, listing the interface and its implementation.
 This allows us to go over Windows~11's \ac{UEFI} installation and boot process as well as relevant security mechanisms in Chapter 3.

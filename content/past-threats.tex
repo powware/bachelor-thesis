@@ -5,79 +5,50 @@
 % https://www.blackhat.com/docs/asia-17/materials/asia-17-Matrosov-The-UEFI-Firmware-Rootkits-Myths-And-Reality.pdf
 % https://www.researchgate.net/profile/Anton-Sergeev-2/publication/269310822_Too_young_to_be_secure_Analysis_of_UEFI_threats_and_vulnerabilities/links/551306b50cf23203199aa237/Too-young-to-be-secure-Analysis-of-UEFI-threats-and-vulnerabilities.pdf
 
-scholar ranking
-bootkits and rootkits often share the same attack vector towards windows because they are executed prior and during windows boot
-
-UEFI threats can be catigorized by their attack vector into two groups: storage based and memory based attacks. Storage based attacks mostly gain access independent of the current state of the operating system by only modifying the disk's content before the operating system access these files. These attacks are often performed before any parts of the operating system are executed. Memory based attacks instead hook into the operating system's boot process to install their payload alongside operating system in memory.
+Before we implement our own \ac{UEFI} attacks, we first take a look how past \ac{UEFI} threats have approached this problem. The threats discussed range from actual attacks found in the wild and analyzed by security researchers, over attacks, which have similarly been implemented for research purposes, to tools to enable system owners more advanced control over their systems.
 
 \section{Infection}
 
-% https://arstechnica.com/information-technology/2022/04/bugs-in-100-lenovo-models-fixed-to-prevent-unremovable-infections/
+The infection is the most important part of an attack, as it dictates when and in what environment, with what privileges the \ac{UEFI} payload is executed.
 
 \subsection{Bootkit}
 
+Bootkits use the \ac{UEFI} Boot manager to gain execution on a system, there are a variety of methods using different options of the boot mechanism. \cite{finspy} backs up and replaces the Windows Boot Manager \lstinline{bootmgfw.efi} on the \ac{ESP}, while the path in the \hyperref[sec:uefi-pi:uefi:boot-manager:boot-variables]{boot entry} for Windows still contains the same file path. This forces the \ac{UEFI} boot manager to launch the bootkit when it decided to use the Windows boot entry. \cite{especter} patches the entrypoint of \lstinline{bootmgfw.efi} and its copy \lstinline{bootx64.efi} in the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path}, so that it executes malicious code upon launch. \cite{dreamboot} and \cite{efiguard} are more proof of concept than real attacks and suggest to be used from removable media, but they are also able to be added to the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path} on an \ac{ESP}, or generally added as their own boot entry \cite{efiguard}, as they are both applications which launch the Windows Boot Manager upon execution. \TODO{Generally it is possible to mount the \ac{ESP} from within Windows with administrative privileges}
+
 \subsection{Rootkit}
 
-\section{Approach}
-\subsection{Storage based}
 
-vector-edk
-
-% https://github.com/hackedteam/vector-edk
-
-LoJax
-
-% https://www.welivesecurity.com/wp-content/uploads/2018/09/ESET-LoJax.pdf
-
-rootkit
-documentation about firmware infection
+Firmware rootkits have been rarer and how exactly the firmware images were infected is often not known,
+\cite{vector-edk} requires booting the target machine from a USB key \cite{mosaicregressor}
+\TODO{SPI read/write} \cite{lojax}
+dump
 remove previous NTFS driver
-add malicious DXE driver
-has NTFS driver
-payload
-registry editor
-\lstinline{C:/Windows/SysWOW64/autoche.exe} is not executed with elevated privileges (can't update TPM values)
+add DXE drivers
+reflash image
 
-\lstinline{EFI_EVENT_GROUP_READY_TO_BOOT} (too early for BitLogger)
+The payload itself has usually simply been \ac{DXE} drivers residing in a firmware volume \cite{mosaicregressor, lojax}, as they are automatically executed by the \ac{DXE} dispatcher. \cite{efiguard} compiles its main \ac{UEFI} payload as a \ac{DXE} driver and suggesting its usage as a firmware rootkit. \cite{moonbounce} does something different and instead patches the \ac{DXE} Core over adding files to \acp{FV}. While the approach could fundamentally be done in the form of a \ac{DXE} driver, it makes tge detection harder \cite{moonbounce}.
 
+\section{Approach}
 
-MosaicRegressor
+We can categorize the threats by their attack vector, rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment prior to the Windows boot process. We found that their approach can mainly be divided into storage based and memory based attacks. Storage based attacks mostly gain execution in the operating system  environment by writing their payload into the Windows installation and modifying configuration data on disk. These attacks are often performed offline, before any parts of the operating system are executed. Memory based attacks instead hook into the operating system's boot process to execute malicious code alongside operating system in memory. For storage-based attacks we were only able to find examples of rootkits \cite{vector-edk, mosaicregressor, lojax}, memory-based attacks were performed by both root- and bootkit \cite{dreamboot, efiguard, especter, finspy ,moonbounce, cosmicstrand}. There is no technical limitation as we show in \autoref{sec:neiter:bootkit} when we implement our own storage-based bootkit, but more likely a general perference for memory-based attacks as they are more sophisticated. Storage-based attacks face more restrictions such as BitLocker and code integrity checks.
 
-% https://securelist.com/mosaicregressor/98849/
-% https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2020/10/07080558/MosaicRegressor_Technical-details.pdf
+\subsection{Storage-based}
 
-rootkit
-has NTFS driver
-\lstinline{C:/ProgramData/Microsoft/Windows/Start Menu/Programs/Startup}
-no registry editing, also not privileged
+Storage based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \lstinline{C:/Windows/SysWOW64/autoche.exe} and then modifies the registry entry \lstinline{HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
 
-\subsection{Memory based}
+\subsection{Memory-based}
 
-% https://github.com/quarkslab/dreamboot
-% https://github.com/Mattiwatti/EfiGuard
-% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
+It seems to be unique to \cite{especter} to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in memory.
+\cite{finspy, dreamboot} when executed load \lstinline{bootmgfw.efi} into memory and apply patches before launching it.
+\cite{efiguard}'s core functionality is the same for its root- and bootkit variant.
+A \ac{DXE} driver is loaded, either form the \ac{DXE} dispatcher or through an intermediary loader application.
+This driver then hooks the \ac{UEFI} boot service \lstinline{LoadImage}. When this is either called by the \ac{UEFI} boot manager or the loader application to load \lstinline{bootmgfw.efi}, it patches the bootloader in memory \cite{efiguard}. \cite{moonbounce} applies its patches within an \lstinline{ExitBootServices} hook.
 
-FinSpy
+The general approach is the same for all memory-based attacks, they propagate their malicious execution further up in the boot chain, by hooking when images are loaded. From \lstinline{bootmgfw.efi} to \ac{Winload.efi} to \lstinline{ntoskernel.exe}, the kernel image.
 
-% https://securelist.com/finspy-unseen-findings/104322/
-
-bootkit
-bootmgfw.efi replaced and orignal moved
-original bootloader patched in memory
-patches "function of the OS loader that transfers execution to the kernel"
-hooks the kernel's PsCreateSystemThread and which then creates an addtional thread decrypting the next stage and loading it
+Some attacks patch the kernel to disable Windows Driver signing and then install a kernel driver \cite{efiguard, especter}.
+Others deploy payload with elevated privileges \cite{finspy, dreamboot} or map code directly into kernel space \cite{moonbounce, cosmicstrand}.
 
 
-ESPecter
-% https://www.welivesecurity.com/2021/10/05/uefi-threats-moving-esp-introducing-especter-bootkit/
-
-bootkit
-
-
-MoonBounce
-
-% https://securelist.com/moonbounce-the-dark-side-of-uefi-firmware/105468/
-
-CosmicStrand
-
-% https://securelist.com/cosmicstrand-uefi-firmware-rootkit/106973/
+\TODO{memroy based vs storage is it really clear cut, some use combination}
+\TODO{not THAT importan but would be really cool, as it stands out as really exploiting rootkit capabilities}% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf

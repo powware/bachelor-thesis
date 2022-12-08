@@ -7,5 +7,6 @@
         "Tuxera",
         "UEFI"
     ],
-    "C_Cpp.clang_format_fallbackStyle": "Visual Studio"
+    "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
+    "editor.wordWrap": "on"
 }
