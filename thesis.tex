@@ -3,7 +3,6 @@
 % **************************************************
 \documentclass[%
     paper=A4,               % paper size --> A4 is default in Germany
-    onside,                 % onesite or twoside printing
     parskip=half,           % spacing value / method for paragraphs
     chapterprefix=true,     % prefix for chapter marks
     11pt,                   % font size
@@ -71,7 +70,6 @@
 \setcounter{page}{1}			% set page counter
 \pagestyle{scrheadings}			% header and footer style
 
-%\part{Example Part}
 \input{content/introduction}
 \input{content/uefi_pi/uefi_pi}
 \input{content/windows}
@@ -109,8 +107,8 @@
 
 \appendix\clearpage
 \input{content/appendix}       % INCLUDE: appendix
-
 \clearpage
+
 \input{content/acronyms}
 \clearpage
 

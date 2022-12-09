@@ -23,9 +23,14 @@ We have two ways to infect a system, we can either use a bootable medium such as
 This can be forced when booting into the \ac{BIOS} menu at startup, given that it is not password protected.
 The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}.
 We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
-\TODO{dump a windows boot entry}
-Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed.
+Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed. A dump of the Windows boot entry can be seen in \autoref{fig:windows-boot-entry}.
 
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=1.0\textwidth]{attacks/neither/windows_boot_entry.png}
+    \caption{Windows boot entry \TODO{CROP}}
+    \label{fig:windows-boot-entry}
+\end{figure}
 
 \subsubsection{File access}
 
