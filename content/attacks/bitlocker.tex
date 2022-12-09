@@ -53,7 +53,7 @@ A keystroke now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{S
 The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending key press.
 The protocol also offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service. Example usage of the protocol can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
-\lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,lastline=30,caption={Example of using \emph{HandleProtocol} to retrieve an instance to the \emph{Simple Text Input Ex Protocol} to use its \emph{ReadKeyStrokeEx} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,caption={Example of using \emph{HandleProtocol} to retrieve an instance to the \emph{Simple Text Input Ex Protocol} to use its \emph{ReadKeyStrokeEx} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
 
 We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
 But \ac{UEFI} protocol hooking does not require such an invasive and unportable technique.
@@ -67,7 +67,7 @@ This is why it is important for a driver's image to remain loaded even after ini
 The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for to the same protocol instance, given they use the same device handle.
 The function interfaces of \lstinline{HandleProtocol} and \lstinline{OpenProtocol} would generally allow for the return of allocated memory containing a copy of the protocol's content, but the implementors of drivers managing multiple devices are encouraged to keep track of private data, that is necessary to manage a device, but not part of the protocol interface. This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[8]{tianocore-edk2-driver-writer-s-guide}. In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface. This keeps the protocol interface clean and limited to the public functionality, but the \ac{UEFI} boot services don't know about the size of the private data when managing protocol instances and therefor cannot make copies spanning the entire data. On top of that, private data likely contains information about the device state, changes in the state would have to occur in all instances of each protocol user instead, this would defeat the concept of private data.
 
-\lstinputlisting[language=C,captionpos=b,label=lst:private-data,firstline=6,lastline=27,caption={Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol} \cite[8.2 and 8.5]{tianocore-edk2-driver-writer-s-guide}}]{code/private_data.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:private-data,firstline=6,caption={Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol} \cite[8.2 and 8.5]{tianocore-edk2-driver-writer-s-guide}}]{code/private_data.c}
 
 Since our \ac{UEFI} payload is executed before the Windows Boot Manager we can query all instances of the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} and change the function pointer of \lstinline{ReadKeyStrokeEx} to point to our function hook.
 When a user later receives a pointer to the protocol instance, accessing the \lstinline{ReadKeyStrokeEx} field will cause our hook to be called instead of the original function.
@@ -76,7 +76,9 @@ We also have to save the original function address, together with a pointer to t
 Multiple different drivers could offer the same protocol, resulting in different functions being called depending on the device, the protocol instance is retrieved from.
 When our hook is called we start by identifying which original function needs to be called using the protocol instance that is used as the first argument of the \lstinline{ReadKeyStrokeEx} function signature.
 We then call the original to read the pending keystroke, keeping track of the keystrokes (separately for each protocol instance), before returning the key data back to the caller.
-We coin this BitLocker specific keylogger \emph{BitLogger}.
+We coin this BitLocker specific keylogger \emph{BitLogger}. A simplified version of how the hooking process works can be seen in \autoref{lst:hooking};
+
+\lstinputlisting[language=C,captionpos=b,label=lst:hooking,firstline=4,caption={Simplified example of hooking the \emph{Simple Text Input Ex Protocol}}]{code/hooking.c}
 
 We want to use the recovery key programmatically, so we can't simply log all key presses in chronological order and evaluate them by hand later.
 The BitLocker recovery prompt has a few rules and does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
@@ -103,11 +105,11 @@ Ignoring ones that are not further used in code have the following list:
 \end{itemize}
 
 The \emph{Device Path to Text Protocol} is just a self-explanatory utility protocol and not related to media access, so we can ignore it as well.
-The \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only produced, as in installed onto handles it supports and can offer the protocol on.
+The \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} is only produced, as in installed onto handles it supports and can offer the protocol on.
 So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts.
 We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
 The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
-Keeping in mind the fact, that the \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}.
+Keeping in mind the fact, that the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}.
 It becomes obvious that all file-wise operations are, is multiple layers of abstraction on top of block-wise access to the underlying media, performed through the \emph{Block \ac{I/O} Protocol}.
 Inspired by the BitLocker filter driver in \autoref{fig:bitlocker-volume-access-driver-stack}, which de- and encrypts each block as it passes through, we hook the \emph{Block \ac{I/O} Protocol} functions \lstinline{ReadBlocks} and \lstinline{WriteBlocks}, their signatures are shown in \autoref{lst:block-io-protocol}.
 We can then use Dislocker on read and write operations to implement our own filter driver as shown in \autoref{fig:dislocker-volume-access-protocol-stack}.
@@ -133,7 +135,7 @@ Since the two Dislocker functions expect offset-length, we simply multiply the s
 For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \lstinline{HKLM\SOFTWARE} registry hive, thus performing the deployment as soon as the \ac{UEFI} payload is executed suffices, as this happens before any Windows boot related actions are performed.
 With BitLocker we have to deploy after our BitLogger was able to obtain the recovery key.
 After initializing Dislocker with the recovery key we enable the transparent \emph{Block \ac{I/O} Protocol} hook layer, so we can trigger the \ac{NTFS} driver to (re-)evaluate which device handles it supports.
-The BitLocker encrypted drive now appearing unencrypted allows the driver to install its \hyperref[lst:simple-filesytem-protocol]{Simple File System Protocol} instance.
+The BitLocker encrypted drive now appearing unencrypted allows the driver to install its \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} instance.
 This allows us to deploy the payload and import our modified registry key.
 After doing this we need to disable the Dislocker layer again, as otherwise Windows is unable to boot and instead attempts Windows recovery, showing a second recovery prompt, but now outside the \ac{UEFI} environment with their own device drivers.
 This recovery environment is located on the unencrypted \ac{NTFS} partition created during installation and also accessible when pressing the escape key during the initial \ac{UEFI} environment recovery prompt.
