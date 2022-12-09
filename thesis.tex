@@ -46,23 +46,23 @@
 \pagenumbering{roman}			% roman page numbing (invisible for empty page style)
 \pagestyle{empty}				% no header or footers
 \input{content/titlepages}		% INCLUDE: all titlepages
-\cleardoublepage
+\clearpage
 
 \input{content/declaration}
-\cleardoublepage
+\clearpage
 
 \pagestyle{plain}				% display just page numbers
 \input{content/abstract}		% INCLUDE: the abstracts (english and german)
-\cleardoublepage
+\clearpage
 %
 \input{content/acknowledgement} % INCLUDE: acknowledgement
-\cleardoublepage
+\clearpage
 %
 \currentpdfbookmark{\contentsname}{toc}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}		% define depth of toc
 \tableofcontents				% display table of contents
-\cleardoublepage
+\clearpage
 
 % --------------------------
 % Body matter
@@ -96,21 +96,21 @@
     \newrefcontext[labelprefix={@}]
     \printbibliography[heading=subbibliography,title={Webpages},type=online]
 }
-\cleardoublepage
+\clearpage
 
 \listoffigures
-\cleardoublepage
+\clearpage
 
 \listoftables
-\cleardoublepage
+\clearpage
 
 \lstlistoflistings
-\cleardoublepage
+\clearpage
 
-\appendix\cleardoublepage
+\appendix\clearpage
 \input{content/appendix}       % INCLUDE: appendix
 
-\cleardoublepage
+\clearpage
 \input{content/acronyms}
 \clearpage
 

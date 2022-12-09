@@ -12,6 +12,7 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 
 \subsection{Bootkit}
 
+
 \subsubsection{Infection}
 
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
@@ -21,11 +22,9 @@ We have two ways to infect a system, we can either use a bootable medium such as
 This can be forced when booting into the \ac{BIOS} menu at startup, given that it is not password protected.
 The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}.
 We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
-
-\subsubsection{Approach}
-
 \TODO{dump a windows boot entry}
 Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option \lstinline{Boot####} for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed.
+
 
 \subsubsection{File access}
 

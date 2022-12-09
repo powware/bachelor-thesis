@@ -41,34 +41,37 @@ We can look at how the user is influenced in their decision, taking a closer loo
 This is ground enough to argue that is very reasonable to assume that the average user will react by entering their recovery key without having any malicious behavior in mind.
 
 
-\subsection{Approach}
+\subsection{BitLogger}
 
-When the user enters their recovery key the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} meta data entry, that was encrypted using the recovery key when BitLocker was set up.
+When the user enters their recovery key the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} metadata entry, that was encrypted using the recovery key when BitLocker was set up.
 It then proceeds to access the bitlocked \ac{NTFS} drive containing the \lstinline{Windload.efi} \ac{OS} loader.
-This all still happens in the \ac{UEFI} boottime environment, before \lstinline{ExitBootServices} is called.
+This all still happens during the \ac{UEFI} boot environment, before \lstinline{ExitBootServices} is called.
 Unfortunately we are still unable to access the Windows installation, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
-
-\subsubsection{BitLogger}
-
 If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, the \ac{FVEK} and in turn the drive ourselves.
+
 We can achieve this by logging the keystrokes performed by a user entering the key in the recovery prompt.
-Since we still are in the \ac{UEFI} boottime environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input.
-\ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{print} statement to the implementation in the \ac{OVMF} source code, this change alone triggers the recovery prompt bcause of \ac{PCR} value changes.
+Since we still are in the \ac{UEFI} boot environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input instead of the own Windows drivers.
+\ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{Print} statement to the implementation in the \ac{OVMF} source code, this change also is enough to trigger the recovery prompt by invalidating the \ac{PCR} measurements.
 A keystroke now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
 The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending key press.
-The protocol offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service.
+The protocol also offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service. Example usage of the protocol can be seen in \autoref{lst:handle-protocol-simple-text-input-ex};
 
+\lstinputlisting[language=C,caption={Example of using \lstinline{HandleProtocol} to retrieve an instance to the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} to use \lstinline{ReadKeyStrokeEx} to read a pending key press},captionpos=b,label=lst:handle-protocol-simple-text-input-ex]{code/handle_protocol_simple_text_input_ex.c}
 
 We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
-\TODO{if we have time talk about downsides of function patching} \ac{UEFI} protocol hooking does not require such an invasive technique.
+But \ac{UEFI} protocol hooking does not require such an invasive and unportable technique.
 When we take a closer look at how protocols are returned to their user we can see why.
-The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance, the latter additionally keeps track of the protocol users \cite[7.3. OpenProtocol]{uefi-spec}, \autoref{lst:handle-protocol} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[4.3. EFI System Table]{uefi-spec}.
+The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance. \lstinline{HandleProtocol} is a simplified abstraction of \lstinline{OpenProtocol} and is implemented by the latter internally \cite[7.3]{uefi-spec}. \lstinline{OpenProtocol} offers many additional options such as keeping track of the protocol users \cite[7.3. OpenProtocol]{uefi-spec} and exclusivity. \autoref{lst:handle-protocol-simple-text-input-ex} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[4.3. EFI System Table]{uefi-spec}.
 The input parameters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure.
 When calling \lstinline{HandleProtocol} the value of the pointer is modified to point to the corresponding protocol instance.
 The protocol instance itself is previously allocated by a driver and installed onto the device handle in their Driver Binding Start function \TODO{Driver binding}.
 The driver assigns the function fields with functions residing in the driver's image.
 This is why it is important for a driver's image to remain loaded even after initial execution.
-The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for this protocol instance, given they use the same device handle.
+The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for to the same protocol instance, given they use the same device handle.
+The function interfaces of \lstinline{HandleProtocol} and \lstinline{OpenProtocol} would allow for the return of allocated memory containing a copy of the protocol's content, but the implementors of drivers managing multiple devices are encouraged to keep track of private data, that is necessary to manage a device, but not part of the protocol interface. This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[8]{tianocore-edk2-driver-writer-s-guide}. This keeps the protocol interface limited to the public functionality. In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface.
+
+\lstinputlisting[language=C,caption={Example of using private data in the implementation of driver},captionpos=b,label=lst:private-data]{code/private_data.c}
+
 Since our \ac{UEFI} payload is executed before the Windows Boot Manager we can query all instances of the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} and change the function pointer of \lstinline{ReadKeyStrokeEx} to point to our function hook.
 When a user later receives a pointer to the protocol instance, accessing the \lstinline{ReadKeyStrokeEx} field will cause our hook to be called instead of the original function.
 The hook has to be implemented in a driver, so that it remains loaded until the Windows Boot Manager uses \lstinline{ReadKeyStrokeEx}.
@@ -78,15 +81,13 @@ When our hook is called we start by identifying which original function needs to
 We then call the original to read the pending keystroke, keeping track of the keystrokes (separately for each protocol instance), before returning the key data back to the caller.
 We coin this BitLocker specific keylogger \emph{BitLogger}.
 
-\lstinputlisting[language=C,caption={Example usage of the \lstinline{HandleProtocol} Boot service},captionpos=b,label=lst:handle-protocol]{code/handle_protocol.c}
-
 We want to use the recovery key programmatically, so we can't simply log all key presses in chronological order and evaluate them by hand later.
 The BitLocker recovery prompt has a few rules and does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
 Each block must be divisible by 11 \cite[9. BitLocker Key Recovery]{windows-internals-6-part2}.
 For this reason and because the cursor can be used to increment and decrement the current digit by using the up and down arrow keys, we have to implement internal tracking of the cursor advancement.
 The recovery prompt in \autoref{fig:bitlocker-recovery-prompt} also tells us, that the function keys (F1-F10) are accepted as input, with F10 mapping to zero, so we have to log these key presses as well.
 
-\subsubsection{Dislocker}
+\subsection{Dislocker}
 
 To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted partitions under Linux supporting read and write access \cite{dislocker}.
 
@@ -159,7 +160,7 @@ We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \
 Now our \ac{UEFI} payload is part of the measurements and considered trusted.
 Execution does not trigger the BitLocker recovery prompt anymore.
 
-\subsubsection{BitLocker Access without Recovery Prompt}
+\subsection{BitLocker Access without Recovery Prompt}
 \label{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}
 
 When either the BitLocker validation profile is misconfigured (for example \lstinline|{7, 11}|) or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
