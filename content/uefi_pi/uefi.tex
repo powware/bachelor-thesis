@@ -58,7 +58,7 @@ They support IA, ARM, RISC-V and x86 CPU architectures.
 There are three different subtypes of executables: applications, boot- and runtime drivers. They mainly differ by their memory type and how it behaves. Loading and transferring execution are two separate steps, so that security policies can be applied before executing a loaded image. Loading and execution of images are two separate steps, at first memory large enough to hold the image is allocated, then relocation fix-ups are \cite[2.1.1]{uefi-spec}
 
 
-UEFI Images are files containting executable code, they use a subset of the PE32+ (Microsoft Portable Executable and Common Object File Format Specification) format with a modified header signature. The format comes with relocation tables, this makes it possible that the images can be loaded at non predetermined addresses.
+UEFI Images are files containting executable code, they use a subset of the PE32+ (Microsoft Portable Executable and Common Object File Format Specification) format with a modified header signature. The format comes with relocation tables, this makes it possible that the images can be loaded at non pre-determined addresses.
 
 The images come in three different types:
 - UEFI Applications
@@ -125,13 +125,13 @@ boot services provide function to install, locate, open, close and monitor proto
 identified with guids
 \subsection{Variables}
 key/value pairs
-store arbirtary data passed between UEFI environment and applications/os loaders
+store arbitrary data passed between UEFI environment and applications/os loaders
 type of data is defined through usage
 storage implementation is not specify but must support non volatility if demanded to be able to be retained after reboots
 variables are defined by their Vendor GUID, Name and attributes such as: their scope (boot time, run time, non-volatile), whether writes require authentication or result in appending data instead of overriding
 \cite[8.2]{uefi-spec}
 \TODO{deep dive in authenticated variables}
-architecually defined variables are called Globally Defined Variables where vendor GUID is defined with the macro \lstinline{EFI_GLOBAL_VARIABLE}
+architectually defined variables are called Globally Defined Variables where vendor GUID is defined with the macro \lstinline{EFI_GLOBAL_VARIABLE}
 \cite[3.3]{uefi-spec}
 relevant for secure boot and boot manager
 

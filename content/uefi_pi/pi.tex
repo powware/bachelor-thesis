@@ -25,13 +25,13 @@ focus will be on dxe and transient system load
 
     \begin{itemize}
         \item  Handles all platform restart events (power on, wakup from sleep, etc)
-        \item  Creates a temporary memory state by configuring the CPU Cache as RAM (CAR) "no evictions mode"
+        \item  Creates a temporary memory state by configuring the CPU Cache as RAM (CAR) no evictions mode
         \item  Serves as the root of trust in the system
         \item  Passes handoff information to the Pre-EFI Initialization (PEI) Foundation
     \end{itemize}
 
 
-    Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
+    % Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
 
     \begin{itemize}
         \item Populates Reset Vector Data structure
@@ -111,7 +111,7 @@ focus will be on dxe and transient system load
 
     PEI design goals of the PI architecture:
     \begin{itemize}
-        \item Maintenance of the "chain of trust", includes protection and authorization of PEI modules
+        \item Maintenance of the chain of trust, includes protection and authorization of PEI modules
         \item Provide a core PEI module
         \item Independent developement of intialization modules
     \end{itemize}

@@ -1,4 +1,4 @@
-\section{Bitlocker}
+\section{BitLocker}
 % https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
 Our final attack will target systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 and no additional PIN or startup key configured.
@@ -9,17 +9,14 @@ This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of 
 The default validation profile \lstinline|{7, 11}| used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
 Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two.
 We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
+For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected.
 
 
 \subsection{Infection}
 
-For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected.
 When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}.
 Resulting in an inability to further deploy the Windows payload on the target system.
 Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
-% tpm values differ
-% measured pcrs
-% not unsealing vmk with tpm
 This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
 
 \begin{figure}[htb]
@@ -54,9 +51,9 @@ Since we still are in the \ac{UEFI} boot environment, the Windows Boot Manager u
 \ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{Print} statement to the implementation in the \ac{OVMF} source code, this change also is enough to trigger the recovery prompt by invalidating the \ac{PCR} measurements.
 A keystroke now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
 The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending key press.
-The protocol also offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service. Example usage of the protocol can be seen in \autoref{lst:handle-protocol-simple-text-input-ex};
+The protocol also offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service. Example usage of the protocol can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
-\lstinputlisting[language=C,caption={Example of using \lstinline{HandleProtocol} to retrieve an instance to the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} to use \lstinline{ReadKeyStrokeEx} to read a pending key press},captionpos=b,label=lst:handle-protocol-simple-text-input-ex]{code/handle_protocol_simple_text_input_ex.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,lastline=30,caption={Example of using \emph{HandleProtocol} to retrieve an instance to the \emph{Simple Text Input Ex Protocol} to use its \emph{ReadKeyStrokeEx} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
 
 We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
 But \ac{UEFI} protocol hooking does not require such an invasive and unportable technique.
@@ -68,9 +65,9 @@ The protocol instance itself is previously allocated by a driver and installed o
 The driver assigns the function fields with functions residing in the driver's image.
 This is why it is important for a driver's image to remain loaded even after initial execution.
 The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for to the same protocol instance, given they use the same device handle.
-The function interfaces of \lstinline{HandleProtocol} and \lstinline{OpenProtocol} would allow for the return of allocated memory containing a copy of the protocol's content, but the implementors of drivers managing multiple devices are encouraged to keep track of private data, that is necessary to manage a device, but not part of the protocol interface. This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[8]{tianocore-edk2-driver-writer-s-guide}. This keeps the protocol interface limited to the public functionality. In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface.
+The function interfaces of \lstinline{HandleProtocol} and \lstinline{OpenProtocol} would generally allow for the return of allocated memory containing a copy of the protocol's content, but the implementors of drivers managing multiple devices are encouraged to keep track of private data, that is necessary to manage a device, but not part of the protocol interface. This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[8]{tianocore-edk2-driver-writer-s-guide}. In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface. This keeps the protocol interface clean and limited to the public functionality, but the \ac{UEFI} boot services don't know about the size of the private data when managing protocol instances and therefor cannot make copies spanning the entire data. On top of that, private data likely contains information about the device state, changes in the state would have to occur in all instances of each protocol user instead, this would defeat the concept of private data.
 
-\lstinputlisting[language=C,caption={Example of using private data in the implementation of driver},captionpos=b,label=lst:private-data]{code/private_data.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:private-data,firstline=6,lastline=27,caption={Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol} \cite[8.2 and 8.5]{tianocore-edk2-driver-writer-s-guide}}]{code/private_data.c}
 
 Since our \ac{UEFI} payload is executed before the Windows Boot Manager we can query all instances of the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} and change the function pointer of \lstinline{ReadKeyStrokeEx} to point to our function hook.
 When a user later receives a pointer to the protocol instance, accessing the \lstinline{ReadKeyStrokeEx} field will cause our hook to be called instead of the original function.
