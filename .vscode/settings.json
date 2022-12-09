@@ -8,5 +8,10 @@
         "UEFI"
     ],
     "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "files.associations": {
+        "*.custom_xml": "xml",
+        "*.generic_xml": "xml",
+        "simpletextinex.h": "c"
+    }
 }

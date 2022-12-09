@@ -92,21 +92,13 @@ To make use of the recovery key we can use an open source software called \emph{
 
 In \autoref{sec:windows:bde} we discussed, how the BitLocker filter driver integrates into the Windows.
 To integrate Dislocker into \ac{UEFI} start by analyzing how the \ac{NTFS} driver works.
-We can start by checking the \lstinline{.inf} file of the driver, which declares which protocol \acp{GUID} are consumed and produced by the driver.
-Ignoring ones that are not further used in code have the following list:
+We can start by checking the \lstinline{.inf} file of the driver, which declares which protocol \acp{GUID} are consumed and produced by the driver. \autoref{lst:uefi-driver}
 
-\begin{itemize}
-    \item \lstinline{gEfiDevicePathToTextProtocolGuid}
-    \item \lstinline{gEfiDiskIoProtocolGuid}
-    \item \lstinline{gEfiDiskIo2ProtocolGuid}
-    \item \lstinline{gEfiBlockIoProtocolGuid}
-    \item \lstinline{gEfiBlockIo2ProtocolGuid}
-    \item \lstinline{gEfiSimpleFileSystemProtocolGuid}
-\end{itemize}
+\lstinputlisting[language=C,captionpos=b,label=lst:uefi-driver,caption={Protocols section of \ac{NTFS} driver's module file}]{code/uef_driver.inf}
 
-The \emph{Device Path to Text Protocol} is just a self-explanatory utility protocol and not related to media access, so we can ignore it as well.
-The \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} is only produced, as in installed onto handles it supports and can offer the protocol on.
-So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts.
+We can ignore the last three protocols as they are not directly involved in media access.
+The \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} is produced by the driver, as it installs the protocol onto handles of devices it supports.
+So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts marked by the trailing 2.
 We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
 The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
 Keeping in mind the fact, that the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:file-protocol]{File Protocol}.
