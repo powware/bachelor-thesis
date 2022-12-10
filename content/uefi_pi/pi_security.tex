@@ -1,0 +1,191 @@
+% !TeX root = ../../thesis.tex
+
+\subsection{Security}
+
+\subsubsection{Authentication}
+
+% https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/intel_boot_guard
+
+\subsubsection{Firmware Protection}
+
+% https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
+NIST 800-147 BIOS Protection Guidelines [15]
+NIST 800-147B BIOS Protection Guidelines for Servers [16]
+NIST 800-155 BIOS Integrity Measurement Guidelines [17]
+
+
+% https://eclypsium.com/2019/10/23/protecting-system-firmware-storage/
+
+DXE SMM Ready to Lock Vol4
+
+Capsule Architectural Protocol
+
+provides
+CapsuleUpdate()
+QueryCapsuleCapabilities()
+of the runtime services table
+
+flash device security
+
+
+
+
+EI
+
+PEI Guided Section Extraction PPI
+
+% EFI_PEI_SECURITY2_PPI
+
+optional and vendor specific
+
+This PPI is installed by some platform PEIM that abstracts the security policy to the PEI Foundation,
+namely the case of a PEIM's authentication state being returned during the PEI section extraction
+process
+
+This PPI is a means by which the platform builder can indicate a response to a PEIM's authentication
+state. This can be in the form of a requirement for the PEI Foundation to skip a module using the
+DeferExecution Boolean output in the AuthenticationState() member function.
+Alternately, the Security PPI can invoke something like a cryptographic PPI that hashes the PEIM
+contents to log attestations, for which the FileHandle parameter in
+AuthenticationState() will be useful. If this PPI does not exist, PEIMs will be considered
+trusted.
+
+AuthenticationState()
+
+This service is published by some platform PEIM. The purpose of this service is to expose a given platform's policy-based response to the PEI Foundation. For example, if there is a PEIM in a GUIDed encapsulation section and the extraction of the PEI file section yields an authentication failure, there is no a priori policy in the PEI Foundation. Specifically, this situation leads to the question whether PEIMs that are either not in GUIDed sections or are in sections whose authentication fails should still be executed. In fact, it is the responsibility of the platform builder to make this decision. This platform-scoped policy is a result that a desktop system might not be able to skip or not execute PEIMs because the skipped PEIM could be the agent that initializes main memory. Alternately, a system may require that unsigned PEIMs not be executed under any circumstances. In either case, the PEI Foundation simply multiplexes access to the Section Extraction PPI and the Security PPI. The Section Extraction PPI determines the contents of a section, and the Security PPI tells the PEI Foundation whether or not to invoke the PEIM. The PEIM that publishes the AuthenticationState() service uses its parameters in the following ways:
+- AuthenticationStatus conveys the source information upon which the PEIM acts.
+- The DeferExecution value tells the PEI Foundation whether or not to dispatch the PEIM. In addition, between receiving the AuthenticationState() from the PEI Foundation and returning with the DeferExecution value, the PEIM that publishes AuthenticationState() can do the following:
+- Log the file state.
+- Lock the firmware hubs in response to an unsigned PEIM being discovered.
+These latter behaviors are platform- and market-specific and thus outside the scope of the PEI CIS.
+
+DXE implementation details in form of protcols
+
+two protocols exist:
+- Security Architecture Protocol
+- Security2 Architecture Protocol
+
+Security Architecture Protocol
+Abstracts security-specific functions from the DXE Foundation for purposes of handling GUIDed
+section encapsulations. This protocol must be produced by a boot service or runtime DXE driver
+and may only be consumed by the DXE Foundation and any other DXE drivers that need to validate
+the authentication of files.
+
+FileAuthenticationState()
+checks authentication status of a file
+system executes platform specific policy in response to different status values
+locking flash upon failure to authenticate
+attestation logging
+
+% EFI_SECURITY_VIOLATION, platform specific policy to execute untrusted code
+% EFI_ACCESS_DENIED, image unloaded from memory
+
+
+
+
+
+Security2 Architecture Protocol
+Abstracts security-specific functions from the DXE Foundation of UEFI Image Verification,
+Trusted Computing Group (TCG) measured boot, and User Identity policy for image loading and
+consoles. This protocol must be produced by a boot service or runtime DXE driver.
+% This protocol is optional and must be published prior to the EFI_SECURITY_ARCH_PROTOCOL.
+As a result, the same driver must publish both of these interfaces.
+When both Security and Security2 Architectural Protocols are published, LoadImage must use
+them in accordance with the following rules:
+- The Security2 protocol must be used on every image being loaded.
+- The Security protocol must be used after the Securiy2 protocol and only on images that have been read using Firmware Volume protocol.
+When only Security architectural protocol is published, LoadImage must use it on every image
+being loaded.
+
+measuring the PE/COFF image prior to invoking, comparing the
+image against a policy (whether a white-list/black-list of public image verification keys or registered hashes)
+
+FileAuthentication()
+This service abstracts the invocation of Trusted Computing Group (TCG) measured boot, UEFI
+Secure boot, and UEFI User Identity infrastructure. For the former two, the DXE Foundation
+invokes the FileAuthentication() with a DevicePath and corresponding image in
+FileBuffer memory. The TCG measurement code will record the FileBuffer contents into the
+appropriate PCR. The image verification logic will confirm the integrity and provenance of the
+image
+
+
+\subsubsection{TPM measurements}
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/3_TCG_Trusted_Boot_Chain_in_EDKII.html
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/6_Checklist_for_Platform_Developers.html
+% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/tpm-fundamentals
+% https://learn.microsoft.com/en-us/windows/security/information-protection/tpm/trusted-platform-module-overview
+% what is TPM
+A \acf{TPM} is a system component which enables trust in computing platforms
+helps verify if the Trusted Computing Base has been compromised
+securely storing passwords, certificates and encryption keys in separate state to host
+only communicating through a well defined interface.
+store platform measurements that help ensure that the platform remains trustworthy
+authentication
+attestation
+hardware and software implementations
+software special mode shielding TPM resources from normal execution
+\cite{tcg-tpm-summary}
+\cite{tcg-tpm-library-part1-architecture}
+
+% what is done with the measurements
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-overview
+how are they used
+works with bitlocker to protect user data
+ensure computer has not been tampered with while offline
+
+% what is measured
+statically configured, unchangeable data
+not dynamic and changeable across the boot,
+\cite{tianocore-trusted-boot-chain}
+
+\begin{table}
+    \centering
+    \begin{tabular}{ c|p{30em}  }
+        \acs{PCR} Index & \multicolumn{1}{c}{\acs{PCR} Usage}                                                                      \\
+        \hline
+        0               & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs and PI Drivers                                \\
+        \hline
+        1               & Host Platform Configuration                                                                              \\
+        \hline
+        2               & UEFI driver and application Code                                                                         \\
+        \hline
+        3               & UEFI driver and application Configuration and Data                                                       \\
+        \hline
+        4               & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                               \\
+        \hline
+        5               & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and \ac{GPT}/Partition Table \\
+        \hline
+        6               & Host Platform Manufacturer Specific                                                                      \\
+        \hline
+        7               & Secure Boot Policy                                                                                       \\
+        \hline
+        8               & First \ac{NTFS} boot sector (volume boot record)                                                         \\
+        \hline
+        9               & Remaining \ac{NTFS} boot sectors (volume boot record)                                                    \\
+        \hline
+        10              & Boot Manager                                                                                             \\
+        \hline
+        11              & BitLocker Access Control                                                                                 \\
+    \end{tabular}
+
+    % \label{}
+    \caption{\cite{tcg-pc-client-platform-firmware-profile-spec, windows-internals-6-part2}}
+\end{table}
+
+
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/media/image2.png
+
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/3_TCG_Trusted_Boot_Chain_in_EDKII.html
+% Table 2 PCR usage (simple rules)
+
+% https://tianocore-docs.github.io/edk2-TrustedBootChain/release-1.00/media/image3.png
+
+% when is it measured
+\cite{tianocore-trusted-boot-chain}
+
+% where is it measured
+\ac{TCG}2 Protocol
+Trusted Computing Group 2 (TCG2) Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
+
+% secret storage, seal and unseal

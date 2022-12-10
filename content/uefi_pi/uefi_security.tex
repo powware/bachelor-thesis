@@ -1,0 +1,90 @@
+% !TeX root = ../../thesis.tex
+
+\subsection{Security}
+
+\subsubsection{Secure Boot}
+
+Secure Boot provides a secure hand-off from the firmware to 3rd party applications used for during the boot process, located on unsecure media \cite{tianocore-understanding-uefi-secure-boot-chain}\cite[32.2 and 32.5.1]{uefi-spec}.
+It assumes the firmware to be a trusted entity and all 3rd party software to be untrusted, this includes images from hardware vendors in \ac{PCI} option \acp{ROM}, bootloader from \ac{OS} vendors and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
+Digital signatures, embedded within the \ac{UEFI} images, can be used to authenticate origin and/or integrity \cite[32.2]{uefi-spec}.
+This is done through asymmetric signing, component provider must sign their executables with their private key and publish the public key.
+The public keys are stored in a signature \ac{DB} and before execution the signed executable can be verified against the database.
+Multiple signatures can be embedded within the same image \cite[32.2.2]{uefi-spec}.
+The signatures are created by first calculating a hash over select parts of the executable, leaving, for example, the signatures out of the hashed data and then signing it with a private key.
+The output of this hashing is called a digest and the algorithm for obtaining the digest is defined in \cite{microsoft-pe-signature-format}.
+Secure Boot also disallows legacy booting through the \ac{CSM}.
+
+Secure Boot is managed through three components, a \ac{PK}, one or more \ac{KEK} and the signature \acp{DB}.
+
+\begin{description}
+    \item[\ac{PK}]
+        The \ac{PK} establishes a trust relationship between platform owner and firmware, the public half is enrolled into the firmware.
+        The private half represents platform ownership, as it can be used to change or delete the \ac{PK} as well as enroll or modify \acp{KEK}.
+    \item[\ac{KEK}]
+        The \ac{KEK} establishes a trust relationship between \ac{OS} and firmware, as its private half is used to modify the signature \acp{DB}.
+    \item[Signature \acfp{DB}]
+        \ac{DB} \ac{DBX} \ac{DBR} \ac{DBT}
+        signature database consists of zero or more signature lists
+        \TODO{WHICH DATA BASES DO WHAT}
+\end{description}
+
+Internally these are all implemented through authenticated variables, residing in tamper resistant non-volatile storage \cite[32.3]{uefi-spec}.
+The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[32.4.1]{uefi-spec}, the variable services can be used to append entries or to read and write the list as a whole \cite[32.3.5 and 32.5.3]{uefi-spec}.
+The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variavble also exist a variant reserved for default entries. These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization.
+Their contents can be copied to their live versions, used during Secure Boot operation.
+The current state of Secure Boot is also reflected within a secure variable \cite[3.3]{uefi-spec}.
+
+% https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
+Users, who are physically present, may disable Secure Boot, enroll default or custom keys via the \ac{BIOS}\TODO{find a good cite}
+
+% The firmware may approve UEFI images for other reasons than those specified here. For example:
+% whether the image is in the system flash, whether the device providing the UEFI image is secured
+% (in a case, etc.) or whether the image contains another type of platform-supported digital signa-
+% ture
+\cite[32.5.3.2]{uefi-spec}
+
+\TODO{secure boot authorization process}
+
+% 1. Reset. This is when the platform begins initialization during boot.
+% 2. Key Store Initialization. During the firmware initialization and before any signed UEFI images
+% are initialized, the platform firmware must validate the signature database.
+% 3. UEFI Image Validation Succeeded? During initialization of an UEFI image, the UEFI Boot
+% Manager decides whether or not the UEFI image should be initialized. By comparing the
+% calculated UEFI image signature against that in one of the signature databases, the firmware
+% can determine if there is a match.
+% The security database db must either contain an entry with a hash value of the image (with a
+% supported hash type), or it must contain an entry with a certificate against which an entry in
+% the image’s certificate table can be verified. In either case verification must not succeed if the
+% security database dbx contains any record with:
+% A. Any entry with SignatureListType of EFI_CERT_SHA256_GUID with any
+% SignatureData containing the SHA-256 hash of the binary.
+% B. Any entry with SignatureListType of EFI_CERT_X509_SHA256,
+% EFI_CERT_X509_SHA384, or EFI_CERT_X509_SHA512, with any SignatureData
+% which reflects the To-Be-Signed hash included in any certificate in the signing chain of
+% the signature being verified.
+% C. Any entry with SignatureListType of EFI_CERT_X509_GUID, with SignatureData
+% which contains a certificate with the same Issuer, Serial Number, and To-Be-Signed hash
+% included in any certificate in the signing chain of the signature being verified.
+% Multiple signatures are allowed to exist in the binary’s certificate table (as per PE/COFF Section
+% “Attribute Certificate Table”). Only one hash or signature is required to be present in db
+% in order to pass validation, so long as neither the SHA-256 hash of the binary nor any
+% present signature is reflected in dbx.
+% Then, based on this match or its own policy, the firmware can decide whether or not to launch
+% the UEFI image.
+% 4. Start UEFI Image. If the UEFI Image is approved, then it is launched normally.
+% 5. UEFI Image Not Approved. If the UEFI image was not approved the platform firmware may use
+% other methods to discover if the UEFI image is authorized, such as consult a disk-based catalog
+% or ask an authorized user. The result can be one of three responses: Yes, No or Defer.
+% 6. UEFI Image Signature Added To Signature Database. If the user approves of the UEFI image,
+% then the UEFI image’s signature is saved in the firmware’s signature database. If user approval
+% is supported, then the firmware be able to update of the Signature Database. For more
+% information, see Signature Database Update.
+% 7. Go To Next Boot Option. If an UEFI image is rejected, then the next boot option is selected
+% normally and go to step 3. This is in the case where the image is listed as a boot option.
+% 8. UEFI Image Signature Passed In System Configuration Table. If user defers, then the UEFI image
+% signature is copied into the Image Execution Information Table in the EFI System Configuration
+% Table which is available to the operating system.
+% 9. OS Application Validates UEFI Image. An OS application determines whether the image is valid.
+% 10. UEFI Image Signature Added To Signature Database. For more information, see Signature
+% Database Update.
+% 11. End.

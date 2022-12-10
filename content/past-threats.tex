@@ -8,6 +8,22 @@
 Before we implement our own \ac{UEFI} attacks, we first take a look how past \ac{UEFI} threats have approached this problem.
 The threats discussed range from actual attacks found in the wild and analyzed by security researchers, over attacks, which have similarly been implemented for research purposes, to tools to enable system owners more advanced control over their systems.
 
+\begin{center}
+    \begin{tabular}{c|c|c}
+                                           & Bootkit       & Rootkit         \\
+        \hline
+        \multirow{4}{4em}{Storage\-/based} & \textbf{ours} & Vector-edk      \\
+                                           &               & Mosaicregressor \\
+                                           &               & LoJax           \\
+                                           &               & \textbf{ours}   \\
+        \hline
+        \multirow{3}{4em}{Memory\-/based}  & Efiguard      & Efiguard        \\
+                                           & ESPecter      & Moonbounce      \\
+                                           & Dreamboot     & Cosmicstrand    \\
+                                           & FinSpy        &                 \\
+    \end{tabular}
+\end{center}
+
 \section{Infection}
 
 The infection is the most important part of an attack, as it dictates when and in what environment, with what privileges the \ac{UEFI} payload is executed.
@@ -54,5 +70,4 @@ Some attacks patch the kernel to disable Windows Driver signing and then install
 Others deploy payload with elevated privileges \cite{finspy, dreamboot} or map code directly into kernel space \cite{moonbounce,cosmicstrand}.
 
 
-\TODO{memroy based vs storage is it really clear cut, some use combination}
 \TODO{not THAT importan but would be really cool, as it stands out as really exploiting rootkit capabilities}% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf

@@ -1,4 +1,4 @@
-% !TeX root = ../thesis.tex
+% !TeX root = ../../thesis.tex
 
 \section{\acf{UEFI}}
 
@@ -132,6 +132,7 @@ variables are defined by their Vendor GUID, Name and attributes such as: their s
 \cite[8.2]{uefi-spec}
 \TODO{deep dive in authenticated variables}
 architectually defined variables are called Globally Defined Variables where vendor GUID is defined with the macro \lstinline{EFI_GLOBAL_VARIABLE}
+\label{sec:uefi-pi:uefi:variables}
 \cite[3.3]{uefi-spec}
 relevant for secure boot and boot manager
 
@@ -171,3 +172,8 @@ device and file path of the Boot Manager, and some optional data
     \caption{Booting Sequence \cite[Figure 2-1]{uefi-spec}}%
     \label{fig:uefi-boot-sequence}%
 \end{figure}
+
+\subsection{\ac{CSM}}
+
+
+\input{content/uefi_pi/uefi_security}
