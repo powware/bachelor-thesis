@@ -24,11 +24,10 @@ Secure Boot is managed through three components, a \ac{PK}, one or more \ac{KEK}
         The \ac{KEK} establishes a trust relationship between \ac{OS} and firmware, as its private half is used to modify the signature \acp{DB}.
     \item[Signature \acfp{DB}]
         \ac{DB} \ac{DBX} \ac{DBR} \ac{DBT}
-        signature database consists of zero or more signature lists
-        \TODO{WHICH DATA BASES DO WHAT}
+        Signature \acp{DB} contain either image hashes or certificates.
 \end{description}
 
-Internally these are all implemented through authenticated variables, residing in tamper resistant non-volatile storage \cite[32.3]{uefi-spec}.
+Internally these are all implemented by authenticated variables, residing in tamper resistant non-volatile storage \cite[32.3]{uefi-spec}.
 The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[32.4.1]{uefi-spec}, the variable services can be used to append entries or to read and write the list as a whole \cite[32.3.5 and 32.5.3]{uefi-spec}.
 The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variavble also exist a variant reserved for default entries. These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization.
 Their contents can be copied to their live versions, used during Secure Boot operation.
@@ -88,3 +87,12 @@ Users, who are physically present, may disable Secure Boot, enroll default or cu
 % 10. UEFI Image Signature Added To Signature Database. For more information, see Signature
 % Database Update.
 % 11. End.
+
+\subsection{Firmware Management}
+
+% https://microsoft.github.io/mu/dyn/mu_tiano_plus/FmpDevicePkg/Docs/FmpDevicePkg_ReadMe/
+
+provides
+CapsuleUpdate()
+QueryCapsuleCapabilities()
+of the runtime services table
