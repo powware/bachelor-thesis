@@ -3,7 +3,7 @@
 
 Our final attack will target systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 and no additional PIN or startup key configured.
 This leaves the Windows boot partition encrypted, the \ac{ESP} is remains unencrypted, thus not affecting the bootkit installation process.
-Secure Boot can be enabled in combination of BitLocker having the effects as observed in \autoref{sec:attacks:secure-boot}, as well as additionally dictating the BitLocker default validation profile Windows uses as mentioned in \autoref{sec:windows:bde}.
+Secure Boot can be enabled in combination of BitLocker having the effects as observed in \autoref{sec:attacks:secure-boot}, as well as additionally dictating the BitLocker default validation profile Windows uses as mentioned in \autoref{sec:windows:security:bde}.
 We perform our attack against both default profiles, starting with \lstinline|{0, 2, 4, 11}|.
 This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of the presence of a signature \ac{DB} other than \emph{Microsoft Windows Production PCA 2011}.
 The default validation profile \lstinline|{7, 11}| used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
@@ -90,7 +90,7 @@ The recovery prompt in \autoref{fig:bitlocker-recovery-prompt} also tells us, th
 
 To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting of BitLocker encrypted partitions under Linux supporting read and write access \cite{dislocker}.
 
-In \autoref{sec:windows:bde} we discussed, how the BitLocker filter driver integrates into the Windows.
+In \autoref{sec:windows:security:bde} we discussed, how the BitLocker filter driver integrates into the Windows.
 To integrate Dislocker into \ac{UEFI} start by analyzing how the \ac{NTFS} driver works.
 We can start by checking the \lstinline{.inf} file of the driver, which declares which protocol \acp{GUID} are consumed and produced by the driver. \autoref{lst:uefi-driver}
 

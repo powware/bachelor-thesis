@@ -34,6 +34,7 @@ the two signature \acp{DB} Production and UEFI
 
 
 \subsection{Trusted Boot}
+
 Trusted Boot picks up the process that started with Secure Boot.
 Trusted Boot protects your PC from malware from the moment you power on your PC until your anti-malware starts
 can prove the system's integrity
@@ -45,14 +46,19 @@ can prove the system's integrity
 \cite{microsoft-secure-the-windows-boot-process}
 \cite{understanding-windows-trusted-boot}
 \subsubsection{KMCI}
-\subsubsection{HVCI}
-Virtualization-based Security {VBS}
-% https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
-
 \subsubsection{ELAM}
 
+\subsubsection{VSB}
+Virtualization-based Security {VBS}
+formerly Device Guard
+\subsubsection{HVCI}
+% https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
+
+
+
+
 \subsection{\acf{BDE}}
-\label{sec:windows:bde}
+\label{sec:windows:security:bde}
 Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
 Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
 The en- and decryption of the volume is done by a filter driver beneath the \ac{NTFS} driver as shown in \autoref{fig:bitlocker-volume-access-driver-stack}.
