@@ -38,7 +38,7 @@ Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI}
 For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
 % search for UEFI NTFS driver with write access
 % open source fork of ntfs-3g for UEFI
-We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
+We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera\cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard}\cite{ntfs-3g-uefi}.
 
 % compile
 % spits out .efi file
@@ -47,8 +47,8 @@ We can compile this driver with \ac{EDK} II to receive a \lstinline{.efi} execut
 % try in EFI shell
 % what is the EFI shell
 \TODO{better summary of UEFI shell}
-Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment \cite[1.1]{uefi-shell-spec}.
-It offers commands related to boot and general configuration, device and driver management, file system access, networking \cite[5.1]{uefi-shell-spec} and supports scripting \cite[4]{uefi-shell-spec}.
+Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment\cite[1.1]{uefi-shell-spec}.
+It offers commands related to boot and general configuration, device and driver management, file system access, networking\cite[5.1]{uefi-shell-spec} and supports scripting\cite[4]{uefi-shell-spec}.
 We can use the file system related commands to test the \ac{NTFS} driver.
 \autoref{fig:uefi-shell} depicts an exemplary output of an \ac{EDK} II \ac{UEFI} shell emulated under QEMU.
 
@@ -58,8 +58,8 @@ We can use the file system related commands to test the \ac{NTFS} driver.
 The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
 
 % explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell-spec}.
-\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell-spec}.
+Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse}\cite[3.3 Initialization]{uefi-shell-spec}.
+\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to\cite[5.3 Shell Commands]{uefi-shell-spec}.
 
 
 \begin{figure}[htb]
@@ -74,14 +74,14 @@ Upon invocation, the shell application performs an initialization during which i
 % consistent device mapping, comparable to partition names in windows
 The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles.
 The aliases can be used instead of a device path when submitting commands via the command line interface.
-The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell-spec}.
-These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
+The \ac{UEFI} shell also produces default mappings, notably for file systems\cite[3.7.2. Mappings]{uefi-shell-spec}.
+These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters\cite[Appendix A]{uefi-shell-spec}.
 
 \TODO{find in spec what precise mapping mechanism}
 When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices.
 This identification is performed via instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
 % explain Simple File System Protocol
-The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} \cite[13.4]{uefi-spec} provides, together with the \hyperref[lst:simple-file-system-protocol]{File Protocol}, file-type access to the device it is installed on \cite[13.5]{uefi-spec}.
+The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}\cite[13.4]{uefi-spec} provides, together with the \hyperref[lst:simple-file-system-protocol]{File Protocol}, file-type access to the device it is installed on\cite[13.5]{uefi-spec}.
 The two protocols are independent of the underlying file system the media is formatted with.
 
 
@@ -116,7 +116,7 @@ Accessing folders and viewing their contents is possible but creation of a new f
 % change source code to not fallback to read only when encountering hibernation file
 Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode.
 Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file. \TODO{this is might not be the hibernation file but something else}
-On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[13.5]{uefi-spec}.
+On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place\cite[7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device\cite[13.5]{uefi-spec}.
 
 We now know that provided we get to load the \ac{NTFS} driver we can now access a Windows installation and subsequently the entire data of unencrypted hard drives.
 Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
@@ -127,10 +127,10 @@ Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driv
 % package payload in firmware image
 The next step is for our bootkit to use the \ac{NTFS} driver to gain file system access and write our payload to the Windows installation.
 During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
-In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[9.1 EFI Loaded Image Protocol]{uefi-spec}.
+In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from\cite[9.1 EFI Loaded Image Protocol]{uefi-spec}.
 This handle can then be used to call the Boot Services \lstinline{LoadImage} and \lstinline{StartImage} to load and execute the NTFS driver.
 Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
-Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[13.4]{uefi-spec}.
+Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume\cite[13.4]{uefi-spec}.
 This instance can then be used to open and read our payload with the absolute path on the \ac{ESP} into memory.
 % write payload
 % seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
@@ -155,10 +155,10 @@ The programs within the startup folder are unfortunately not automatically run a
 \TODO{modifying Windows Executables KMCI}
 
 % Task Scheduler
-The Task Scheduler is a Windows service responsible for managing the automatic execution of background tasks \cite[10. The Task Scheduler]{windows-internals-7-part2}.
+The Task Scheduler is a Windows service responsible for managing the automatic execution of background tasks\cite[10. The Task Scheduler]{windows-internals-7-part2}.
 Tasks are performed on certain triggers, which may be time-based (periodically or on a specific time) or event-based, for example on user logon or system boot\cite{microsoft-task-scheduler-triggers}.
-A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, but we will focus on command execution.
-Most tasks will simply execute other programs as their action, this execution is performed under specified a security context \cite{microsoft-task-scheduler-security-contexts}.
+A task can perform various actions upon invocation\cite{microsoft-task-scheduler-actions}, but we will focus on command execution.
+Most tasks will simply execute other programs as their action, this execution is performed under specified a security context\cite{microsoft-task-scheduler-security-contexts}.
 The idea of our attack is to have a task, that performs its action with a high privilege level, execute our payload.
 The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the command
 
@@ -166,10 +166,10 @@ The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the 
 %windir%\system32\rundll32.exe /d acproxy.dll,PerformAutochkOperations
 \end{lstlisting}
 
-30 minutes after system boot, the executable \lstinline{rundll32.exe} loads the \ac{DLL} \lstinline{acproxy.dll} and invokes the exported function \lstinline{PerformAutochkOperations} \cite{microsoft-rundll32}.
-The function name as well as the task name suggest the performed action relates to the Windows utility \emph{autochk} which verifies the integrity of \ac{NTFS} file systems \cite{microsoft-autochk}.
+30 minutes after system boot, the executable \lstinline{rundll32.exe} loads the \ac{DLL} \lstinline{acproxy.dll} and invokes the exported function \lstinline{PerformAutochkOperations}\cite{microsoft-rundll32}.
+The function name as well as the task name suggest the performed action relates to the Windows utility \emph{autochk} which verifies the integrity of \ac{NTFS} file systems\cite{microsoft-autochk}.
 The Task Scheduler keeps book of its active tasks in the registry under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache}, grouped by four subkeys Boot, logon, plain and Maintenance.
-These entries consist only of a \ac{GUID} that is used to look up the task descriptor saved under their respective task master (registry) keys, these task master keys are located under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks} \cite[10. The Task Scheduler - Initialization]{windows-internals-7-part2}.
+These entries consist only of a \ac{GUID} that is used to look up the task descriptor saved under their respective task master (registry) keys, these task master keys are located under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks}\cite[10. The Task Scheduler - Initialization]{windows-internals-7-part2}.
 There also exist a secondary copy of the task descriptors, on the regular file system under \lstinline{%windir%\system32\Task}, stored as \ac{XML} files.
 
 We can use the Task Scheduler Configuration Tool to modify the target task on a system under our control, we change the executable path as well as remove the configured delay.
@@ -181,8 +181,8 @@ We then use the Windows registry editor \lstinline{reged.exe} to navigate to the
 % whoami
 % We modify the task's action, to run our payload instead.
 To verify the privileges our payload is executed with, we can save the output of \lstinline{whoami /all} into a file.
-The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
-After manually triggering the task through the configuration tool, we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+The \lstinline{whoami} command shows the current user and privileges\cite{microsoft-whoami}.
+After manually triggering the task through the configuration tool, we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account\cite{microsoft-localsystem-account}.
 
 \TODO{whoami /all snippet}
 
@@ -190,7 +190,7 @@ After manually triggering the task through the configuration tool, we see that o
 % edit Task in machine under Control
 We can use this exported key and import it on our victim's system as part of our attack.
 This way, instead of modifying a single value of the registry key, the victim's key maintains its integrity as we also overwrite the hash value with correct data.
-To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local Windows user accounts \cite{chntpw}.
+To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local Windows user accounts\cite{chntpw}.
 The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
 % test
 % dual boot
@@ -214,7 +214,7 @@ The name of a task master key is the task's \ac{GUID}, which may differ from dev
 We then match for the name value of the key.
 
 Now that we modified the Windows installation to execute our payload upon boot, we need to transfer execution from the bootkit to the original Windows Boot Manager.
-Loading the original application is inspired by how the UEFI Boot Manger loads boot options, this includes relaying the \lstinline{LoadOptions} and \lstinline{ParentHandle} of the \emph{\ac{EFI} Loaded Image Protocol} \cite[9.1]{uefi-spec} instance installed to our bootkit to the Windows Boot Manager.
+Loading the original application is inspired by how the UEFI Boot Manger loads boot options, this includes relaying the \lstinline{LoadOptions} and \lstinline{ParentHandle} of the \emph{\ac{EFI} Loaded Image Protocol}\cite[9.1]{uefi-spec} instance installed to our bootkit to the Windows Boot Manager.
 
 
 \subsection{Rootkit}
@@ -222,7 +222,7 @@ Loading the original application is inspired by how the UEFI Boot Manger loads b
 Performing the same attack in the form of a rootkit is very similar and mainly differs in the infection process.
 The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of an application.
 When placed in the \ac{DXE} volume it is automatically loaded by the \ac{DXE} Dispatcher iterating over the \ac{FV}, loading  drivers whose dependencies are resolved.
-The core functionality of our \ac{UEFI} payload is identical with the exception that we don't have to manually load the \ac{NTFS} driver anymore and accessing the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the \cite[3.4.1]{pi-spec}, instead of \emph{Simple Filesystem Protocol}. There are no traditional file names on a firmware volume, and we have to search for files using the module \acp{GUID}.
+The core functionality of our \ac{UEFI} payload is identical with the exception that we don't have to manually load the \ac{NTFS} driver anymore and accessing the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the\cite[3.4.1]{pi-spec}, instead of \emph{Simple Filesystem Protocol}. There are no traditional file names on a firmware volume, and we have to search for files using the module \acp{GUID}.
 
 \subsubsection{Infection}
 
@@ -230,16 +230,16 @@ Infection with the rootkit is has a much higher barrier of entry, as it requires
 \autoref{sec:test-setup} potentially exploit \ac{OEM} specific flash mechanism, signing with stolen private key, part of the supply chain, might also be physical \TODO{LIST ALL OPTIONS}
 
 We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
-When we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specification \cite{uefitool}.
+When we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specification\cite{uefitool}.
 In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
 % since files are part of file sections we cant drop in the .efi
-We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol 3, 2.1.4.1.4]{pi-spec}.
+We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section\cite[Vol 3, 2.1.4.1.4]{pi-spec}.
 % compile dxe driver within ovmf
 % generate unused volume to receive .ffs file with version, depex, user interface and pe section
 For our \ac{UEFI} payload to be generated as a sectioned \ac{FFS} file we add our files to the build process of \ac{OVMF} package in \ac{EDK} II. When part of the \ac{FDF} which is used to generate a firmware image file, the intermediary \lstinline{.ffs} files from the build process are of much value for us.
 % pack executable binary as uefi module
 % EDK II produces freeform image with one raw section
-For our Windows payload we can use a special \ac{EDK} II module type which takes binary files as input, resulting in a sectioned file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, with no restrictions on the contained file sections \cite[Vol 3, 2.1.4.1.7]{pi-spec}.
+For our Windows payload we can use a special \ac{EDK} II module type which takes binary files as input, resulting in a sectioned file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, with no restrictions on the contained file sections\cite[Vol 3, 2.1.4.1.7]{pi-spec}.
 The output contains only one file section of type \lstinline{EFI_SECTION_RAW} consisting of the binary payload.
 This use of this special module has the benefit that its \ac{GUID} is used to attribute the sectioned file when being placed in the firmware volume.
 Not that we have \lstinline{.ffs} files corresponding to all our resources used in the attack we can import these into the target image with UEFITool.

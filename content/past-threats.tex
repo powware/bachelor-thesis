@@ -33,44 +33,44 @@ The infection is the most important part of an attack, as it dictates when and i
 Bootkits use the \ac{UEFI} Boot manager to gain execution on a system, there are a variety of methods using different options of the boot mechanism.
 \cite{finspy} backs up and replaces the Windows Boot Manager \lstinline{bootmgfw.efi} on the \ac{ESP}.
 \cite{especter} patches the entrypoint of \lstinline{bootmgfw.efi} and its copy \lstinline{bootx64.efi} in the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path}, so that it executes malicious code upon launch.
-\cite{dreamboot} and \cite{efiguard} are more proof of concept than real attacks and suggest to be used from removable media, but they are also able to be added to the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path} on an \ac{ESP}, or generally added as their own boot entry \cite{efiguard}, as they are both applications which launch the Windows Boot Manager upon execution.
+\cite{dreamboot} and\cite{efiguard} are more proof of concept than real attacks and suggest to be used from removable media, but they are also able to be added to the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path} on an \ac{ESP}, or generally added as their own boot entry\cite{efiguard}, as they are both applications which launch the Windows Boot Manager upon execution.
 \TODO{Generally it is possible to mount the \ac{ESP} from within Windows with administrative privileges}
 \subsection{Rootkit}
 
 
 Firmware rootkits have been rarer and how exactly the firmware images were infected is often not known,
-\cite{vector-edk} requires booting the target machine from a USB key \cite{mosaicregressor}
-\TODO{SPI read/write} \cite{lojax}
+\cite{vector-edk} requires booting the target machine from a USB key\cite{mosaicregressor}
+\TODO{SPI read/write}\cite{lojax}
 dump
 remove previous NTFS driver
 add DXE drivers
 reflash image
 
-The payload itself has usually simply been \ac{DXE} drivers residing in a firmware volume \cite{mosaicregressor,lojax}, as they are automatically executed by the \ac{DXE} dispatcher. \cite{efiguard} compiles its main \ac{UEFI} payload as a \ac{DXE} driver and suggesting its usage as a firmware rootkit. \cite{moonbounce} does something different and instead patches the \ac{DXE} Core over adding files to \acp{FV}. While the approach could fundamentally be done in the form of a \ac{DXE} driver, it makes tge detection harder \cite{moonbounce}.
+The payload itself has usually simply been \ac{DXE} drivers residing in a firmware volume\cite{mosaicregressor,lojax}, as they are automatically executed by the \ac{DXE} dispatcher.\cite{efiguard} compiles its main \ac{UEFI} payload as a \ac{DXE} driver and suggesting its usage as a firmware rootkit.\cite{moonbounce} does something different and instead patches the \ac{DXE} Core over adding files to \acp{FV}. While the approach could fundamentally be done in the form of a \ac{DXE} driver, it makes tge detection harder\cite{moonbounce}.
 
 \section{Approach}
 
 We can categorize the threats by their attack vector, rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment prior to the Windows boot process.
 We found that their approach can mainly be divided into storage\-/based and memory\-/based attacks.
-Storage\-/based attacks mostly gain execution in the operating system  environment by writing their payload into the Windows installation and modifying configuration data on disk. These attacks are often performed offline, before any parts of the operating system are executed. Memory\-/based attacks instead hook into the operating system's boot process to execute malicious code alongside operating system in memory. For storage\-/based attacks we were only able to find examples of rootkits \cite{vector-edk,mosaicregressor,lojax}, memory\-/based attacks were performed by both root- and bootkit \cite{dreamboot,efiguard,especter,finspy,moonbounce,cosmicstrand}.
+Storage\-/based attacks mostly gain execution in the operating system  environment by writing their payload into the Windows installation and modifying configuration data on disk. These attacks are often performed offline, before any parts of the operating system are executed. Memory\-/based attacks instead hook into the operating system's boot process to execute malicious code alongside operating system in memory. For storage\-/based attacks we were only able to find examples of rootkits\cite{vector-edk,mosaicregressor,lojax}, memory\-/based attacks were performed by both root- and bootkit\cite{dreamboot,efiguard,especter,finspy,moonbounce,cosmicstrand}.
 There is no technical limitation as we show in \autoref{sec:attacks:neither:bootkit} when we implement our own storage\-/based bootkit, but more likely a general perference for memory\-/based attacks as they are more sophisticated. Storage\-/based attacks face more restrictions such as BitLocker and code integrity checks.
 
 \subsection{Storage\-/based}
 
-Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \lstinline{C:/Windows/SysWOW64/autoche.exe} and then modifies the registry entry \lstinline{HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
+Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32\cite[13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack.\cite{mosaicregressor} and\cite{lojax} seem to use\cite{vector-edk}'s leaked \ac{NTFS} driver.\cite{lojax} deploys its payload under the file path \lstinline{C:/Windows/SysWOW64/autoche.exe} and then modifies the registry entry \lstinline{HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute}, so that their payload is executed instead of the original executable.\cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
 
 \subsection{Memory\-/based}
 
-It seems to be unique to \cite{especter} to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in memory.
+It seems to be unique to\cite{especter} to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in memory.
 \cite{finspy, dreamboot} when executed load \lstinline{bootmgfw.efi} into memory and apply patches before launching it.
 \cite{efiguard}'s core functionality is the same for its root- and bootkit variant.
 A \ac{DXE} driver is loaded, either form the \ac{DXE} dispatcher or through an intermediary loader application.
-This driver then hooks the \ac{UEFI} boot service \lstinline{LoadImage}. When this is either called by the \ac{UEFI} boot manager or the loader application to load \lstinline{bootmgfw.efi}, it patches the bootloader in memory \cite{efiguard}. \cite{moonbounce} applies its patches within an \lstinline{ExitBootServices} hook.
+This driver then hooks the \ac{UEFI} boot service \lstinline{LoadImage}. When this is either called by the \ac{UEFI} boot manager or the loader application to load \lstinline{bootmgfw.efi}, it patches the bootloader in memory\cite{efiguard}.\cite{moonbounce} applies its patches within an \lstinline{ExitBootServices} hook.
 
 The general approach is the same for all memory\-/based attacks, they propagate their malicious execution further up in the boot chain, by hooking when images are loaded. From \lstinline{bootmgfw.efi} to \lstinline{Winload.efi} to \lstinline{ntoskernel.exe}, the kernel image.
 
-Some attacks patch the kernel to disable Windows Driver signing and then install a kernel driver \cite{efiguard,especter}.
-Others deploy payload with elevated privileges \cite{finspy, dreamboot} or map code directly into kernel space \cite{moonbounce,cosmicstrand}.
+Some attacks patch the kernel to disable Windows Driver signing and then install a kernel driver\cite{efiguard,especter}.
+Others deploy payload with elevated privileges\cite{finspy, dreamboot} or map code directly into kernel space\cite{moonbounce,cosmicstrand}.
 
 
 \TODO{not THAT importan but would be really cool, as it stands out as really exploiting rootkit capabilities}% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
