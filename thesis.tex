@@ -17,6 +17,16 @@
 ]{scrreprt}%
 
 
+% ******************************************************************************************
+% Added correct packages for character coding and fonts for the document when using PDFLaTeX
+% ******************************************************************************************
+\RequirePackage[utf8]{inputenc}   	% UTF-8 Support
+\RequirePackage[T1]{fontenc}		% T1 Fonts for font encoding -> also set in cleanthesis.sty
+%
+\RequirePackage[T1]{url} 			% Web addresses with T1 encoding
+\urlstyle{tt} 						% Web addresses in tt-style
+%
+
 % **************************************************
 % Setup YOUR thesis document in this file !
 % **************************************************
@@ -38,11 +48,68 @@
 % --------------------------
 \renewcaptionname{english}{\figurename}{Fig.}
 \renewcaptionname{english}{\tablename}{Tab.}
+\renewcommand{\lstlistlistingname}{List of Source Code Listings}
+\renewcommand{\lstlistingname}{Listing}
 
-% --------------------------
+
+% ---------------------------------------------------------------------------------------------------
+% Newly defined LaTeX commands for typographic use (e.g., emphasizing and highlighting special terms) 
+% ---------------------------------------------------------------------------------------------------
+% WARNING: in all four commands below you will need to escape special LaTeX characters & % $ # _ { } ~ ^ \
+% escape them via \&  \%  \$  \#  \_  \{  \}  \textasciitilde{} or \~{}  \textasciicircum{}  \textbackslash{}
+% refer to https://en.wikibooks.org/wiki/LaTeX/Special_Characters#Other_symbols for more example
+%
+% to emphasize all source-code-related information outside a listing
+% for example: ``The \code{copy(\&buffer)} function''
+\newcommand{\code}[1]{\texttt{#1}\xspace}
+%
+% to emphasize all non-source-code-related information
+% for example: ``The program uses the \cursive{Mersenne Twister} function ''
+\newcommand{\cursive}[1]{\textit{#1}\xspace}
+%
+% to emphasize program and tool names
+% for example: ``The \program{opp\_runall} tool''
+\newcommand{\program}[1]{\textsf{#1}\xspace}
+%
+% to emphasize file names
+% for example: ``The \filename{result\_scenario1.sca} file''
+\newcommand{\filename}[1]{\textsl{#1}\xspace}
+%
+% ---------------------------------------------------------------------------------------------------
+% NOTE: the alternative four commands below can be used just like the ones above WITHOUT the need to escape special LaTeX characters
+% BUT:  these command variants cannot be used inside other commands or macros (e.g., \caption{})
+%
+%\usepackage{xparse}		% package to support parsing of customized commands and macros
+%
+% to emphasize all source-code-related information outside a listing without escaping LaTeX characters
+% for example: ``The \Code{copy(&buffer)} function''
+%\DeclareDocumentCommand\Code{ v }{%
+%{\texttt{#1}\xspace}%
+%}%
+%
+% to emphasize all non-source-code-related information
+% for example: ``The program uses the a \Cursive{Mersenne_Twister} function ''
+%\DeclareDocumentCommand\Cursive{ v }{%
+%{\textit{#1}\xspace}%
+%}%
+%
+% to emphasize program and tool names without escaping LaTeX characters
+% for example: ``The \Program{opp_runall} tool''
+%\DeclareDocumentCommand\Program{ v }{%
+%{\textbf{#1}\xspace}%
+%}%
+%
+% to emphasize file names without escaping LaTeX characters
+% for example: ``The \Filename{result#01.res} file''
+%\DeclareDocumentCommand\Filename{ v }{%
+%{\textsl{#1}\xspace}%
+%}%
+%
+
+% --------------------------pdfbookmark
 % Front matter
 % --------------------------
-\pagenumbering{roman}			% roman page numbing (invisible for empty page style)
+\pagenumbering{Alph}
 \pagestyle{empty}				% no header or footers
 \input{content/titlepages}		% INCLUDE: all titlepages
 \clearpage
@@ -50,16 +117,17 @@
 \input{content/declaration}
 \clearpage
 
-\pagestyle{plain}				% display just page numbers
 \input{content/abstract}		% INCLUDE: the abstracts (english and german)
 \clearpage
-%
+
 \input{content/acknowledgement} % INCLUDE: acknowledgement
 \clearpage
 %
+\pagenumbering{Roman}
 \currentpdfbookmark{\contentsname}{toc}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}		% define depth of toc
+\pagestyle{plain}				% no header or footers
 \tableofcontents				% display table of contents
 \clearpage
 
