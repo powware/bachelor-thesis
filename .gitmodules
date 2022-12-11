@@ -1,3 +1,0 @@
-[submodule "deps/edk2"]
-	path = deps/edk2
-	url = ../../tianocore/edk2.git
