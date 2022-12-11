@@ -14,7 +14,7 @@ focus will be on dxe and transient system load
 \begin{figure}[htb]%
     \centering%
     \includegraphics[width=\textwidth]{pi_boot_sequence}%
-    \caption{\ac{PI} Architecture Firmware Phases\cite[Figure 2-1]{pi-spec}}%
+    \caption{\ac{PI} Architecture Firmware Phases \cite[Figure 2-1]{pi-spec}}%
     \label{fig:pi-phases}%
 \end{figure}
 
@@ -66,7 +66,7 @@ focus will be on dxe and transient system load
     \end{itemize}
 
 
-    % The SEC phase is the first phase in the UEFI boot process. It is specified in\cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
+    % The SEC phase is the first phase in the UEFI boot process. It is specified in \cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
     ref to PSP
 
     inductive security design
@@ -180,7 +180,7 @@ focus will be on dxe and transient system load
     resuming from S3 sleep state
     linear array of RAM
     \ac{PEIM} provides a framework to allow vendors to supply separate initialization modules for
-    each functionally distinct piece of system hardware that must be initialized prior to the DXE phase\cite{pi-spec}
+    each functionally distinct piece of system hardware that must be initialized prior to the DXE phase \cite{pi-spec}
 
     % design goals
     maintenance of chain of trust, protection against unauthorized updates to the PEI phase or modules
@@ -256,7 +256,7 @@ focus will be on dxe and transient system load
     doesnt return when successfully booting OS
 
     UEFI itself only specifies the NVRAM variables used in selecting boot options
-    leaves the implementation of the menu system as value added implementation space\cite{uefi-spec}
+    leaves the implementation of the menu system as value added implementation space \cite{uefi-spec}
 
     \cite{pi-spec}
 

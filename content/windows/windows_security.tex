@@ -9,7 +9,7 @@
 \begin{figure}[htb]
     \centering
     \includegraphics[width=1.0\textwidth]{windows/windows_startup_process.png}
-    \caption{Windows startup process\cite{microsoft-secure-the-windows-boot-process}}
+    \caption{Windows startup process \cite{microsoft-secure-the-windows-boot-process}}
     \label{fig:windows-startup-process}
 \end{figure}
 
@@ -59,14 +59,14 @@ formerly Device Guard
 
 \subsection{\acf{BDE}}
 \label{sec:windows:security:bde}
-Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS}\cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
-Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest\cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM}\cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
+Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
+Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM} \cite[9. BitLocker Drive encryption]{windows-internals-6-part2}.
 The en- and decryption of the volume is done by a filter driver beneath the \ac{NTFS} driver as shown in \autoref{fig:bitlocker-volume-access-driver-stack}.
 The \ac{NTFS} driver translates file and directory access into block-wise operations on the volume \TODO{CITE}, the filter driver receives these block operations, encrypting blocks on write and decrypting blocks on read, while they pass through.
-This leaves the en- and decryption entirely transparent, making the underlying volume appear decrypted to the \ac{NTFS} driver\cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}.
-The encryption of each block is done using a modified version of the \ac{AES}128 and \ac{AES}256 cypher\cite[9. Encryption Keys]{windows-internals-6-part2}.
-A \ac{FVEK} is used in combination with the block index as input for the algorithm, resulting in an entirely different output for two blocks with identical data\cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}.
-The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multiple protectors, these encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the volume\cite[9. Encryption Keys]{windows-internals-6-part2}.
+This leaves the en- and decryption entirely transparent, making the underlying volume appear decrypted to the \ac{NTFS} driver \cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}.
+The encryption of each block is done using a modified version of the \ac{AES}128 and \ac{AES}256 cypher \cite[9. Encryption Keys]{windows-internals-6-part2}.
+A \ac{FVEK} is used in combination with the block index as input for the algorithm, resulting in an entirely different output for two blocks with identical data \cite[9. Full-Volume Encryption Driver]{windows-internals-6-part2}.
+The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multiple protectors, these encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the volume \cite[9. Encryption Keys]{windows-internals-6-part2}.
 The \ac{VMK} is encrypted by the following protectors:
 
 \begin{itemize}
@@ -81,7 +81,7 @@ The \ac{VMK} is encrypted by the following protectors:
         - tpm with startup key and PIN
         \cite{microsoft-bitlocker-countermeasures}
         with tpm ensures integrity of early boot components and boot configuration
-        tpm usage requires \ac{TCG}2 compliant \ac{UEFI} firmware\cite[9. TPM]{windows-internals-6-part2}
+        tpm usage requires \ac{TCG}2 compliant \ac{UEFI} firmware \cite[9. TPM]{windows-internals-6-part2}
 
         tpm is used to \emph{seal} and \emph{unseal} \ac{VMK}
         \TODO{PCR table either here or at TPM section}
@@ -110,12 +110,12 @@ The \ac{VMK} is encrypted by the following protectors:
         used for suspension
 
 
-        \TODO{decide if we add this} With Windows 11 and Windows 10, administrators can turn on BitLocker and the TPM from within the Windows Pre-installation Environment\cite{microsoft-bitlocker-device-encryption}
+        \TODO{decide if we add this} With Windows 11 and Windows 10, administrators can turn on BitLocker and the TPM from within the Windows Pre-installation Environment \cite{microsoft-bitlocker-device-encryption}
 
         \begin{figure}[htb]%
             \centering
             \includesvg{bitlocker_volume_access_driver_stack.drawio.svg}
-            \caption{BitLocker Volume Access Driver Stack (inspired by\cite[Figure 9-24]{windows-internals-6-part2})}%
+            \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
             \label{fig:bitlocker-volume-access-driver-stack}%
         \end{figure}
 

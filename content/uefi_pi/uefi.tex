@@ -19,28 +19,28 @@ security
 \subsection{\acf{GUID}}
 
 The \ac{UEFI} environment depends on \acp{GUID}, also known \acp{UUID} to uniquely identify a variety of things, such as protocols, files, hard drive paritions.
-\acp{GUID} are 128-bit long, statistically unique identifiers and can be generated on demand and without a centralized authority, statistically guaranteeing that there will be no duplicates on a system that combines hard and software from multiple vendors\cite{rfc-4122}.
+\acp{GUID} are 128-bit long, statistically unique identifiers and can be generated on demand and without a centralized authority, statistically guaranteeing that there will be no duplicates on a system that combines hard and software from multiple vendors \cite{rfc-4122}.
 
 \subsection{\acf{GPT}}
 
 Partitions allow a disk to be distinctly separated into logical disks, allowing for each to be formatted with a different file systems.
 Prior to \ac{UEFI} disks have been paritioned using the \ac{MBR} parition table, supporting up to 4 different partitions.
-The \ac{MBR} is stored within the first sector, also optionally containing 424 bytes of bootable code through which the \ac{BIOS} boots\cite[13.3.1]{uefi-spec}.
+The \ac{MBR} is stored within the first sector, also optionally containing 424 bytes of bootable code through which the \ac{BIOS} boots \cite[13.3.1]{uefi-spec}.
 \ac{UEFI} is still backwards compatible with \ac{MBR} partitioned disks and contained on each disk, but \ac{UEFI} does not execute the boot code.
 The \ac{MBR} is used in two different ways by the \ac{UEFI} environment, either as a legacy \ac{MBR} or a protective \ac{MBR}.
 With the legacy \ac{MBR}, \ac{UEFI} uses the partitions defined in the \ac{MBR} parition table, where as the protective \ac{MBR} only has one partition spanning the entire disk.
 The protective partition is for legacy devices and in reality \ac{GPT} partitioning is used to separate the disk.
 For this \ac{UEFI} defines two \ac{OS} types used in \ac{MBR} parition entries.
-One identifies the \ac{ESP}, the parition \ac{UEFI} boots from, within the legacy \ac{MBR} partition table and the other indicates that a protective parition is used\cite[5]{uefi-spec}.
+One identifies the \ac{ESP}, the parition \ac{UEFI} boots from, within the legacy \ac{MBR} partition table and the other indicates that a protective parition is used \cite[5]{uefi-spec}.
 \cite[5]{uefi-spec} defines the \ac{GPT} disk layout, with the \ac{GPT} format \ac{LBA} are 64 bit instead of 32 bit, allowing to support drives with up to 9400000000 \ac{TB} of storage, where as \ac{MBR} is limited to 2 \ac{TB}.
-This is accompanied by allowing many more than 4 partitions, with Windows supporting up to 128\cite{microsoft-windows-and-gpt-faq}.
+This is accompanied by allowing many more than 4 partitions, with Windows supporting up to 128 \cite{microsoft-windows-and-gpt-faq}.
 \ac{GUID} are used to identify paritions and parition types, but also offering a human readable parition name.
 \ac{GPT} also has a primary and a backup parition table for redundancy pruposes, the primary table follows the \ac{MBR} sector and the backup is at the end of the disk.
 
 \subsection{\acf{ESP}}
 
-The \ac{ESP} can reside any media that is supported by the \ac{UEFI} firmware and has to be \ac{FAT}32 formatted\cite[13.3]{uefi-spec}.
-It must contain an \lstinline{EFI} root directory\cite[13.3.1.3]{uefi-spec} and all \ac{UEFI} applications, that are to be launched directly by the \ac{UEFI} firmware have to be located in subdirectories below the \lstinline{EFI} driectory\cite[13.3.1.3]{uefi-spec}. Drivers and indirectly loaded applcations have no storage restrictions. Vendors are to use vendor\-/specifically named subdirectories within the \lstinline{EFI} directory. Fixed disks have no restrictions on the amount of \acp{ESP} present, whereas removable media is only allowed to have one \ac{ESP}, so that boot behavior is deterministic. In general the \ac{ESP} is identified by a specific \ac{GUID}, but implementations are allowed to support accordingly structured \ac{FAT} partitions. Since there is no limitation on the amount of \acp{ESP}, boot applications can share the drive with their \ac{OS}, or can be accumulated in a single system\-/wide \ac{ESP}\cite[13.3.3]{uefi-spec}.
+The \ac{ESP} can reside any media that is supported by the \ac{UEFI} firmware and has to be \ac{FAT}32 formatted \cite[13.3]{uefi-spec}.
+It must contain an \lstinline{EFI} root directory \cite[13.3.1.3]{uefi-spec} and all \ac{UEFI} applications, that are to be launched directly by the \ac{UEFI} firmware have to be located in subdirectories below the \lstinline{EFI} driectory \cite[13.3.1.3]{uefi-spec}. Drivers and indirectly loaded applcations have no storage restrictions. Vendors are to use vendor\-/specifically named subdirectories within the \lstinline{EFI} directory. Fixed disks have no restrictions on the amount of \acp{ESP} present, whereas removable media is only allowed to have one \ac{ESP}, so that boot behavior is deterministic. In general the \ac{ESP} is identified by a specific \ac{GUID}, but implementations are allowed to support accordingly structured \ac{FAT} partitions. Since there is no limitation on the amount of \acp{ESP}, boot applications can share the drive with their \ac{OS}, or can be accumulated in a single system\-/wide \ac{ESP} \cite[13.3.3]{uefi-spec}.
 
 
 \subsection{\acs{UEFI} Images}
@@ -49,7 +49,7 @@ It must contain an \lstinline{EFI} root directory\cite[13.3.1.3]{uefi-spec} and 
 The format comes with relocation tables, making it possible for the images to be executed in place or to be loaded at non pre\-/determined memory addresses.
 They support multiple CPU architectures such as IA, ARM, RISC-V and x86.
 There are three different subtypes of executables: applications, boot and runtime drivers. They mainly differ by their memory type and how it behaves.
-Loading and transferring execution are two separate steps, so that security policies can be applied before executing a loaded image\cite[2.1.1]{uefi-spec}.
+Loading and transferring execution are two separate steps, so that security policies can be applied before executing a loaded image \cite[2.1.1]{uefi-spec}.
 
 Applications are always unloaded when they return execution, while drivers are only unloaded when they return an error code. This allows drivers to install their offered functionality upon intial executions and later calls to these functions jump back into the driver's image which is still loaded.
 Boot drivers are unloaded when an \ac{OS} loader application transitions to runtime by taking over the memory management through the call of the boot service function \lstinline{ExitBootServices}, while runtime drivers remain loaded and are translated into the virtual memory mapping. \ac{OS} loaders only return execution in error cases.
@@ -58,18 +58,18 @@ Boot drivers are unloaded when an \ac{OS} loader application transitions to runt
 \subsection{Protocols and Handles}
 
 When \ac{UEFI} binaries are loaded only the entry point is \emph{linked}, the rest of the communication has to be programmatically discovered through protocol interfaces.
-Protocols are C structures and may contain services in the form of function pointers or other data structures, they are identified by \acp{GUID} and stored in a single global database\cite{beyond-bios}.
-This database is called the handle database, handles describe a grouping of one or more protocols to logically associate\cite[3.6]{tianocore-edk2-driver-writer-s-guide}: loaded images such as drivers and applications, abstract services or controllers representing devices\cite[3.4]{tianocore-edk2-driver-writer-s-guide}.
-Handles are only unique per session and should not be saved across reboots\cite{beyond-bios}.
+Protocols are C structures and may contain services in the form of function pointers or other data structures, they are identified by \acp{GUID} and stored in a single global database \cite{beyond-bios}.
+This database is called the handle database, handles describe a grouping of one or more protocols to logically associate \cite[3.6]{tianocore-edk2-driver-writer-s-guide}: loaded images such as drivers and applications, abstract services or controllers representing devices \cite[3.4]{tianocore-edk2-driver-writer-s-guide}.
+Handles are only unique per session and should not be saved across reboots \cite{beyond-bios}.
 Multiple instances of a protocol identified by the same \ac{GUID} can exist on different handles, offering the same service on different devices.
-Protocols provide a mechanism to allow extension of firmware capabilities over time as well as dynamically\cite[3.6]{tianocore-edk2-driver-writer-s-guide}.
+Protocols provide a mechanism to allow extension of firmware capabilities over time as well as dynamically \cite[3.6]{tianocore-edk2-driver-writer-s-guide}.
 
 \subsection{\ac{UEFI} Driver Model}
 
 \TODO{me}
 
 \subsection{Systemtable}
-The UEFI System Table is an important data structure, it provides access to system configuration information, generic boot and runtime services and stores the protocols in its handle database\cite[3.3]{tianocore-edk2-driver-writer-s-guide}.
+The UEFI System Table is an important data structure, it provides access to system configuration information, generic boot and runtime services and stores the protocols in its handle database \cite[3.3]{tianocore-edk2-driver-writer-s-guide}.
 It also serves as an entrance in to the \ac{UEFI} environment, as a loaded images receives a pointer to the system table as well as a handle to its own loaded image as the only parameters through the images entry point.
 
 \subsubsection{Boottime Services}
@@ -117,11 +117,9 @@ device and file path of the Boot Manager, and some optional data
 \begin{figure}[htb]%
     \centering%
     \includegraphics[width=\textwidth]{uefi_boot_sequence}%
-    \caption{Booting Sequence\cite[Figure 2-1]{uefi-spec}}%
+    \caption{Booting Sequence \cite[Figure 2-1]{uefi-spec}}%
     \label{fig:uefi-boot-sequence}%
 \end{figure}
-
-\subsection{\ac{CSM}}
 
 
 \input{content/uefi_pi/uefi_security}
