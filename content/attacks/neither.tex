@@ -79,9 +79,9 @@ These mappings are designed to be consistent across reboots as long as the hardw
 
 \TODO{find in spec what precise mapping mechanism}
 When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices.
-This identification is performed via instances of the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
+This identification is performed via instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
 % explain Simple File System Protocol
-The \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} \cite[13.4]{uefi-spec} provides, together with the \hyperref[lst:file-protocol]{File Protocol}, file-type access to the device it is installed on \cite[13.5]{uefi-spec}.
+The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} \cite[13.4]{uefi-spec} provides, together with the \hyperref[lst:simple-file-system-protocol]{File Protocol}, file-type access to the device it is installed on \cite[13.5]{uefi-spec}.
 The two protocols are independent of the underlying file system the media is formatted with.
 
 
@@ -116,7 +116,7 @@ Accessing folders and viewing their contents is possible but creation of a new f
 % change source code to not fallback to read only when encountering hibernation file
 Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode.
 Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file. \TODO{this is might not be the hibernation file but something else}
-On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[13.5]{uefi-spec}.
+On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[13.5]{uefi-spec}.
 
 We now know that provided we get to load the \ac{NTFS} driver we can now access a Windows installation and subsequently the entire data of unencrypted hard drives.
 Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
@@ -129,19 +129,19 @@ The next step is for our bootkit to use the \ac{NTFS} driver to gain file system
 During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
 In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[9.1 EFI Loaded Image Protocol]{uefi-spec}.
 This handle can then be used to call the Boot Services \lstinline{LoadImage} and \lstinline{StartImage} to load and execute the NTFS driver.
-Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} on their handles.
-Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:file-protocol]{File Protocol} representing the root folder of the volume \cite[13.4]{uefi-spec}.
+Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
+Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[13.4]{uefi-spec}.
 This instance can then be used to open and read our payload with the absolute path on the \ac{ESP} into memory.
 % write payload
 % seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
 % search for windows installation
-% iterate over all \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} instance
+% iterate over all \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} instance
 % open volume
 
 \subsubsection{Payload deployment}
 
 To perform the write operation we now need a handle we did not yet interact with, at least directly.
-We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol}, this includes volumes such as the \ac{ESP} but also the Windows recovery partition.
+We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}, this includes volumes such as the \ac{ESP} but also the Windows recovery partition.
 We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation.
 This operation fails on volumes not containing a Windows installation which we can just skip.
 Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
@@ -208,7 +208,7 @@ Function definitions can often be translated to \ac{UEFI} equivalents, \ac{EDK} 
 % memory allocation (malloc, calloc, realloc), memory manipulation (memset, memcpy) string manipulation (sscanf, strtol), stdout (printf), abort, exit
 Memory allocation maps to the MemoryAllocationLib, memory manipulation to BaseMemoryLib, basic string manipulation to BaseLib, stdout to PrintLib (only relevant for print debugging).
 % cstdio is non trivial and has to be implemented by calling protocols on the right volume
-Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to the \ac{UEFI} protocols \hyperref[lst:simple-filesystem-protocol]{Simple File System Protocol} and \hyperref[lst:file-protocol]{File Protocol}.
+Function calls related to standard input and output such as opening, reading and writing a file, namely the hive file, are more complex and have to be mapped to the \ac{UEFI} protocols \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \hyperref[lst:simple-file-system-protocol]{File Protocol}.
 Luckily the author of \lstinline{reged} used distinct functions to access the hive file and registry file, making it possible to keep the original source code unmodified, except for a change in the import behavior.
 The name of a task master key is the task's \ac{GUID}, which may differ from device to device, thus we cannot import a key into its exact path, we instead iterate over the subkeys of the target's parent key.
 We then match for the name value of the key.

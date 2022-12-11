@@ -15,6 +15,11 @@ The Windows Boot Manager boot option pointing to our bootkit is now denied execu
 
 \subsection{Rootkit}
 
-When installing our rootkit on \autoref{sec:test-setup:asrock}, we observe that Secure Boot is not applying its verification to our \ac{DXE} drivers, as they are still being executed without any restrictions. When we look at the reference implementation in \ac{EDK} II, we can see why. \autoref{lst:dxe-image-verification-handler} shows, that the image origin dictates which is applied. Standard policy for images from a \acf{FV} (\lstinline{IMAGE_FROM_FV}) is to always allow execution. This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy: \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here. For example: whether the image is in the system flash \textelp{}}. This behavior was reproducible on all our hardware setups, likely in order to prevent accidentally entirely unbootable firmware or to reduce boot time.
+When installing our rootkit on \autoref{sec:test-setup:asrock}, we observe that Secure Boot is not applying its verification to our \ac{DXE} drivers, as they are still being executed without any restrictions.
+When we look at the reference implementation in \ac{EDK} II, we can see why.
+\autoref{lst:dxe-image-verification-handler} shows, that the image origin dictates which is applied.
+Standard policy for images from a \acf{FV} (\lstinline{IMAGE_FROM_FV}) is to always allow execution. This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
+\textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here.
+    For example: whether the image is in the system flash \textelp{}}. This behavior was reproducible on all our hardware setups, likely in order to prevent accidentally entirely unbootable firmware or to reduce boot time.
 
 \lstinputlisting[language=C,firstline=4,caption={DxeImageVerificationHandler Reference Implementation},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
