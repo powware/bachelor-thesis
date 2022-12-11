@@ -35,57 +35,7 @@ The current state of Secure Boot is also reflected within a secure variable\cite
 % https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
 Users, who are physically present, may disable Secure Boot, enroll default or custom keys via the \ac{BIOS} interactive menu. \TODO{find a good cite}
 
-% The firmware may approve UEFI images for other reasons than those specified here. For example:
-% whether the image is in the system flash, whether the device providing the UEFI image is secured
-% (in a case, etc.) or whether the image contains another type of platform-supported digital signa-
-% ture
-\cite[32.5.3.2]{uefi-spec}
-
-\TODO{secure boot authorization process}
-
-% 1. Reset. This is when the platform begins initialization during boot.
-% 2. Key Store Initialization. During the firmware initialization and before any signed UEFI images
-% are initialized, the platform firmware must validate the signature database.
-% 3. UEFI Image Validation Succeeded? During initialization of an UEFI image, the UEFI Boot
-% Manager decides whether or not the UEFI image should be initialized. By comparing the
-% calculated UEFI image signature against that in one of the signature databases, the firmware
-% can determine if there is a match.
-% The security database db must either contain an entry with a hash value of the image (with a
-% supported hash type), or it must contain an entry with a certificate against which an entry in
-% the image’s certificate table can be verified. In either case verification must not succeed if the
-% security database dbx contains any record with:
-% A. Any entry with SignatureListType of EFI_CERT_SHA256_GUID with any
-% SignatureData containing the SHA-256 hash of the binary.
-% B. Any entry with SignatureListType of EFI_CERT_X509_SHA256,
-% EFI_CERT_X509_SHA384, or EFI_CERT_X509_SHA512, with any SignatureData
-% which reflects the To-Be-Signed hash included in any certificate in the signing chain of
-% the signature being verified.
-% C. Any entry with SignatureListType of EFI_CERT_X509_GUID, with SignatureData
-% which contains a certificate with the same Issuer, Serial Number, and To-Be-Signed hash
-% included in any certificate in the signing chain of the signature being verified.
-% Multiple signatures are allowed to exist in the binary’s certificate table (as per PE/COFF Section
-% “Attribute Certificate Table”). Only one hash or signature is required to be present in db
-% in order to pass validation, so long as neither the SHA-256 hash of the binary nor any
-% present signature is reflected in dbx.
-% Then, based on this match or its own policy, the firmware can decide whether or not to launch
-% the UEFI image.
-% 4. Start UEFI Image. If the UEFI Image is approved, then it is launched normally.
-% 5. UEFI Image Not Approved. If the UEFI image was not approved the platform firmware may use
-% other methods to discover if the UEFI image is authorized, such as consult a disk-based catalog
-% or ask an authorized user. The result can be one of three responses: Yes, No or Defer.
-% 6. UEFI Image Signature Added To Signature Database. If the user approves of the UEFI image,
-% then the UEFI image’s signature is saved in the firmware’s signature database. If user approval
-% is supported, then the firmware be able to update of the Signature Database. For more
-% information, see Signature Database Update.
-% 7. Go To Next Boot Option. If an UEFI image is rejected, then the next boot option is selected
-% normally and go to step 3. This is in the case where the image is listed as a boot option.
-% 8. UEFI Image Signature Passed In System Configuration Table. If user defers, then the UEFI image
-% signature is copied into the Image Execution Information Table in the EFI System Configuration
-% Table which is available to the operating system.
-% 9. OS Application Validates UEFI Image. An OS application determines whether the image is valid.
-% 10. UEFI Image Signature Added To Signature Database. For more information, see Signature
-% Database Update.
-% 11. End.
+\TODO{maybe secure boot authorization process}
 
 \subsection{Firmware Management}
 
