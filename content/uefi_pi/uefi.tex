@@ -68,18 +68,17 @@ When \ac{UEFI} binaries are loaded only the entry point is \emph{linked}, the re
 Protocols are created dynamically and provide a mechanism to allow extension of firmware capabilities over time \cite[Section 3.6]{tianocore-edk2-driver-writer-s-guide}.
 They are C structures and may contain services, in the form of function pointers, or other data structures, they are identified by \acp{GUID} and stored in a single global database implemented by the firmware \cite{beyond-bios}.
 This database is called the handle database, handles describe a logical grouping of one or more protocols \cite[Section 3.6]{tianocore-edk2-driver-writer-s-guide}.
-\TODO{go over all the handle types and add images} % : loaded images such as drivers and applications, abstract services or controllers representing devices \cite[Section 3.4]{tianocore-edk2-driver-writer-s-guide}.
 Handles are unique per session and should not be saved across reboots \cite{beyond-bios}.
 Multiple instances of a protocol identified by the same \ac{GUID} can exist on different handles, offering the same service on different devices.
 
 \begin{figure}[htb]%
     \centering%
-    \includegraphics[width=\textwidth]{uefi/handle_types.jpg}%
+    \includegraphics[width=0.7\textwidth]{uefi/handle_types.jpg}%
     \caption{Handle types (taken from \cite[Figure 3]{tianocore-edk2-driver-writer-s-guide})}%
     \label{fig:handle-types}%
 \end{figure}
 
-\autoref{fig:handle-types} shows how handles are categorized by the protocols they are grouped with.
+\cite{tianocore-edk2-driver-writer-s-guide} explains the categories of handles that are formed by the type of protocols that are grouped. \autoref{fig:handle-types} shows these categories.
 
 \begin{description}
     \item[Image handles] are handles of \ac{UEFI} images loaded into memory, as they support the \hyperref[lst:loaded-image-protocol]{Loaded Image Protocol}, giving access to information about the image in memory. This includes the image's address, size, memory type, origin and optional load options.
@@ -109,7 +108,10 @@ The firmware can also call the \code{Stop} of the Driver Binding Protocol functi
 \subsection{Systemtable}
 
 The UEFI System Table is an important data structure, it provides access to system configuration information, generic boot and runtime services \cite[Section 3.3]{tianocore-edk2-driver-writer-s-guide}.
-It also serves as the entrance in to the \ac{UEFI} environment, as a loaded images receives a only pointer to the system table as well as its iamge handle through its entry point. Although the Loaded Image Protocol provides and interface to hand optional load options to the image \cite{beyond-bios}.
+It also serves as the entrance in to the \ac{UEFI} environment, as a loaded images receives a only pointer to the system table as well as its image handle through its entry point. Although the Loaded Image Protocol provides and interface to hand optional load options to the image \cite{beyond-bios}.
+
+\TODO{during boot boot and runtime services are available}
+
 
 \subsubsection{Boot Services}
 
@@ -127,6 +129,14 @@ It also serves as the entrance in to the \ac{UEFI} environment, as a loaded imag
 
 \TODO{me}
 
+\begin{description}
+    \item [Variable Services] used to query, get and set \hyperref[sec:uefi-pi:uefi:variables]{variables}.
+    \item [Time Services] used to get and set time as well as a system wakeup timer.
+    \item [Virtual Memory Services] relate to enabling virtual memory and translating memory addresses.
+    \item [Image Services] to load, unload and start images. Images can also use these to transfer execution back to the firmware or with \code{ExitBootServices()} assume control over the system
+    \item [Miscellaneous Runtime Services] offer system reset, a monotonic counter and capsule services. Capsules allow the \ac{OS} to pass data to the firmware, this includes firmware managment related data.
+\end{description}
+
 \subsection{Variables}
 \label{sec:uefi-pi:uefi:variables}
 
@@ -135,34 +145,28 @@ The data type has to be known beforehand and as such is specified for variables 
 The Storage implementation is not specified by \ac{UEFI}, but it must support non\-/volatility, to retain after reboots, or temper resistance if demanded.
 Variables are defined by a vendor \ac{GUID}, a name and attributes.
 Attributes include their scope (boot, runtime, non-volatile), whether writes require authentication or result in appending data instead of overwriting \cite[Section 8.2]{uefi-spec}.
-\ac{UEFI} defined variables are called Globally Defined Variables where the vendor \ac{GUID} has the value \code{EFI\_GLOBAL\_VARIABLE} \cite[Section 3.3]{uefi-spec}.
+Architecturally defined \ac{UEFI} variables are called Globally Defined Variables where the vendor \ac{GUID} has the value \code{EFI\_GLOBAL\_VARIABLE} \cite[Section 3.3]{uefi-spec}.
 
 \subsection{Boot Manager}
 \label{sec:uefi-pi:uefi:boot-manager}
 
-\autoref{fig:uefi-boot-sequence}
+The \ac{UEFI} boot manager is a firmware component executed after the platform is completely initialized, it decides which \ac{UEFI} drivers or applcations are loaded and when.
+The boot behavior is configured through architecturally defined \ac{NVRAM} global variables\cite[Section 3.1]{uefi-spec}.
+Each load option entry for a driver or application resides in a variable following the naming scheme of \code{Driver\#\#\#\#} or \code{Boot\#\#\#\#} respectively. Where \code{\#} stands for a hexadecimal digit forming a 4 digit number, requiring leading zeros.
+If a firmware implementation allows for the creation of new load options they can then be added to the ordered lists \code{DriverOrder} and \code{BootOrder}, they reference load options and dictate the order in which they are processed.
+Driver load options are processed before the boot load options, there also exists the \code{BootNext} variable to override the boot options once.
+A general depiction of the \ac{UEFI} boot flow can be seen in \autoref{fig:uefi-boot-sequence}.
+Implementations usually allow for an interactive menu, where users can modify the order or boot entries manually \cite[Section 3.1.1]{uefi-spec}.
+Boot options are generally first attempted to be loaded through the \code{LoadImage} boot service.
+If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}\cite[Section 3.1.2]{uefi-spec}, for x64 it uses the default path \code{\textbackslash EFI\textbackslash BOOT\textbackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
 
-what is the boot manager
-which drivers and applications and when
-firmware policy engine
-configured by non volatile variables
-\cite[Section 3.1.]{uefi-spec}
-boot manager = bds
-boot behavior
-\subsubsection{Boot Variables}
-\label{sec:uefi-pi:uefi:boot-manager:boot-variables}
-boot options variables
-boot options (network, simple file system protocol, load file)
-default boot behavior for simple file system protocol
 
-EFI boot variable must contain a short description of the boot entry, the complete
-device and file path of the Boot Manager, and some optional data
-\cite{windows-internals-7-part2}
+
 
 \begin{figure}[htb]%
     \centering%
-    \includegraphics[width=\textwidth]{uefi_boot_sequence}%
-    \caption{Booting Sequence \cite[Figure 2-1]{uefi-spec}}%
+    \includegraphics[width=0.8\textwidth]{uefi_boot_sequence}%
+    \caption{Booting Sequence (taken from \cite[Figure 2-1]{uefi-spec})}%
     \label{fig:uefi-boot-sequence}%
 \end{figure}
 
