@@ -28,6 +28,17 @@
 %
 
 % **************************************************
+% Set extra options for later-on loaded packages
+% **************************************************
+\PassOptionsToPackage{defernumbers=true}{biblatex}	% important for split-bibliographies like cleanthesis.sty uses
+
+% **************************************************
+% Additional useful little LaTeX helper packages
+% **************************************************
+\usepackage[section]{placeins}	% Insert float barriers before every section
+\usepackage{flafter}			% Never insert figures before the actual reference
+
+% **************************************************
 % Setup YOUR thesis document in this file !
 % **************************************************
 \input{setup}
@@ -128,7 +139,9 @@
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}		% define depth of toc
 \pagestyle{plain}				% no header or footers
+\microtypesetup{protrusion=false}
 \tableofcontents				% display table of contents
+\microtypesetup{protrusion=true}
 \clearpage
 
 % --------------------------
@@ -164,23 +177,28 @@
 }
 \clearpage
 
+\microtypesetup{protrusion=false}
+
+\pdfbookmark[0]{List of Figures}{List of Figures}
 \listoffigures
 \clearpage
 
+\pdfbookmark[0]{List of Tables}{List of Tables}
 \listoftables
 \clearpage
 
+\pdfbookmark[0]{List of Source Code Listings}{List of Source Code Listings}
 \lstlistoflistings
 \clearpage
 
-\appendix\clearpage
-\input{content/appendix}       % INCLUDE: appendix
-\clearpage
-
+\pdfbookmark[0]{List of Acronyms}{List of Acronyms}
 \input{content/acronyms}
 \clearpage
+\microtypesetup{protrusion=true}
 
-\newpage
-\mbox{}
+\appendix\clearpage
+\input{content/appendix}
+\clearpage
+
 
 \end{document}

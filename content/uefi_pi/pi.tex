@@ -2,10 +2,9 @@
 
 \section{\acf{PI}}
 
-\subsection{Boot Sequence}
+\subsection{\acs{PI} Architecture Firmware Phases}
 
-% https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/23_boot_sequence
-
+The \ac{PI} Architecture defines distinct phases.
 focus will be on dxe and transient system load
 \autoref{fig:pi-phases}
 
@@ -21,90 +20,20 @@ focus will be on dxe and transient system load
 
 \begin{enumerate}
     \item{\acf{SEC}}
-    The Security phase is the first code executed by the CPU, it is uncompressed and executed directly from flash. It consists of platform specific assembly.
+    % % Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
 
-    \begin{itemize}
-        \item  Handles all platform restart events (power on, wakup from sleep, etc)
-        \item  Creates a temporary memory state by configuring the CPU Cache as RAM (CAR) no evictions mode
-        \item  Serves as the root of trust in the system
-        \item  Passes handoff information to the Pre-EFI Initialization (PEI) Foundation
-    \end{itemize}
-
-
-    % Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
-
-    \begin{itemize}
-        \item Populates Reset Vector Data structure
-        \item Saves Built-in self-test (BIST) status
-        \item Enables protected mode (16 bit -> 32 bit)
-        \item Configures temporary RAM (not only limited in processor cache) by using MTRR to configure CAR.
-    \end{itemize}
-
-    Passing of handoff information to the PEI phase:
-
-    \lstinline{typedef VOID EFIAPI (*EFI_PEI_CORE_ENTRY_POINT)(IN CONST EFI_SEC_PEI_HAND_OFF *SecCoreData, IN CONST EFI_PEI_PPI_DESCRIPTOR *PpiList);}
-
-    SEC Core Data:
-    \begin{itemize}
-        \item Points to a data structure containing information about the operating environment:
-        \item Location and size of the temporary RAM
-        \item Location of the stack (in temporary RAM)
-        \item Location of the Boot Firmware Volume (BFV)
-    \end{itemize}
+    % \begin{itemize}
+    %     \item Populates Reset Vector Data structure
+    %     \item Saves Built-in self-test (BIST) status
+    %     \item Enables protected mode (16 bit -> 32 bit)
+    %     \item Configures temporary RAM (not only limited in processor cache) by using MTRR to configure CAR.
+    % \end{itemize}
 
 
-    PPI list:
-    \begin{itemize}
-
-        \item Temporary RAM support PPI
-
-              An optional service that moves temporary RAM contents to permanent RAM.
-
-        \item SEC platform information PPI
-
-              An optional service that abstracts platform-specific information to locate the PEIM dispatch order and maximum stack capabilities.
-    \end{itemize}
-
-
-    % The SEC phase is the first phase in the UEFI boot process. It is specified in \cite[Vol 1, Section 13 ]{pi-spec}. Under its responsibilities fall setting up temporary memory used for the stack and the establishment of the system's root of trust which is a foundation for all secure operations. Inductive security designs rely on this root of trust to build a chain of trust by having a module verify the integrity of its subsequent module.
-    ref to PSP
-
-    inductive security design
-    integrity of next module checked by the previous module
-
-    handles all platform restart events
-    applying power to system from unpowered state
-    restarting from active state
-    receiving exception conditions
-
-    creates temporary memory store
-    possibly CPU \ac{CAR}
-    cache behaves as linear store of memory
-    no evictions mode
-    every memory access is a hit
-    eviction not supported as main memory is not set up yet and would lead to platform failure
-
-
-    final step
-    Pass handoff information to the \ac{PEI} Foundation
-    % what is the PEI foundation
-    \begin{itemize}
-        \item state of platform
-        \item location and size of the \ac{BFV}
-        \item location and size of the temporary RAM
-        \item location and size of the stack
-        \item optionally one or more \acp{HOB} via the \ac{SEC} \ac{HOB} Data \ac{PPI}
-    \end{itemize}
-
-
-    Part of this process is a so called \ac{HOB} with a function pointer to a procedure to verify PE modules.
-
-    SEC Platform Information PPI
-    information about the health of the processor
-
-    SEC HOB Data PPI
+    The \ac{SEC} phase is the first phase performed during platform initialization. Under its responsibilities fall handling all platform restart events, setting up temporary memory and establishing the system's root of trust. It serves as the foundation for all secure operations on which inductive security designs rely to build a chain of trust by having a module verify the integrity of its subsequent module. For this the \ac{SEC} phase may verify the integrity of the \ac{PEI} foundation before transfering execution to it. When it transfers execution, it also passes information about the current state of the system, including location and size of the temporary stack, \ac{RAM}, and \ac{BFV}. It can also optionally pass protocols for the \ac{PEI} phase to use.
 
     \item{\acf{PEI}}
+
     Configures a system meeting the minimum prerequisites for the Driver Execution (DXE) phase, which is generally a linear array of RAM large enough for successful execution.
 
     PEI provides a framework allowing vendors to supply initialization modules for each functionally distinct piece of system hardware which must be initialized before the DXE phase.
@@ -272,10 +201,10 @@ focus will be on dxe and transient system load
 
     This phase ends when an OS boot loader calls 'ExitBootServices()'.
 
-    boottime and runtime services/driver
+    boot and runtime services/driver
     bootloader
-    \cite[13.3 System Partition]{uefi-spec}
-    \cite[3.5.1.1]{uefi-spec}
+    \cite[Section 13.3]{uefi-spec}
+    \cite[Section 3.5.1.1]{uefi-spec}
 
     ExitBootServices()
 
@@ -301,7 +230,7 @@ A FV is formatted with a binary file system, typically with Firmware File System
 In a FFS modules are stored as files, they can be executed at the fixed address from Read Only Memory (ROM) or through relocation in loaded memory. Within a file are multiple sections which then contain the "leaf" images. These are for example PE32 images.
 
 % https://edk2-docs.gitbook.io/edk-ii-build-specification/2_design_discussion/22_uefipi_firmware_images
-\cite[Volume 3, 2.1]{pi-spec}
+\cite[Vol. 3, Section 2.1]{pi-spec}
 
 \includegraphics[width=\textwidth]{flash_device}
 \ac{FD}

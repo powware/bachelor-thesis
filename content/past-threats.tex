@@ -17,9 +17,9 @@ The threats discussed range from actual attacks found in the wild and analyzed b
                                            &               & LoJax           \\
                                            &               & \textbf{ours}   \\
         \hline
-        \multirow{3}{4em}{Memory\-/based}  & Efiguard      & Efiguard        \\
-                                           & ESPecter      & Moonbounce      \\
-                                           & Dreamboot     & Cosmicstrand    \\
+        \multirow{3}{4em}{Memory\-/based}  & Efiguard      & Moonbounce      \\
+                                           & ESPecter      & Cosmicstrand    \\
+                                           & Dreamboot     &                 \\
                                            & FinSpy        &                 \\
     \end{tabular}
 \end{center}
@@ -57,7 +57,7 @@ There is no technical limitation as we show in \autoref{sec:attacks:neither:boot
 
 \subsection{Storage-based}
 
-Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \lstinline{C:/Windows/SysWOW64/autoche.exe} and then modifies the registry entry \lstinline{HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
+Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[Section 13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \lstinline{C:/Windows/SysWOW64/autoche.exe} and then modifies the registry entry \lstinline{HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
 
 \subsection{Memory-based}
 

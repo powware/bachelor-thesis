@@ -17,7 +17,7 @@ For the most part of this attack we assume, that the infection is performed afte
 When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}.
 Resulting in an inability to further deploy the Windows payload on the target system.
 Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
-This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from and as a result unable to decrypt the Windows installation \cite[12.]{windows-internals-7-part2}.
+This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from and as a result unable to decrypt the Windows installation \cite[Section 12]{windows-internals-7-part2}.
 
 \begin{figure}[htb]
     \centering
@@ -59,8 +59,8 @@ We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a techni
 But \ac{UEFI} protocol hooking does not require such an invasive and unportable technique.
 When we take a closer look at how protocols are returned to their user we can see why.
 The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance. \lstinline{HandleProtocol} is a simplified abstraction of \lstinline{OpenProtocol} and is implemented by the latter internally.
-\lstinline{OpenProtocol} offers many additional options such as keeping track of the protocol users and exclusivity \cite[7.3]{uefi-spec}.
-\autoref{lst:handle-protocol-simple-text-input-ex} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[4.3]{uefi-spec}.
+\lstinline{OpenProtocol} offers many additional options such as keeping track of the protocol users and exclusivity \cite[Section 7.3]{uefi-spec}.
+\autoref{lst:handle-protocol-simple-text-input-ex} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[Section 4.3]{uefi-spec}.
 The input parameters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure.
 When calling \lstinline{HandleProtocol} the value of the pointer is modified to point to the corresponding protocol instance.
 The protocol instance itself is previously allocated by a driver and installed onto the device handle in their Driver Binding Start function \TODO{Driver binding}.
@@ -68,12 +68,12 @@ The driver assigns the function fields with functions residing in the driver's i
 This is why it is important for a driver's image to remain loaded even after initial execution.
 The important fact about this process is, that a driver installs only one protocol instance per device handle and every protocol user receives the same address for to the same protocol instance, given they use the same device handle.
 The function interfaces of \lstinline{HandleProtocol} and \lstinline{OpenProtocol} would generally allow for the return of allocated memory containing a copy of the protocol's content, but the implementors of drivers managing multiple devices are encouraged to keep track of private data, that is necessary to manage a device, but not part of the protocol interface.
-This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[8]{tianocore-edk2-driver-writer-s-guide}.
+This private data struct contains the protocol instance, so that it is then possible to calculate the private data address using the protocol instance's address and the offset of the protocol within the struct \cite[Section 8]{tianocore-edk2-driver-writer-s-guide}.
 In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface.
 This keeps the protocol interface clean and limited to the public functionality, but the \ac{UEFI} boot services don't know about the size of the private data when managing protocol instances and therefor cannot make copies spanning the entire data.
 On top of that, private data likely contains information about the device state, changes in the state would have to occur in all instances of each protocol user instead, this would defeat the concept of private data.
 
-\lstinputlisting[language=C,captionpos=b,label=lst:private-data,firstline=6,caption={Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol} (snipptets from 8.2 and 8.5 \cite{tianocore-edk2-driver-writer-s-guide})}]{code/private_data.c}
+\lstinputlisting[language=C, captionpos=b, firstline=6, caption={[Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol}]Example of a driver using private data in the implementation of the \emph{Disk I/O Protocol} (snippets from \protect\cite[Sections 8.2 and 8.5]{tianocore-edk2-driver-writer-s-guide})}, label=lst:private-data]{code/private_data.c}
 
 Since our \ac{UEFI} payload is executed before the Windows Boot Manager we can query all instances of the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} and change the function pointer of \lstinline{ReadKeyStrokeEx} to point to our function hook.
 When a user later receives a pointer to the protocol instance, accessing the \lstinline{ReadKeyStrokeEx} field will cause our hook to be called instead of the original function.
@@ -88,7 +88,7 @@ We coin this BitLocker specific keylogger \emph{BitLogger}. A simplified version
 
 We want to use the recovery key programmatically, so we can't simply log all key presses in chronological order and evaluate them by hand later.
 The BitLocker recovery prompt has a few rules and does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
-Each block must be divisible by 11 \cite[9]{windows-internals-6-part2}.
+Each block must be divisible by 11 \cite[Section 9]{windows-internals-6-part2}.
 For this reason and because the cursor can be used to increment and decrement the current digit by using the up and down arrow keys, we have to implement internal tracking of the cursor advancement.
 The recovery prompt in \autoref{fig:bitlocker-recovery-prompt} also tells us, that the function keys (F1-F10) are accepted as input, with F10 mapping to zero, so we have to log these key presses as well.
 
@@ -106,7 +106,7 @@ We can ignore the last three protocols as they are not directly involved in medi
 The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} is produced by the driver, as it installs the protocol onto handles of devices it supports.
 So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts marked by the trailing 2.
 We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
-The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
+The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[Section 13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
 Keeping in mind the fact, that the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:simple-file-system-protocol]{File Protocol}.
 It becomes obvious that all file-wise operations are, is multiple layers of abstraction on top of block-wise access to the underlying media, performed through the \emph{Block \ac{I/O} Protocol}.
 Inspired by the BitLocker filter driver in \autoref{fig:bitlocker-volume-access-driver-stack}, which de- and encrypts each block as it passes through, we hook the \emph{Block \ac{I/O} Protocol} functions \lstinline{ReadBlocks} and \lstinline{WriteBlocks}, their signatures are shown in \autoref{lst:block-io-protocol}.
@@ -164,9 +164,9 @@ When either the BitLocker validation profile is misconfigured (for example \lsti
 We are unable to receive a recovery key as none has to be entered and in turn we cannot decrypt the drive.
 In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
 
-hook \ac{TCG}2 Protocol \cite[6.7.3]{tcg-efi-protocol-spec}
+hook \ac{TCG}2 Protocol \cite[Section 6.7.3]{tcg-efi-protocol-spec}
 \ac{TPM} communication
-%\cite[12.7]{tcg-tpm-library-part3-commands}
+%\cite[Section 12.7]{tcg-tpm-library-part3-commands}
 receive bitlocker \ac{VMK} key and send to dislocker
 \cite{bde-format-spec}
 \cite{tpm-sniffing}
