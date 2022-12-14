@@ -230,7 +230,6 @@ Infection with the rootkit is has a much higher barrier of entry, as it requires
 \autoref{sec:test-setup} potentially exploit \ac{OEM} specific flash mechanism, signing with stolen private key, part of the supply chain, might also be physical \TODO{LIST ALL OPTIONS}
 
 We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
-When we have the image we can edit it with UEFITool, which is an editor for firmware images conforming to the \ac{UEFI} \ac{PI} specification \cite{uefitool}.
 In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
 % since files are part of file sections we cant drop in the .efi
 We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol. 3, Section 2.1.4.1.4]{pi-spec}.

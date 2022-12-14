@@ -14,7 +14,23 @@ protected mode, takes care of memory management and mapping with a one to one ma
 - abstract interfaces to support a range of processors without the need for knowledge about underlying hardware for the bootloader
 - sharable persistent storage for platform support code
 security
-\TODO{MEMORY LAYOUT no memory protection, RWE everywhere}
+
+% Uniprocessor
+
+% Long mode, in 64-bit mode
+
+% Paging mode is enabled and any memory space defined by the UEFI memory map is identity
+% mapped (virtual address equals physical address), although the attributes of certain regions
+% may not have all read, write, and execute attributes or be unmarked for purposes of platform
+% protection. The mappings to other regions, such as those for unaccepted memory, are
+% undefined and may vary from implementation to implementation.
+
+% Interrupts are enabled–though no interrupt services are supported other than the UEFI boot
+% services timer functions (All loaded device drivers are serviced synchronously by “polling.”)
+
+% 128 KiB, or more, of available stack space
+
+\cite[2.3.4]{uefi-spec}
 
 It was designed to replace the legacy \acl{BF} \ac{BIOS} \TODO{which wasnt very standardized}, while also providing backwards compatibility by defining the \acf{CSM} allowing \ac{UEFI} firmware to boot legacy \ac{BIOS} applications.
 
@@ -165,7 +181,7 @@ If the device path of a boot option only points to a device instead to the file 
 
 \begin{figure}[htb]%
     \centering%
-    \includegraphics[width=0.8\textwidth]{uefi_boot_sequence}%
+    \includegraphics[width=0.8\textwidth]{uefi/uefi_boot_sequence}%
     \caption{Booting Sequence (taken from \cite[Figure 2-1]{uefi-spec})}%
     \label{fig:uefi-boot-sequence}%
 \end{figure}

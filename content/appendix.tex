@@ -1,6 +1,8 @@
 % !TEX root = ../thesis.tex
 
-\chapter{Protocols}
+\chapter{Appendix}
+
+\section{Protocols}
 
 \lstinputlisting[language=C,firstline=4,caption={Loaded Image Protocol},captionpos=b,label=lst:loaded-image-protocol]{code/protocols/LoadedImage.h}
 
@@ -27,3 +29,91 @@
 \clearpage
 
 \lstinputlisting[language=C,firstline=4,caption={\ac{TCG}2 Protocol},captionpos=b,label=lst:tcg2-protocol]{code/protocols/Tcg2Protocol.h}
+
+\section{Firmware File Types}
+
+\begin{table}
+    \centering
+    \begin{tabular}{p{20em}|p{3em}|p{15em}}
+        \code{EFI\_FV\_FILETYPE\_RAW}                                         & \code{0x01}             & Binary data                                                                                                                \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_FREEFORM}                                    & \code{0x02}             & Sectioned data                                                                                                             \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_SECURITY\_CORE}                              & \code{0x03}             & Platform core code used during the SEC phase                                                                               \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_PEI\_CORE}                                   & \code{0x04}             & PEI Foundation                                                                                                             \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_DXE\_CORE}                                   & \code{0x05}             & DXE Foundation                                                                                                             \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_PEIM}                                        & \code{0x06}             & PEI module (PEIM)                                                                                                          \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_DRIVER}                                      & \code{0x07}             & DXE driver                                                                                                                 \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_COMBINED\_PEIM\_DRIVER}                      & \code{0x08}             & Combined PEIM/DXE driver                                                                                                   \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_APPLICATION}                                 & \code{0x09}             & Application                                                                                                                \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_MM}                                          & \code{0x0A}             & Contains a PE32+ image that will be loaded into MMRAM in MM Traditional Mode.                                              \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_FIRMWARE\_VOLUME\_IMAGE}                     & \code{0x0B}             & Firmware volume image                                                                                                      \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_COMBINED\_MM\_DXE}                           & \code{0x0C}             & Contains PE32+ image that will be dispatched by the DXE Dispatcher and will also beloaded into MMRAM in MM Tradition Mode. \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_MM\_CORE}                                    & \code{0x0D}             & MM Foundation that support MM Traditional Mode.                                                                            \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_MM\_STANDALONE}                              & \code{0x0E}             & Contains a PE32+ image that will be loaded into MMRAM in MM Standalone Mode.                                               \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_MM\_CORE\_STANDALONE}                        & \code{0x0F}             & MM Foundation that support MM Tradition Mode and MM Standalone Mode.                                                       \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_OEM\_MIN... EFI\_FV\_FILETYPE\_OEM\_MAX}     & \code{0xC0-}\code{0xDF} & OEM File Types                                                                                                             \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_DEBUG\_MIN... EFI\_FV\_FILETYPE\_DEBUG\_MAX} & \code{0xE0-}\code{0xEF} & Debug/Test File Types                                                                                                      \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_FFS\_MIN... EFI\_FV\_FILETYPE\_FFS\_MAX}     & \code{0xF0-}\code{0xFF} & Firmware File System Specific File Types                                                                                   \\
+        \hline
+        \code{EFI\_FV\_FILETYPE\_FFS\_PAD}                                    & \code{0xF0}             & Pad File For FFS                                                                                                           \\
+    \end{tabular}
+    \caption{Firmware File Types \cite[Vol. 3, Table 3-3]{pi-spec}}
+    \label{tab:file-types}
+\end{table}
+
+\clearpage
+
+\section{Firmware File Section Types}
+
+\begin{table}
+    \centering
+    \begin{tabular}{p{20em}|p{3em}|p{15em}}
+        \code{EFI\_SECTION\_COMPRESSION}            & \code{0x01} & Encapsulation section where other sections are compressed.                                                                                              \\
+        \hline
+        \code{EFI\_SECTION\_GUID\_DEFINED}          & \code{0x02} & Encapsulation section where other sections have format defined by a GUID.                                                                               \\
+        \hline
+        \code{EFI\_SECTION\_DISPOSABLE}             & \code{0x03} & Encapsulation section used during the build process but not required for execution.                                                                     \\
+        \hline
+        \code{EFI\_SECTION\_PE32}                   & \code{0x10} & PE32+ Executable image.                                                                                                                                 \\
+        \hline
+        \code{EFI\_SECTION\_PIC}                    & \code{0x11} & Position-Independent Code.                                                                                                                              \\
+        \hline
+        \code{EFI\_SECTION\_TE}                     & \code{0x12} & Terse Executable image.                                                                                                                                 \\
+        \hline
+        \code{EFI\_SECTION\_DXE\_DEPEX}             & \code{0x13} & DXE Dependency Expression.                                                                                                                              \\
+        \hline
+        \code{EFI\_SECTION\_VERSION}                & \code{0x14} & Version, Text and Numeric.                                                                                                                              \\
+        \hline
+        \code{EFI\_SECTION\_USER\_INTERFACE}        & \code{0x15} & User-Friendly name of the driver.                                                                                                                       \\
+        \hline
+        \code{EFI\_SECTION\_COMPATIBILITY16}        & \code{0x16} & DOS-style 16-bit EXE.                                                                                                                                   \\
+        \hline
+        \code{EFI\_SECTION\_FIRMWARE\_VOLUME\_IMAG} & \code{0x17} & PI Firmware Volume image.                                                                                                                               \\
+        \hline
+        \code{EFI\_SECTION\_FREEFORM\_SUBTYPE\_GUI} & \code{0x18} & Raw data with GUID in header to define format.                                                                                                          \\
+        \hline
+        \code{EFI\_SECTION\_RAW}                    & \code{0x19} & Raw data.                                                                                                                                               \\
+        \hline
+        \code{EFI\_SECTION\_PEI\_DEPEX}             & \code{0x1B} & PEI Dependency Expression.                                                                                                                              \\
+        \hline
+        \code{EFI\_SECTION\_MM\_DEPEX}              & \code{0x1C} & Leaf section type for determining the dispatch order for an MM Traditional driver in MM Traditional Mode or MM Standaline driver in MM Standalone Mode. \\
+    \end{tabular}
+    \caption{Firmware File Section Types \cite[Vol. 3, Table 3-4]{pi-spec}}
+    \label{tab:file-section-types}
+\end{table}
