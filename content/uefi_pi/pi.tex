@@ -41,6 +41,7 @@ The \ac{PI} Architecture defines distinct phases.
 focus will be on dxe and transient system load
 \autoref{fig:pi-phases}
 
+\TODO{me}
 
 
 \begin{figure}[htb]%
@@ -52,15 +53,6 @@ focus will be on dxe and transient system load
 
 
 \subsubsection{\acf{SEC}}
-% % Since the CPU doesn't know about UEFI or BIOS the initial step is exactly the same, it starts in 16-bit real mode and fetches it's first instruction from `CS = 0xF000` and `IP = 0xFFF0` but instead of shifting `CS` left by four bits and adding `IP`, the `CS` base register is initialized to `0xFFFF'0000`. So the first instruction is fetched from the physical address `0xFFFF'FFF0` (`0xFFFF'0000 + 0xFFF0`). The CS base address remains at this initial value until the CS selector register is loaded by software (e.g. far jump or call instruction)
-
-% \begin{itemize}
-%     \item Populates Reset Vector Data structure
-%     \item Saves Built-in self-test (BIST) status
-%     \item Enables protected mode (16 bit -> 32 bit)
-%     \item Configures temporary RAM (not only limited in processor cache) by using MTRR to configure CAR.
-% \end{itemize}
-
 
 The \ac{SEC} phase is the first phase performed during platform initialization.
 Under its responsibilities fall handling all platform restart events, setting up temporary memory and establishing the system's root of trust.
@@ -116,6 +108,7 @@ The two phases work together until the \ac{OS} takes over control of the system 
 This protocol implements the \ac{UEFI} boot manager policy as defined in \cite[Section 3]{uefi-spec} and summarized in \autoref{sec:uefi-pi:uefi:boot-manager}.
 It may return or call the \ac{DXE} dispatcher directly when discovering additional \acp{FV} or when not enough drivers are initialized to successfully boot from a device.
 
+\TODO{finish}
 % - Initializing console devices based on the ConIn, ConOut, and StdErr environment variables
 % - Loading device drivers listed in the DriverOrder environment variables
 % - Attempting to load and execute boot selections list from the BootOrder environment variables
@@ -138,6 +131,8 @@ leaves the implementation of the menu system as value added implementation space
 
 \subsubsection{\acf{TSL}}
 
+\TODO{me}
+
 The Transient System Load (TSL) is primarily the OS vendor provided boot loader. Both the TSL and the Runtime Services (RT) phases may allow access to persistent content, via UEFI drivers and UEFI applications. Drivers in this category include PCI Option ROMs.
 
 This phase ends when an OS boot loader calls 'ExitBootServices()'.
@@ -150,18 +145,20 @@ bootloader
 ExitBootServices()
 
 \subsubsection{\acf{RT}}
+
+\TODO{me}
+
 Boot service drivers have been unloaded and only runtime services are accessible.
 
 
 runtime services/driver
 
 \subsubsection{\acf{AL}}
+
+\TODO{me}
+
 The After Life (AL) phase consists of persistent UEFI drivers used for storing the state of the system during the OS orderly shutdown, sleep, hibernate or restart processes.
 
 hibernation
 sleep
 
-
-
-
-\input{content/uefi_pi/pi_security}

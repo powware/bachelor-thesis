@@ -15,6 +15,7 @@ protected mode, takes care of memory management and mapping with a one to one ma
 - sharable persistent storage for platform support code
 security
 
+\TODO{here}
 % Uniprocessor
 
 % Long mode, in 64-bit mode
@@ -186,15 +187,9 @@ Implementations usually allow for an interactive menu, where users can modify th
 Boot options are generally first attempted to be loaded through the \code{LoadImage} boot service.
 If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}\cite[Section 3.1.2]{uefi-spec}, for x64 it uses the default path \code{\textbackslash EFI\textbackslash BOOT\textbackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
 
-
-
-
 \begin{figure}[htb]%
     \centering%
     \includegraphics[width=0.8\textwidth]{uefi/uefi_boot_sequence}%
     \caption{Booting Sequence (taken from \cite[Figure 2-1]{uefi-spec})}%
     \label{fig:uefi-boot-sequence}%
 \end{figure}
-
-
-\input{content/uefi_pi/uefi_security}
