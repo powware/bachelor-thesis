@@ -22,6 +22,26 @@ Security2 Architecture Protocol
 
 \subsubsection{Firmware Protection}
 
+The \ac{DXE} phase also offers drivers to register notification
+% End of Dxe Event
+% From SEC through the signaling of this event, all of the components should be under the authority of
+% the platform manufacturer and not have to worry about interaction or corruption by 3rd party
+% extensible modules such as UEFI drivers and UEFI applications.
+
+% Platform may choose to lock certain resources or disable certain interfaces prior to executing third
+% party extensible modules. Transition from the environment where all of the components are under
+% the authority of the platform manufacturer to the environment where third party modules are
+% executed is a two-step process:
+
+% 1. End of DXE Event is signaled. This event presents the last opportunity to use resources or
+% interfaces that are going to be locked or disabled in anticipation of the invocation of 3rd party
+% extensible modules.
+% 2. DXE SMM Ready to Lock Protocol is installed. PI modules that need to lock or protect their
+% resources in anticipation of the invocation of 3rd party extensible modules should register for
+% notification on installation of this protocol and effect the appropriate protections in their
+% notification handlers
+
+
 % https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
 % NIST 800-147 BIOS Protection Guidelines [15]
 % NIST 800-147B BIOS Protection Guidelines for Servers [16]

@@ -58,8 +58,8 @@ We can use the file system related commands to test the \ac{NTFS} driver.
 The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
 
 % explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[3.3 Initialization]{uefi-shell-spec}.
-\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[5.3 Shell Commands]{uefi-shell-spec}.
+Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[Section 3.3]{uefi-shell-spec}.
+\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[Section 5.3]{uefi-shell-spec}.
 
 
 \begin{figure}[htb]
@@ -74,7 +74,7 @@ Upon invocation, the shell application performs an initialization during which i
 % consistent device mapping, comparable to partition names in windows
 The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles.
 The aliases can be used instead of a device path when submitting commands via the command line interface.
-The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[3.7.2. Mappings]{uefi-shell-spec}.
+The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[Section 3.7.2]{uefi-shell-spec}.
 These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
 
 \TODO{find in spec what precise mapping mechanism}
@@ -232,13 +232,13 @@ Infection with the rootkit is has a much higher barrier of entry, as it requires
 We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
 In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
 % since files are part of file sections we cant drop in the .efi
-We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol. 3, Section 2.1.4.1.4]{pi-spec}.
+We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol. 3, 2.1.4.1.4]{pi-spec}.
 % compile dxe driver within ovmf
 % generate unused volume to receive .ffs file with version, depex, user interface and pe section
 For our \ac{UEFI} payload to be generated as a sectioned \ac{FFS} file we add our files to the build process of \ac{OVMF} package in \ac{EDK} II. When part of the \ac{FDF} which is used to generate a firmware image file, the intermediary \lstinline{.ffs} files from the build process are of much value for us.
 % pack executable binary as uefi module
 % EDK II produces freeform image with one raw section
-For our Windows payload we can use a special \ac{EDK} II module type which takes binary files as input, resulting in a sectioned file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, with no restrictions on the contained file sections \cite[Vol. 3, Section 2.1.4.1.7]{pi-spec}.
+For our Windows payload we can use a special \ac{EDK} II module type which takes binary files as input, resulting in a sectioned file of type \lstinline{EFI_FV_FILETYPE_FREEFORM}, with no restrictions on the contained file sections \cite[Vol. 3, 2.1.4.1.7]{pi-spec}.
 The output contains only one file section of type \lstinline{EFI_SECTION_RAW} consisting of the binary payload.
 This use of this special module has the benefit that its \ac{GUID} is used to attribute the sectioned file when being placed in the firmware volume.
 Not that we have \lstinline{.ffs} files corresponding to all our resources used in the attack we can import these into the target image with UEFITool.

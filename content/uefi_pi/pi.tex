@@ -2,16 +2,17 @@
 
 \section{\acf{PI}}
 
+\ac{DXE} does not require \ac{PEI}, just the \acp{HOB}, \ac{PEI} is one of many possible implementations
 \TODO{me}
 
 \subsection{\acs{UEFI}/\acs{PI} Firmware Images}
 
-\cite[Vol. 3, Section 2]{pi-spec} defines the firmware storage design.
-A Firmware Image is stored in one or more non\-/volatile physical storage devices called \acp{FD}, they are most commonly flash devices \cite[Vol. 3, Section 2.1]{pi-spec}.
-Flash often offers the ability to restrtict read and write properties differently depending on the storage region \cite[Vol. 3, Section 2.1.1]{pi-spec}.
+\cite[Vol. 3, 2]{pi-spec} defines the firmware storage design.
+A Firmware Image is stored in one or more non\-/volatile physical storage devices called \acp{FD}, they are most commonly flash devices \cite[Vol. 3, 2.1]{pi-spec}.
+Flash often offers the ability to restrtict read and write properties differently depending on the storage region \cite[Vol. 3, 2.1.1]{pi-spec}.
 \ac{UEFI} variables may reside in a region that remains read- and writable during the whole operation of a system, whereas the code storage may only be writable during the initial \ac{PI} phases.
 Firmware images might be split over multiple physical \acp{FD}, but may also be inturn be logically be split into \acp{FV}.
-\acp{FV} are comparable to hard drive volumes as they also are formatted with a file system, usually the \ac{PI} \ac{FFS} format defined in \cite[Vol. 3, Section 2.2]{pi-spec}.
+\acp{FV} are comparable to hard drive volumes as they also are formatted with a file system, usually the \ac{PI} \ac{FFS} format defined in \cite[Vol. 3, 2.2]{pi-spec}.
 The \ac{PI} \ac{FFS} is a flat file system consisting of a single list of files without any directory structure.
 Parsing the volume is done by iterating over all files one by one.
 Files contain code or data in the form of sections.
@@ -28,7 +29,7 @@ The cursor is on the executable section of a \acs{DXE} driver.
 
 \begin{figure}[htb]%
     \centering%
-    \includegraphics[width=\textwidth]{pi/ovfm_uefitool.png}%
+    \includegraphics[width=\textwidth]{pi/ovfm_uefitool}%
     \caption{\ac{OVMF} opened in \program{UEFITool}}%
     \label{fig:ovmf-in-uefitool}%
 \end{figure}
@@ -61,18 +62,26 @@ focus will be on dxe and transient system load
 % \end{itemize}
 
 
-The \ac{SEC} phase is the first phase performed during platform initialization. Under its responsibilities fall handling all platform restart events, setting up temporary memory and establishing the system's root of trust. It serves as the foundation for all secure operations on which inductive security designs rely to build a chain of trust by having a module verify the integrity of its subsequent module. For this the \ac{SEC} phase may verify the integrity of the \ac{PEI} foundation before transfering execution to it. When it transfers execution, it also passes information about the current state of the system, including location and size of the temporary stack, \ac{RAM}, and \ac{BFV}. It can also optionally pass protocols for the \ac{PEI} phase to use.
+The \ac{SEC} phase is the first phase performed during platform initialization.
+Under its responsibilities fall handling all platform restart events, setting up temporary memory and establishing the system's root of trust.
+It serves as the foundation for all secure operations on which inductive security designs rely to build a chain of trust by having a module verify the integrity of its subsequent module.
+For this the \ac{SEC} phase may verify the integrity of the \ac{PEI} foundation before transfering execution to it.
+As this is very specific to how the platform is implemented, the \ac{SEC} phase is only specified as the basic requirements that it needs to meet before handing over execution to the \ac{PEI} phase.
+When it transfers execution, it passes information about the current state of the system, including location and size of the temporary stack, \ac{RAM}, and \ac{BFV}.
+It can also optionally pass protocols for the \ac{PEI} phase to use.
 
 \subsubsection{\acf{PEI}}
 
 The \ac{PEI} phase configures the system to meet the minimum requirements for the \ac{DXE}.
 Its job is the intialization of all system hardware requiring to be initialized beforehand, as well as the initialization of permanent memory, which is later described in \acp{HOB} to be passed off to the \ac{DXE} phase \cite[Vol. 1, 2.1]{pi-spec}.
 The \ac{PEI} phase is architecturally a stripped down version of the \ac{DXE} phase, as it offers the same extensibility through modules supplied by the different \acp{OEM} responsible for the component initialization.
+As the \ac{PEI}'s environment is still very restricted and the main memory only initialized towards the end of the phase, more complex processing is to be done in the \ac{DXE}.
 Even though the implementation of the \ac{PEI} phase is the most hardware dependent, the core functionality of the \ac{PEI} is common to all processor architectures and offered through the \ac{PEI} foundation \cite[Vol. 1, 2.2]{pi-spec}.
-It is the module initially invoked by the \ac{SEC} phase and responsible of dispatching further \acp{PEIM} and offering a intermodule communication through the management of \acp{PPI} \cite[Vol. 1, 2.5]{pi-spec}.
+It is the module initially invoked by the \ac{SEC} phase and responsible of dispatching further \acp{PEIM} and offering am intermodule communication through the management of \acp{PPI} \cite[Vol. 1, 2.5]{pi-spec}.
 The \ac{PEI} foundation implements a \ac{PEI} dispatcher, who iterates over \acp{PEIM} found in \acp{FV}, to evaluate their \acp{DEPEX}.
 \acp{DEPEX} are logical combinations of \acp{PPI} that must be present before loading a \ac{PEIM}.
-Loading \acp{PEIM} in turn enables them to install new \acp{PPI} and discover additional \acp{FV}, leading to previously unfullfilled \acp{DEPEX} now being fullfilled.
+Loading \acp{PEIM} results in the installation of new \acp{PPI} and the discovery of additional \acp{FV}.
+Theis leads to previously unfullfilled \acp{DEPEX} to now be fullfilled and the dispatcher loading these \acp{PEIM} on their next evaluation.
 This process is repeated until no more \acp{PEIM} are able to be dispatched.
 The foundation then invokes the \emph{\ac{DXE} IPL \ac{PPI}}, which loads the \ac{DXE} foundation into memory, to then transfer execution \cite[Vol. 1, 2.6]{pi-spec}.
 The \ac{BFV} containing the \ac{PEI} foundation, initially discovered by the \ac{SEC} phase, and any additionally discovered \acp{FV} are also passed off to the \ac{DXE} in the form of \acp{HOB}.
@@ -83,57 +92,33 @@ One of which is the \emph{Security PPI}, it used to maintain the chain of trust 
 
 \subsubsection{\acf{DXE}}
 
+The \ac{DXE} phase is responsible to finalize the initialization of all platform components, as well as implementing \ac{UEFI}, the \ac{UEFI} environment and its system abstractions as they are defined in \cite{uefi-spec}.
+As mentioned earlier, the \ac{DXE} phase is architecturally similar to the \ac{PEI} phase, as it also has a foundation with a dispatcher, extensibile modules in the form of \ac{DXE} drivers and uses \ac{UEFI} protocols for intermodule communication \citep[Vol. 2, 2.1]{pi-spec}.
+The \ac{DXE} foundation is only dependent on the list of \acp{HOB} it receives from the previous phase, allowing to use it with a \ac{PEI} or a different implementation.
+This also makes it possible to unload the previous stage, freeing up memory \cite[Vol. 2, 9.1]{pi-spec}.
+The \ac{DXE} foundation produces the \ac{UEFI} boot and runtime services as well as additional \ac{DXE} services and offers them through the \ac{UEFI} system table to its \ac{DXE} drivers as it can be seen in \autoref{fig:uefi-system-table}\cite[Vol. 2, 2.2.1]{pi-spec}.
+\ac{DXE} drivers are very similar to \ac{UEFI} images as they even share the same entry point signature, they also come in boot and runtime variants \cite[Vol. 2, 11.2.3]{pi-spec}.
+The implementation of the \ac{UEFI} system table services is done by \ac{DXE} drivers, who provide architectural protocols for the \ac{DXE} foundation to consume \cite[Vol. 2, 12.1]{pi-spec}.
+Thus the foundation has to provide the most basic services, required to load and execute \ac{DXE} drivers, on its own.
+\ac{DXE} drivers implementing architectural protocols are called early drivers, they can not assume that that all \ac{UEFI} system table services are already available to them and do not follow the \ac{UEFI} driver model \cite[Vol. 2, 11.2.1]{pi-spec}.
+To guarantee that some of the architectural drivers are loaded before others, an \emph{a priori} file can be used.
+When an \emph{a priori} file is present on a \ac{FV}, it is read to provide a deterministic order of drivers, which are to be executed before the dispatcher starts its regular \ac{DXE} driver discovery and \ac{DEPEX} evaluation on the rest of the architectural drivers \cite[Vol. 2, 10.3]{pi-spec}.
+\ac{DXE} drivers which follow the \ac{UEFI} driver model have an empty \ac{DEPEX}, as installing the Driver Binding Protocol to its own image handle does not require any architectural protocols.
+They are still only disptached after all architectural protocols have been installed \cite[Vol. 2, 11.2.2]{pi-spec}.
+The dispatcher also makes use of a Security Architectural Protocol to authenticate each \ac{DXE} driver to deciding whether or not to execute it \cite[Vol. 2, 10.13]{pi-spec}.
 
-The DXE Foundation produces a set of Boot, Runtime and DXE Services and exposes them through handle databases in the EFI System Table. It is designed to be completely portable, independent of processor, chipset and platform. The only dependent of the Hand-Off Blocks from the PEI phase, after these are processed the all prior phases can be unloaded.
-
-% #### DXE Dispatcher
-
-The DXE Dispatcher discovers DXE drivers within the Firmware Volume (FV) and executes them in the correct order, respecting their dependencies towards each other. The Firmware Volume file format allows the DXE driver images to be packaged with expressions about their dependencies. Since the DXE Drivers are PE/COFF images the dispatcher comes with an apropriate loader to load and execute the image format.
-
-% #### DXE Drivers
-
-% - Drivers that execute very early in the DXE phase
-% - Drivers that comply with the UEFI Driver Model
-
-The DXE Drivers are responsible for initializing the processor, chipset,
-and platform components as well as providing software abstractions for console and
-boot devices in the form of services.
-
-dxe core/foundation
-platform independent
-is implementation of UEFI
-UEFI Boot Services
-UEFI Runtime Services
-DXE Services
-
-dxe dispatcher
-discover drivers stored in firmware volumes and execute in proper order
-apriori file optionally in FV or depex of driver
-after dispatching all drivers in the dispatch queue hands control over to BDS
-
-dxe drivers
-init processor, chipset and platform
-produce arichtectural protocols and \ac{I/O} abstractions for consoles and boot devices
-
-% responsibilities
-initializing the processor, chipset, and platform components
-providing software abstractions for system services, console devices, and boot devices.
-
-\TODO{DXE\_IMAGE sections and DEPEX section}
+When the \ac{DXE} dispatcher is unable to load any new drivers it transfers execution to the \emph{\ac{BDS} Architectural Protocol} \cite[Vol. 2, 2.4]{pi-spec}.
+This presents the advancement into the \ac{BDS} phase, but not simaltaniously the end of the \ac{DXE} phase \cite[Vol. 2, 2.1]{pi-spec}.
+The two phases work together until the \ac{OS} takes over control of the system with the call to \code{ExitBootServices()}.
 
 \subsubsection{\acf{BDS}}
-The DXE Foundation will hand control to the BDS Architectural Protocol after all of the DXE drivers whose dependencies have been satisfied have been loaded and executed by the DXE Dispatcher.
+
+This protocol implements the \ac{UEFI} boot manager policy as defined in \cite[Section 3]{uefi-spec} and summarized in \autoref{sec:uefi-pi:uefi:boot-manager}.
+It may return or call the \ac{DXE} dispatcher directly when discovering additional \acp{FV} or when not enough drivers are initialized to successfully boot from a device.
 
 % - Initializing console devices based on the ConIn, ConOut, and StdErr environment variables
 % - Loading device drivers listed in the DriverOrder environment variables
 % - Attempting to load and execute boot selections list from the BootOrder environment variables
-
-During the BDS phase new Firmware Volumes (FV) might be discovered and control is once again handed to the DXE Dispatcher to load drivers found on these additional volumes.
-
-
-DXE arichtectural protocol
-one function entry
-platform boot
 
 attempts to connect boot devices required to load the os
 discovers volumes containing new drivers

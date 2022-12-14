@@ -105,7 +105,7 @@ We can start by checking the \lstinline{.inf} file of the driver, which declares
 We can ignore the last three protocols as they are not directly involved in media access.
 The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} is produced by the driver, as it installs the protocol onto handles of devices it supports.
 So the only relevant protocols it consumes are the \emph{Disk \ac{I/O} Protocol} and the \emph{Block \ac{I/O} Protocol} as well as their respective asynchronous counterparts marked by the trailing 2.
-We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[13.8 and 13.10]{uefi-spec}.
+We will ignore the asynchronous protocols, as they only serve to further abstract their synchronous version \cite[Sections 13.8 and 13.10]{uefi-spec}.
 The same could be said for the \emph{Disk \ac{I/O} Protocol}, as it abstract the \emph{Block \ac{I/O} Protocol} to offer an offset-length driven continous access to the underlying block device \cite[Section 13.7]{uefi-spec}, but this is the protocol primarily used by the driver and the \emph{Block \ac{I/O} Protocol} is only used directly to retrieve volume and block size, as well as read the first block to determine whether the volume is \ac{NTFS} formatted.
 Keeping in mind the fact, that the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} is only used to open a volume and any further access to the volume is done through the \hyperref[lst:simple-file-system-protocol]{File Protocol}.
 It becomes obvious that all file-wise operations are, is multiple layers of abstraction on top of block-wise access to the underlying media, performed through the \emph{Block \ac{I/O} Protocol}.

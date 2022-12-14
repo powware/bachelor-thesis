@@ -89,7 +89,7 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
 
 \begin{figure}[htb]%
     \centering%
-    \includegraphics[width=0.7\textwidth]{uefi/handle_types.jpg}%
+    \includegraphics[width=0.7\textwidth]{uefi/handle_types}%
     \caption{Handle types (taken from \cite[Figure 3]{tianocore-edk2-driver-writer-s-guide})}%
     \label{fig:handle-types}%
 \end{figure}
@@ -126,7 +126,17 @@ The firmware can also call the \code{Stop} of the Driver Binding Protocol functi
 The UEFI System Table is an important data structure, it provides access to system configuration information, generic boot and runtime services \cite[Section 3.3]{tianocore-edk2-driver-writer-s-guide}.
 It also serves as the entrance in to the \ac{UEFI} environment, as a loaded images receives a only pointer to the system table as well as its image handle through its entry point. Although the Loaded Image Protocol provides and interface to hand optional load options to the image \cite{beyond-bios}.
 
+\autoref{fig:uefi-system-table}
+
+
 \TODO{during boot boot and runtime services are available}
+
+\begin{figure}[htb]%
+    \centering%
+    \includegraphics[width=0.8\textwidth]{uefi/uefi_system_table}%
+    \caption{\ac{UEFI} System Table (taken from \cite[Vol 2, Figure 2-5]{pi-spec})}%
+    \label{fig:uefi-system-table}%
+\end{figure}
 
 
 \subsubsection{Boot Services}
