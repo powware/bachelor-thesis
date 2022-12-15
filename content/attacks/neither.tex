@@ -2,12 +2,7 @@
 
 \section{Neither Secure Boot nor BitLocker}
 
-% premise of attack
-Our first attack is performed on a system with Secure Boot and BitLocker disabled.
-% general concept
-% deviate the boot flow
-% access to the hard drive from the UEFI Environment
-% deploy payload so that it is executed
+In our first attack we implement a baseline attack, that we can use in the following attacks.
 We implement a bootkit and a rootkit, that deviate the regular boot flow to access the Windows installation and deploy a payload that is automatically executed upon Windows boot.
 
 \subsection{Bootkit}
@@ -35,50 +30,12 @@ Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI}
 
 \subsubsection{File access}
 
-% UEFI does not support NTFS
-For our storage-based approach we now need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
-% search for UEFI NTFS driver with write access
-% open source fork of ntfs-3g for UEFI
+For our storage-based approach we need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
 We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
-
-% compile
-% spits out .efi file
-We can compile this driver with \ac{EDK} II to receive a \lstinline{.efi} executable file.
-
-% try in EFI shell
-% what is the EFI shell
-\TODO{better summary of UEFI shell}
-Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment \cite[Section 1.1]{uefi-shell-spec}.
-It offers commands related to boot and general configuration, device and driver management, file system access, networking \cite[Section 5.1]{uefi-shell-spec} and supports scripting \cite[Section 4]{uefi-shell-spec}.
-We can use the file system related commands to test the \ac{NTFS} driver.
-\autoref{fig:uefi-shell} depicts an exemplary output of an \ac{EDK} II \ac{UEFI} shell emulated under QEMU.
-
-% how to use uefi shell
-% we are trying in qemu where the shell is available in boot options
-% real hardware might require the uefi shell application .efi from the user via usb stick
-The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
-
-% explain shell screen
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[Section 3.3]{uefi-shell-spec}.
-\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[Section 5.3]{uefi-shell-spec}.
+Using \ac{EDK} II to compile it, we receive a \program{.efi} executable file.
 
 
-% showing mapping, also available with map command
-% consistent device mapping, comparable to partition names in windows
-The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles.
-The aliases can be used instead of a device path when submitting commands via the command line interface.
-The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[Section 3.7.2]{uefi-shell-spec}.
-These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
-
-\TODO{find in spec what precise mapping mechanism}
-When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices.
-This identification is performed via instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
-% explain Simple File System Protocol
-The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} \cite[Section 13.4]{uefi-spec} provides, together with the \hyperref[lst:simple-file-system-protocol]{File Protocol}, file-type access to the device it is installed on \cite[Section 13.5]{uefi-spec}.
-The two protocols are independent of the underlying file system the media is formatted with.
-
-
-% load NtfsDxe.efi
+We can use the \ac{UEFI} shell and its file system related commands to test the \ac{NTFS} driver.
 Our \ac{NTFS} \ac{UEFI} Driver is one such abstraction and needs to be loaded, this is done by first entering the alias, for the file system containing the \lstinline{NtfsDxe.efi}.
 This effectively switches the console's working directory to be the root of the entered file system, now we can invoke \lstinline{load} with the path to the executable.
 The output indicates whether loading the driver was successful.
@@ -95,18 +52,10 @@ The mapping also shows us that the file system now sits on top of a device which
 As done before we now type the alias of the new file system to switch to NTFS formatted file system.
 With \lstinline{ls} we can list the current directory's content and confirm by the presence of the Windows folder that we are on the volume containing the Windows installation.
 \TODO{maybe vol} % With \lstinline{vol} we can query information about the current volume, this shows us that our d
-
-
-% navigate to Windows folder
-% means read works
-% try creating folder to test write
 \TODO{Windows file access privileges}
 We now navigate into the Windows folder to test whether we have unrestricted read and write access, since is not the case if done by an unprivileged user when performed from within Windows.
 Accessing folders and viewing their contents is possible but creation of a new folder fails.
 
-% debug why it failed
-% find out its from windows having hibernation enabled by default
-% change source code to not fallback to read only when encountering hibernation file
 Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode.
 Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file. \TODO{this is might not be the hibernation file but something else}
 On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[Section 7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[Section 13.5]{uefi-spec}.
@@ -114,10 +63,6 @@ On our hardware setups we noticed that the firmware already is shipped with an \
 We now know that provided we get to load the \ac{NTFS} driver we can now access a Windows installation and subsequently the entire data of unencrypted hard drives.
 Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
 
-% try to use ntfs-driver in code
-% this is our first rootkit iteration
-% payload will also be DXE driver
-% package payload in firmware image
 The next step is for our bootkit to use the \ac{NTFS} driver to gain file system access and write our payload to the Windows installation.
 During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
 In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[Section 9.1]{uefi-spec}.
@@ -125,11 +70,6 @@ This handle can then be used to call the Boot Services \lstinline{LoadImage} and
 Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
 Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[Section 13.4]{uefi-spec}.
 This instance can then be used to open and read our payload with the absolute path on the \ac{ESP} into memory.
-% write payload
-% seems to not be needed: install tag protocol on NTFS driver and put into depex of rootkit
-% search for windows installation
-% iterate over all \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} instance
-% open volume
 
 \subsubsection{Payload deployment}
 
