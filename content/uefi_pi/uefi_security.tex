@@ -8,7 +8,7 @@ Digital signatures, embedded within the \ac{UEFI} images, can be used to authent
 This is done through asymmetric signing, component provider must sign their executables with their private key and publish the public key.
 The public keys are stored in a signature \ac{DB} and before execution the signed executable can be verified against the database.
 Multiple signatures can be embedded within the same image \cite[Section 32.2.2]{uefi-spec}.
-The signatures are created by first calculating a hash over select parts of the executable, leaving, for example, the signatures out of the hashed data and then signing it with a private key.
+The signatures are created by first calculating a hash over select parts of the executable and then signing it with a private key.
 The output of this hashing is called a digest and the algorithm for obtaining the digest is defined in \cite{microsoft-pe-signature-format}.
 Secure Boot also disallows legacy booting through the \ac{CSM}.
 
@@ -26,9 +26,10 @@ Secure Boot is managed through three components, a \ac{PK}, one or more \ac{KEK}
 
 Internally these are all implemented by authenticated variables, residing in tamper resistant non-volatile storage \cite[Section 32.3]{uefi-spec}.
 The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[Section 32.4.1]{uefi-spec}, the variable services can be used to append entries or to read and write the list as a whole \cite[Sections 32.3.5 and 32.5.3]{uefi-spec}.
-The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variavble also exist a variant reserved for default entries. These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization.
-Their contents can be copied to their live versions, used during Secure Boot operation.
-The current state of Secure Boot is also reflected within a secure variable \cite[Section 3.3]{uefi-spec}.
+The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variavble also exist a variant reserved for default entries.
+These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization by a user.
+Their contents can be copied to their live versions, to then be used during Secure Boot operation.
+The current state of Secure Boot is communicated with a secure variable, which the the \ac{OS} can probe \cite[Section 3.3]{uefi-spec}.
 
 % https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
 Users, who are physically present, may disable Secure Boot, enroll default or custom keys via an interactive menu. \TODO{find a good cite}
@@ -37,11 +38,6 @@ Users, who are physically present, may disable Secure Boot, enroll default or cu
 
 \subsection{Firmware Management}
 
-\TODO{me}
-
-% https://microsoft.github.io/mu/dyn/mu_tiano_plus/FmpDevicePkg/Docs/FmpDevicePkg_ReadMe/
-
-provides
-CapsuleUpdate()
-QueryCapsuleCapabilities()
-of the runtime services table
+The Firmware Management Protocol provides a boot abstraction for authenticated updating and management of \ac{PF} \cite[Section 23]{uefi-spec}.
+The runtime services \code{QueryCapsuleCapabilities()} and \code{CapsuleUpdate()} may be used by the \ac{OS} to pass updates to the firmware in a persistent manner, so that they can be processed on subsequent boots \cite[Section 23.3]{uefi-spec}.
+\acp{OEM} also often provide their own ways to process firmware updates, for example via dedicated \ac{USB} ports, which allow to process firmware updates upon boot.

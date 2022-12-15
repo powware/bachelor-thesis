@@ -5,6 +5,8 @@
 
 \TODO{what is 11 compared to 10}
 
+same foundation as Windows 10
+
 \section{\acs{UEFI}}
 
 \subsection{Installation}
@@ -43,8 +45,8 @@ If this fails it shows a recovery prompt, otherwise it proceeds to load the \lst
 
 \subsection{Runtime}
 
-get/set variable
-CapsuleUpdate, but OEM have a lot of differnt own ways to update firmware image
+During runtime Windows uses the variable services to communicate with the \ac{PF} and even exposes these to application developers.
+It also supports firmware or option \ac{ROM} updates via the capsule delivery services.
 
 \section{Registry}
 

@@ -2,7 +2,16 @@
 
 \subsection{Security}
 
+The \ac{PI} specification does not attempt to define a coherent security system and instead only provides optional services and mechanisms for a system designer to use.
+
 \subsubsection{Hardware Validated Boot}
+
+The \ac{PI} specification defines \acp{PPI} and \ac{DXE} protocols which can be used to validate loaded images before exeuting them.
+During the \ac{PEI} phase the \emph{\ac{PEI} Guided Section Extraction \ac{PPI}} can be used for the authentication of file section, while the \emph{Security \ac{PPI}} implements the policy response to the authentication result.
+The \ac{DXE} phase has similar counter parts in the form of \emph{Guided Section Extraction Protocol}, \emph{Security Architectural Protocol} and \emph{Security2 Architectural Protocol}
+These allows the platform designer to implement policy responses following image authentication, ranging from deferral of execution to locking the system flash.
+
+
 Secure Boot relies for the firmware as its root of trust, hardware validated boot shifts this trusts out of the firmware image into hardware.
 amd
 % https://ebrary.net/24869/computer_science/secure_technology
@@ -10,36 +19,12 @@ amd
 intel
 % https://edk2-docs.gitbook.io/understanding-the-uefi-secure-boot-chain/secure_boot_chain_in_uefi/intel_boot_guard
 
-with pi offering security PPI and dxe protocols for this
-
-PEI Guided Section Extraction PPI
-Security PPI
-
-Guided Section Extraction Protocol
-Security Architecture Protocol
-Security2 Architecture Protocol
-
-
 \subsubsection{Firmware Protection}
 
-The \ac{DXE} phase also offers drivers to register notification
-% End of Dxe Event
-% From SEC through the signaling of this event, all of the components should be under the authority of
-% the platform manufacturer and not have to worry about interaction or corruption by 3rd party
-% extensible modules such as UEFI drivers and UEFI applications.
-
-% Platform may choose to lock certain resources or disable certain interfaces prior to executing third
-% party extensible modules. Transition from the environment where all of the components are under
-% the authority of the platform manufacturer to the environment where third party modules are
-% executed is a two-step process:
-
-% 1. End of DXE Event is signaled. This event presents the last opportunity to use resources or
-% interfaces that are going to be locked or disabled in anticipation of the invocation of 3rd party
-% extensible modules.
-% 2. DXE SMM Ready to Lock Protocol is installed. PI modules that need to lock or protect their
-% resources in anticipation of the invocation of 3rd party extensible modules should register for
-% notification on installation of this protocol and effect the appropriate protections in their
-% notification handlers
+The \ac{PI} speficiation defines a \emph{End of Dxe Event}, it indicates the introduction of third party software execution to the platform.
+Up until this point it is assumed that the entire system software is under the control of the platform manufacturer.
+Drivers may react to this event by locking critical system resources, by using the \ac{SMM} services \cite[Vol. 2, 5.1.2.1]{pi-spec}.
+The \ac{SMM} is a secure execution environment, achieved by isolation from the rest of the system, through the \ac{CPU} \cite[Vol. 4, Section 1.3]{pi-spec}.
 
 
 % https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
@@ -50,9 +35,3 @@ The \ac{DXE} phase also offers drivers to register notification
 
 % https://eclypsium.com/2019/10/23/protecting-system-firmware-storage/
 
-DXE SMM Ready to Lock Vol4
-
-
-
-
-flash device security

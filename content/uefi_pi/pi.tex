@@ -1,11 +1,10 @@
 % !TeX root = ../../thesis.tex
 
-\section{\acf{PI}}
+\section{\acs{UEFI} \acf{PI}}
 
-\ac{DXE} does not require \ac{PEI}, just the \acp{HOB}, \ac{PEI} is one of many possible implementations
-\TODO{me}
+\cite{pi-spec} defines an implementation of the \ac{PI} process and the \ac{UEFI} environment, as well as a scalable \ac{PI} firmware storage and interface solution.
 
-\subsection{\acs{UEFI}/\acs{PI} Firmware Images}
+\subsection{\acs{PI} Firmware Images}
 
 \cite[Vol. 3, 2]{pi-spec} defines the firmware storage design.
 A Firmware Image is stored in one or more non\-/volatile physical storage devices called \acp{FD}, they are most commonly flash devices \cite[Vol. 3, 2.1]{pi-spec}.
@@ -26,6 +25,8 @@ The full list of section types can be seen in \autoref{tab:file-section-types}.
 \autoref{fig:ovmf-in-uefitool} shows a firmware image opened in \program{UEFITool}, an editor for firmware images conforming to the \ac{PI} specification \cite{uefitool}.
 The cursor is on the executable section of a \acs{DXE} driver.
 
+% https://3762986563-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-M5spcVt2sqlUZOWmnXY%2F-M5sphJDWD7_iUuoREya%2F-M5spjqkdHzNxeIs2rlZ%2Fimage6.png?generation=1587944061953355&alt=media
+\TODO{MAYBE add this image?}
 
 \begin{figure}[htb]%
     \centering%
@@ -37,12 +38,9 @@ The cursor is on the executable section of a \acs{DXE} driver.
 
 \subsection{\acs{PI} Architecture Firmware Phases}
 
-The \ac{PI} Architecture defines distinct phases.
-focus will be on dxe and transient system load
-\autoref{fig:pi-phases}
-
-\TODO{me}
-
+\cite{pi-spec} defines a multi phase architecture of the \ac{PI} that can be used by system designers to implement \ac{PF}.
+It is designed to be very extensible and to simplify the process of independent hardware vendors working together, when combining their software into a single \ac{PF}.
+The proposed \ac{PI} architecture phases can be seen in \autoref{fig:pi-phases}, they are not entirely distinct and system designers may choose to implement phases differently.
 
 \begin{figure}[htb]%
     \centering%
@@ -86,8 +84,8 @@ One of which is the \emph{Security PPI}, it used to maintain the chain of trust 
 
 The \ac{DXE} phase is responsible to finalize the initialization of all platform components, as well as implementing \ac{UEFI}, the \ac{UEFI} environment and its system abstractions as they are defined in \cite{uefi-spec}.
 As mentioned earlier, the \ac{DXE} phase is architecturally similar to the \ac{PEI} phase, as it also has a foundation with a dispatcher, extensibile modules in the form of \ac{DXE} drivers and uses \ac{UEFI} protocols for intermodule communication \citep[Vol. 2, 2.1]{pi-spec}.
-The \ac{DXE} foundation is only dependent on the list of \acp{HOB} it receives from the previous phase, allowing to use it with a \ac{PEI} or a different implementation.
-This also makes it possible to unload the previous stage, freeing up memory \cite[Vol. 2, 9.1]{pi-spec}.
+The \ac{DXE} foundation is only dependent on the list of \acp{HOB} it receives from the previous phase, allowing it to be used with the \ac{PEI} phase or different implementations.
+This also makes it possible to unload the previous stage, freeing up its memory \cite[Vol. 2, 9.1]{pi-spec}.
 The \ac{DXE} foundation produces the \ac{UEFI} boot and runtime services as well as additional \ac{DXE} services and offers them through the \ac{UEFI} system table to its \ac{DXE} drivers as it can be seen in \autoref{fig:uefi-system-table}\cite[Vol. 2, 2.2.1]{pi-spec}.
 \ac{DXE} drivers are very similar to \ac{UEFI} images as they even share the same entry point signature, they also come in boot and runtime variants \cite[Vol. 2, 11.2.3]{pi-spec}.
 The implementation of the \ac{UEFI} system table services is done by \ac{DXE} drivers, who provide architectural protocols for the \ac{DXE} foundation to consume \cite[Vol. 2, 12.1]{pi-spec}.
@@ -105,60 +103,21 @@ The two phases work together until the \ac{OS} takes over control of the system 
 
 \subsubsection{\acf{BDS}}
 
-This protocol implements the \ac{UEFI} boot manager policy as defined in \cite[Section 3]{uefi-spec} and summarized in \autoref{sec:uefi-pi:uefi:boot-manager}.
-It may return or call the \ac{DXE} dispatcher directly when discovering additional \acp{FV} or when not enough drivers are initialized to successfully boot from a device.
+The \ac{BDS} phase consists of the implementation of the \emph{\ac{BDS} Architectural Protocol}.
+It implements the \ac{UEFI} boot manager policy as defined in \cite[Section 3]{uefi-spec} and summarized in \autoref{sec:uefi-pi:uefi:boot-manager}.
+When discovering additional \acp{FV} the \ac{DXE} dispatcher is invoked through the \ac{DXE} services.
+Execution may also be returned to the \ac{DXE} phase when not enough drivers were initialized to successfully boot from a device \cite[Vol. 2, 12.2]{pi-spec}.
 
-\TODO{finish}
-% - Initializing console devices based on the ConIn, ConOut, and StdErr environment variables
-% - Loading device drivers listed in the DriverOrder environment variables
-% - Attempting to load and execute boot selections list from the BootOrder environment variables
-
-attempts to connect boot devices required to load the os
-discovers volumes containing new drivers
-calls DXE dispatcher
-doesnt return when successfully booting OS
-
-UEFI itself only specifies the NVRAM variables used in selecting boot options
-leaves the implementation of the menu system as value added implementation space \cite{uefi-spec}
-
-\cite{pi-spec}
-
-\begin{itemize}
-    \item Initializing console devices
-    \item Loading device drivers
-    \item Attempting to load and execute boot selections
-\end{itemize}
 
 \subsubsection{\acf{TSL}}
 
-\TODO{me}
-
-The Transient System Load (TSL) is primarily the OS vendor provided boot loader. Both the TSL and the Runtime Services (RT) phases may allow access to persistent content, via UEFI drivers and UEFI applications. Drivers in this category include PCI Option ROMs.
-
-This phase ends when an OS boot loader calls 'ExitBootServices()'.
-
-boot and runtime services/driver
-bootloader
-\cite[Section 13.3]{uefi-spec}
-\cite[Section 3.5.1.1]{uefi-spec}
-
-ExitBootServices()
+The \ac{TSL} phase constist of the \ac{UEFI} \ac{OS} boot loader performing its necessary actions in preparation of assuming control over the system by calling \code{ExitBootServices()} and transfering execution to the \ac{OS} kernel \cite[Section 2.3]{tianocore-edk2-build-spec}.
+The \ac{DXE} phase and all boot services are unloaded.
 
 \subsubsection{\acf{RT}}
 
-\TODO{me}
-
-Boot service drivers have been unloaded and only runtime services are accessible.
-
-
-runtime services/driver
+The \ac{RT} phase offers only minimal functionality via the remaining runtime services while the \ac{OS} owns the system \cite[Section 2.3]{tianocore-edk2-build-spec}.
 
 \subsubsection{\acf{AL}}
 
-\TODO{me}
-
-The After Life (AL) phase consists of persistent UEFI drivers used for storing the state of the system during the OS orderly shutdown, sleep, hibernate or restart processes.
-
-hibernation
-sleep
-
+The \ac{AL} phase facilitates drivers storing the system state during shutdown, sleep, hibernation and restart events \cite[Section 2.3]{tianocore-edk2-build-spec}.
