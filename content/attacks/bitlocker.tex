@@ -164,12 +164,13 @@ When either the BitLocker validation profile is misconfigured (for example \lsti
 We are unable to receive a recovery key as none has to be entered and in turn we cannot decrypt the drive.
 In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
 
-hook \ac{TCG}2 Protocol \cite[Section 6.7.3]{tcg-efi-protocol-spec}
-\ac{TPM} communication
-%\cite[Section 12.7]{tcg-tpm-library-part3-commands}
-receive bitlocker \ac{VMK} key and send to dislocker
-\cite{bde-format-spec}
-\cite{tpm-sniffing}
-% https://labs.withsecure.com/publications/sniff-there-leaks-my-bitlocker-key
+Under these circumstances execution of our \ac{UEFI} payload does not influence the outcome of the interaction between the Windows boot manager and the \ac{TPM} when unsealing the encrypted \ac{VMK}.
+This allows us to be a spectator without interrupting the process.
+\cite{tpm-spi-sniffing, tpm-lpc-sniffing} have proven the viability of sniffing the \ac{TPM} communication directly off the hardware bus.
+Inspired by this we can hook the \emph{\ac{TCG}2 Protocol} that is used to abstract \ac{TPM} communication for the \ac{UEFI} environment.
+The function \code{SubmitCommand()} is used to perform request the unseal operation.
+We can hook this function and filter for the correct command submission using the header structures of the request and response.
+We then extract the \ac{VMK} from the command response as done in \cite{tpm-lpc-sniffing}.
+The unencrypted \ac{VMK} can then be simply passed to dislocker for the initialization of hard drive decryption.
 
 This increases the persistence and applicability of our attack immensely.

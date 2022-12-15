@@ -38,7 +38,10 @@ rootkit persistence across reinstallations or hard drive replacements
 didnt prevent firmware update overwriting our payload
 generally the bitlocker reocvery prompt can raise suspicion and may lead to investigations and the threat to be found
 BitLogger is more of a last resort and a social engineering aspect comparable to phishing
-implications of windows secure boot PCR7 binding and use of secure boot system integrity check and validation profile 7, 11 is a bad decision of microsoft, that for example allows stolen laptops to be unlocked when infecting the firmware with our rootkit
+implications of windows secure boot PCR7 binding and use of secure boot system integrity check and validation profile 7, 11 is a bad decision of microsoft, that for example allows
+stolen laptops to be unlocked when infecting the firmware with our rootkit
+
+\textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile 0, 2, 4, 11 or profile 7, 11}
 
 it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
 

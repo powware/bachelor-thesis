@@ -9,7 +9,7 @@ We perform our attacks against Windows 11 on three different setups, as even tho
 \label{sec:test-setup:qemu}
 
 Our main development setup is an emulated environment using the emulator \ac{QEMU} \cite{qemu} together with the \ac{OVMF} image, from \ac{EDK} II (\lstinline{edk2-stable202208}).
-For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acsu{CA} 2011} as \ac{KEK} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} from Microsoft. The former required for their \ac{UEFI} executables used during the Windows boot process \cite{microsoft-secure-boot-guidance} and the latter reserved for third party executables signed at Microsoft's discretion after manual review \TODO{better source} \cite{microsoft-uefi-signing}.
+For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acsu{CA} 2011} as \ac{KEK} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} from Microsoft.
 In the attacks against BitLocker we use \emph{swtpm} for the emulation of a software \ac{TPM} \cite{swtpm}. Accessing the firmware image with this setup is just done through simple file access.
 
 \section{Lenovo Ideapad 5 Pro-16ACH6}

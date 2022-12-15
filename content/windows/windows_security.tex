@@ -2,9 +2,6 @@
 
 \section{Security}
 
-% https://learn.microsoft.com/en-us/windows/whats-new/windows-11-overview#security-and-scanning
-% \subsection{User Access Control (UAC)}
-% https://learn.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 
 \begin{figure}[htb]
     \centering
@@ -15,40 +12,20 @@
 
 \subsection{Secure Boot}
 
-% https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/OEM-highly-secure-11
-
-% https://learn.microsoft.com/en-us/windows/security/information-protection/secure-the-windows-10-boot-process#secure-boot
-% All x86-based Certified For Windows PCs must meet several requirements related to Secure Boot:
-
-% They must have Secure Boot enabled by default.
-% They must trust Microsoft's certificate (and thus any bootloader Microsoft has signed).
-% They must allow the user to configure Secure Boot to trust other bootloaders.
-% They must allow the user to completely disable Secure Boot.
-
-% Secure Boot to be enabled and configured to distrust the Microsoft 3rd Party UEFI CA signature, by default, to provide customers with the most secure configuration of their PCs possible
-
-\cite{microsoft-secure-the-windows-boot-process}
-
-% https://learn.microsoft.com/en-us/windows/security/trusted-boot
-the two signature \acp{DB} Production and UEFI
-
-windows certified pcs and their signature \acp{DB}
-
+Devices shipping with Windows 11 must have Secure Boot enabled by default \cite{microsoft-windows-minimum-hardware-requirements-overview}.
+Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB}, to allow non\-/Windows boot loaders, as well as completely disable secure boot.
+Windows offers two signature \acp{DB} the \emph{Microsoft Windows Production PCA 2011} required for the Windows boot process and \emph{Microsoft Corporation \ac{UEFI} \ac{CA} 2011}, which is reserved for third party executables signed at Microsoft's discretion after manual review \TODO{better source} \cite{microsoft-uefi-signing}.
+Microsoft advises to only allow other third party \ac{UEFI} applications if necessary and even mandates the exclusion of \acp{DB} other than \emph{Microsoft Windows Production PCA 2011} on Secured\-/core \acp{PC} \cite{microsoft-secure-the-windows-boot-process}.
 
 \subsection{Trusted Boot}
 
-Trusted Boot picks up the process that started with Secure Boot.
-Trusted Boot protects your PC from malware from the moment you power on your PC until your anti-malware starts
-can prove the system's integrity
+Trusted Boot picks up where Secure Boot ends and maintains the verification chain through the kernel into the Windows startup process.
+This includes boot drivers, startup files and the \ac{ELAM} driver \cite{microsoft-trusted-boot}.
 
-% https://learn.microsoft.com/en-us/windows/security/information-protection/secure-the-windows-10-boot-process
-% https://learn.microsoft.com/en-us/windows/security/trusted-boot
-% https://www.anoopcnair.com/understanding-windows-trusted-boot/
-\cite{microsoft-trusted-boot}
-\cite{microsoft-secure-the-windows-boot-process}
-\cite{understanding-windows-trusted-boot}
 \subsubsection{KMCI}
+\cite{understanding-windows-trusted-boot}
 \subsubsection{ELAM}
+\cite{understanding-windows-trusted-boot}
 
 \subsubsection{VSB}
 Virtualization-based Security {VBS}
