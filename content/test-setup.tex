@@ -8,9 +8,11 @@ We perform our attacks against Windows 11 on three different setups, as even tho
 \section{\acs{QEMU}}
 \label{sec:test-setup:qemu}
 
-Our main development setup is an emulated environment using the emulator \ac{QEMU} \cite{qemu} together with the \ac{OVMF} image, from \ac{EDK} II (\lstinline{edk2-stable202208}).
-For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acsu{CA} 2011} as \ac{KEK} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} from Microsoft.
-In the attacks against BitLocker we use \emph{swtpm} for the emulation of a software \ac{TPM} \cite{swtpm}. Accessing the firmware image with this setup is just done through simple file access.
+Our main development setup is an emulated environment using the emulator \program{\ac{QEMU}} \cite{qemu} together with the \ac{OVMF} image, from \ac{EDK} II using version\code{edk2-stable202208}.
+For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acsu{CA} 2011} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} provided by Microsoft.
+For BitLocker and to fullfill Windows 11's general requirement that a \ac{TPM} 2.0 is present, we use \program{swtpm}.
+A \ac{TPM} emulated in software \cite{swtpm}.
+Accessing the firmware image with this setup is done through simple file access.
 
 \section{Lenovo Ideapad 5 Pro-16ACH6}
 \label{sec:test-setup:lenovo}
@@ -22,7 +24,7 @@ Lenovo Ideapad 5 Pro-16ACH6
 microsoft device guard
 
 secure boot default keys
-
+\emph{Microsoft Windows Production PCA 2011}
 
 This can be done by using a spi flash programmer and clamping the physical chip. \TODO{FLASHROM}
 
@@ -40,6 +42,7 @@ A520M-HVS 2.30 latest firmware at time of writing
 Ryzen 5 5600X Zen 3
 
 secure boot default keys
+\emph{Microsoft Windows Production PCA 2011}
 
 
 flashrom -p internal
