@@ -4,11 +4,8 @@
 
 EFI_BOOT_SERVICES *gBS;
 
-EFI_STATUS
-EFIAPI
-EntryPoint(
-    IN EFI_HANDLE ImageHandle,
-    IN EFI_SYSTEM_TABLE *SystemTable)
+EFI_STATUS EFIAPI EntryPoint(IN EFI_HANDLE ImageHandle,
+                             IN EFI_SYSTEM_TABLE *SystemTable)
 {
     gBS = SystemTable->BootServices;
 

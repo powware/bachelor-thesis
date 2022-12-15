@@ -82,9 +82,9 @@ We also have to save the original function address, together with a pointer to t
 Multiple different drivers could offer the same protocol, resulting in different functions being called depending on the device, the protocol instance is retrieved from.
 When our hook is called we start by identifying which original function needs to be called using the protocol instance that is used as the first argument of the \lstinline{ReadKeyStrokeEx} function signature.
 We then call the original to read the pending keystroke, keeping track of the keystrokes (separately for each protocol instance), before returning the key data back to the caller.
-We coin this BitLocker specific keylogger \emph{BitLogger}. A simplified version of how the hooking process works can be seen in \autoref{lst:hooking};
+We coin this BitLocker specific keylogger \emph{BitLogger}. A simplified version of how the hooking process works can be seen in \autoref{lst:read_key_stroke_ex_hooking};
 
-\lstinputlisting[language=C,captionpos=b,label=lst:hooking,firstline=4,caption={Simplified example of hooking the \emph{Simple Text Input Ex Protocol}}]{code/hooking.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:read_key_stroke_ex_hooking,firstline=4,caption={Simplified example of hooking the \emph{Simple Text Input Ex Protocol}}]{code/read_key_stroke_ex_hooking.c}
 
 We want to use the recovery key programmatically, so we can't simply log all key presses in chronological order and evaluate them by hand later.
 The BitLocker recovery prompt has a few rules and does not allow the user to just input any possible combination of digits, each entered block is checked for validity before allowing the cursor to advance to another block, this also applies when moving the cursor backwards to a previously entered block, while incomplete blocks are not evaluated.
@@ -127,6 +127,9 @@ These operations are always performed on whole blocks, as BitLocker encryption i
 So the starting offset is rounded down and the offset plus length is rounded up the to next block boundary.
 We can map \lstinline{pread} and \lstinline{pwrite} to call the original \lstinline{ReadBlocks} and \lstinline{WriteBlocks} functions.
 Since the two Dislocker functions expect offset-length, we simply multiply the starting block index by the block size to use as starting offset.
+\autoref{lst:block_io_hooking}
+
+\lstinputlisting[language=C,captionpos=b,label=lst:block_io_hooking,firstline=4,caption={Simplified example of hooking the \emph{Block \ac{I/O} Protocol}}]{code/block_io_hooking.c}
 
 
 % execute after NTFS driver by doing it in an ExitBootServices hook

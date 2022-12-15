@@ -6,21 +6,20 @@
 The specifications making up this model are:
 
 \begin{itemize}
-    \item \ac{ACPI} Specification
-    \item \ac{UEFI} Specification
-    \item \ac{UEFI} Shell Specification
-    \item \ac{UEFI} \ac{PI} Specification
-    \item \ac{UEFI} \ac{PI} Distribution Packaging Specification
-    \item \ac{TCG} \ac{EFI} Platform Specification
-    \item \ac{TCG} \ac{EFI} Protocol Specification
+    \item \acs{ACPI} Specification
+    \item \acs{UEFI} Specification
+    \item \acs{UEFI} Shell Specification
+    \item \acs{UEFI} \acs{PI} Specification
+    \item \acs{UEFI} \acs{PI} Distribution Packaging Specification
+    \item \acs{TCG} \acs{EFI} Platform Specification
+    \item \acs{TCG} \acs{EFI} Protocol Specification
 \end{itemize}
 
-We make an effort to keep a clear distinction as to what is defined in which specification.
+The \ac{ACPI} and \ac{UEFI} \ac{PI} Distribution Packaging Specification are not required to be able to follow this thesis.
+As for the other specifications, we briefly summarize the relevant content.
 
 
-The \ac{UEFI} \ac{PI}
-\TODO{mention of EFI and framework into UEFI and pi?}
-
+\clearpage
 \input{content/uefi_pi/uefi}
 \input{content/uefi_pi/uefi_security}
 \clearpage
@@ -33,11 +32,9 @@ The \ac{UEFI} \ac{PI}
 
 \section{\acs{EDK} II}
 
-\TODO{me}
+\ac{EDK} II, maintained by \emph{TianoCore}, is an open source implementation of \ac{UEFI}, offering a modern, feature-rich, cross-platform firmware development environment for the \ac{UEFI} and \ac{PI} specifications \cite{tianocore}.
+It can be used to build modules of all types defined in the \ac{PI} and \ac{UEFI} specification and supports the generation of \ac{PF} images, option\-/\acp{ROM} and bootable media.
+On top of implementing the \ac{PI} and \ac{UEFI} specifications, it defines a lot of helpful libraries and protocols that can be used to simplify the development process.
+The build process is flexible as it can use different compilers such as \program{GCC} and \program{MSVC}.
 
-build system
-at least mention that local gcc is used, relevant for porting and headers
-\ac{OVMF}
-
-BaseTools package process files compiled by third party tools, as well as text and Unicode files in order to create UEFI or PI compliant binary image files
-\cite{tianocore-edk2}
+\emph{TianoCore} also offers material to learn about developing applications, drivers, firmware, and a general understanding about the \ac{UEFI} ecosystem.

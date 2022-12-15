@@ -19,7 +19,7 @@ Microsoft advises to only allow other third party \ac{UEFI} applications if nece
 
 \subsection{Trusted Boot}
 
-Trusted Boot picks up where Secure Boot ends and maintains the verification chain through the kernel into the Windows startup process.
+Trusted Boot picks up where Secure Boot ends and maintains the code integrity chain through the kernel into the Windows startup process, by verifying the digital signature of every component.
 This includes boot drivers, startup files and the \ac{ELAM} driver \cite{microsoft-trusted-boot}.
 
 \subsubsection{KMCI}

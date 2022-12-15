@@ -19,7 +19,8 @@ We implement a bootkit and a rootkit, that deviate the regular boot flow to acce
 % https://stackoverflow.com/questions/40208794/findfirstvolume-does-not-return-efi-system-partition
 % https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile?redirectedfrom=MSDN
 
-We have two ways to infect a system, we can either use a bootable medium such as a CD-ROM or \ac{USB} stick with a \ac{UEFI} application installing the bootkit or a Windows executable mounting the \ac{ESP} with admin privileges. Booting into the installer application requires either the firmware implementation or the boot order ti prefer booting from the removable media over Windows.
+We have two ways to infect a system, we can either use a bootable medium such as a CD-ROM or \ac{USB} stick with a \ac{UEFI} application installing the bootkit or a Windows executable mounting the \ac{ESP} with admin privileges.
+Booting into the installer application requires either the firmware implementation or the boot order to prefer booting from the removable media over Windows.
 This can be forced when booting into the \ac{BIOS} menu at startup, given that it is not password protected.
 The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}.
 We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
