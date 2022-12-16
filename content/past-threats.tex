@@ -9,18 +9,25 @@ Before we implement our own \ac{UEFI} attacks, we first take a look how past \ac
 The threats discussed range from actual attacks found in the wild and analyzed by security researchers, over attacks, which have similarly been implemented for research purposes, to tools to enable system owners more advanced control over their systems.
 
 \begin{center}
-    \begin{tabular}{c|c|c}
-                                           & Bootkit       & Rootkit         \\
-        \hline
-        \multirow{4}{4em}{Storage\-/based} & \textbf{ours} & Vector-edk      \\
-                                           &               & Mosaicregressor \\
-                                           &               & LoJax           \\
-                                           &               & \textbf{ours}   \\
-        \hline
-        \multirow{3}{4em}{Memory\-/based}  & Efiguard      & Moonbounce      \\
-                                           & ESPecter      & Cosmicstrand    \\
-                                           & Dreamboot     &                 \\
-                                           & FinSpy        &                 \\
+    \begin{tabular}{lll}
+        \toprule
+        {\bfseries Approach}               & {\bfseries Bootkit} & {\bfseries Rootkit} \\
+        \cmidrule[0.4pt](r){1-1}
+        % \cmidrule[0.4pt](lr){2-2}
+        \cmidrule[0.4pt](l){2-3}
+        \multirow{4}{4em}{Storage\-/based} & \textbf{ours}       & Vector-edk          \\
+                                           &                     & Mosaicregressor     \\
+                                           &                     & LoJax               \\
+                                           &                     & \textbf{ours}       \\
+        % \hline
+        \cmidrule[0.4pt](r){1-1}
+        % \cmidrule[0.4pt](lr){2-2}
+        \cmidrule[0.4pt](l){2-3}
+        \multirow{3}{4em}{Memory\-/based}  & Efiguard            & Moonbounce          \\
+                                           & ESPecter            & Cosmicstrand        \\
+                                           & Dreamboot           &                     \\
+                                           & FinSpy              &                     \\
+        \bottomrule
     \end{tabular}
 \end{center}
 
