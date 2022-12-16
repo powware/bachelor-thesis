@@ -40,14 +40,6 @@ On a full boot it checks the \ac{BCD} for boot entries, if the entry points to a
 If this fails it shows a recovery prompt, otherwise it proceeds to load the \lstinline{Windload.efi} \ac{OS} loader \cite[Section 12]{windows-internals-7-part2}.
 \TODO{mention \lstinline{ntoskernel.exe}}
 
-% tries to TPM unseal
-% url and message are read from BCD
-% if succeeds make sure TPM cant be used to unseal further things
-% StartImage os loader, only returns in error case
-% if so start Windows Recovery Sequence
-\TODO{TPM interaction}
-\cite[Section 12]{windows-internals-7-part2}
-
 \subsection{Runtime}
 
 During runtime Windows uses the variable services to communicate with the \ac{PF} and even exposes these to application developers.
@@ -70,6 +62,5 @@ Some hives even reside entirely in memory as a means of offering hardware config
 \TODO{maybe fun fact that EFS cant encrypt hives}
 windows also has a feature called Encrypting File System (EFS) with file system level encryption but it cant be used for registry hives
 \cite[Section 9]{windows-internals-6-part2}
-
 
 \input{content/windows/windows_security}

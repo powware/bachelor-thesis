@@ -33,76 +33,52 @@ formerly Device Guard
 \subsubsection{HVCI}
 % https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement
 
-
-
-
 \subsection{\acf{BDE}}
 \label{sec:windows:security:bde}
 Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[Section 9]{windows-internals-6-part2}.
-Windows uses BitLocker, integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}, while also verifying boot integrity when used with a \ac{TPM} \cite[Section 9]{windows-internals-6-part2}.
+Windows uses BitLocker, an integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}.
+It also serves as a mechanism to verify boot integrity when used with in combination of a \ac{TPM} \cite[Section 9]{windows-internals-6-part2}.
 The en- and decryption of the volume is done by a filter driver beneath the \ac{NTFS} driver as shown in \autoref{fig:bitlocker-volume-access-driver-stack}.
-The \ac{NTFS} driver translates file and directory access into block-wise operations on the volume \TODO{CITE}, the filter driver receives these block operations, encrypting blocks on write and decrypting blocks on read, while they pass through.
-This leaves the en- and decryption entirely transparent, making the underlying volume appear decrypted to the \ac{NTFS} driver \cite[Section 9]{windows-internals-6-part2}.
+The \ac{NTFS} driver translates file and directory access into block-wise operations on the volume.
+The filter driver then receives these block operations, encrypting blocks on write and decrypting blocks on read, while they pass through it.
+This results in en- and decryption, that is entirely transparent to the \ac{NTFS} driver, making the underlying volume appear decrypted \cite[Section 9]{windows-internals-6-part2}.
 The encryption of each block is done using a modified version of the \ac{AES}128 and \ac{AES}256 cypher \cite[Section 9]{windows-internals-6-part2}.
 A \ac{FVEK} is used in combination with the block index as input for the algorithm, resulting in an entirely different output for two blocks with identical data \cite[Section 9]{windows-internals-6-part2}.
-The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multiple protectors, these encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the volume \cite[Section 9]{windows-internals-6-part2}.
-The \ac{VMK} is encrypted by the following protectors:
+The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multiple protectors.
+These encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the BitLocker protected volume \cite[Section 9]{windows-internals-6-part2}.
+The \ac{VMK} can be encrypted by the following protectors:
 
-\begin{itemize}
-    \item[Startup key] stored in a \lstinline{.bek} file with a \ac{GUID} name equaling key identifier in bitlocker meta data
-        \cite[Section 2.6]{bde-format-spec}
+\begin{description}
+    \item[Startup key] The Startup key can be storead on removable media such as a \ac{USB} stick and serves as physical proof of ownership.
+        The removable media contains a \program{.bek} file, that is named with a \ac{GUID} corresponding to BitLocker meta data entry, as it it possible to have multiple start up keys for the same volume \cite[Section 2.6]{bde-format-spec}\cite{microsoft-windows-prepare-your-org}.
+
     \item[TPM]
-        - tpm only
-        no additional user interaction
-        - tpm with startup key
-        additional usb
-        - tpm with PIN
-        - tpm with startup key and PIN
-        \cite{microsoft-bitlocker-countermeasures}
-        with tpm ensures integrity of early boot components and boot configuration
-        tpm usage requires \ac{TCG}2 compliant \ac{UEFI} firmware \cite[Section 9]{windows-internals-6-part2}
+        When a \ac{TPM} is used to seal the \ac{VMK}, BitLocker can ensure integrity of early boot components and boot configuration, as the unseal operation fails upon modifcation of the boot flow.
+        The \ac{TPM} can, in combination to the \ac{PCR} values, use a startup key, a pin or both to seal the \ac{VMK} \cite{microsoft-bitlocker-countermeasures}.
+        The collection of \ac{PCR} indexes used to instruct the \ac{TPM} when initially sealing the \ac{VMK} is called a validation profile.
+        The validation profile is configurable through Windows group policy settings, and\ac{PCR}11 is always required as its contents measure the BitLocker Access Control.
+        Windows configures BitLocker with a default validation profile of \code{\{0, 2, 4, 11\}} \cite{microsoft-windows-bitlocker-group-policy-settings}.
+        When Secure Boot is enabled and correctly configured, Microsoft defines this as only using their \emph{Microsoft Windows Production PCA 2011} signature \ac{DB}, BitLocker defaults to a validation profile of \code{\{7, 11\}} \cite{microsoft-pcr7-binding}.
+        The measurements that extend \ac{PCR}7 are defined in \cite{microsoft-trusted-execution-environment}.
+        The content reflects the current state and configuration of Secure Boot, including trusted keys.
+        BitLocker then makes use of the Secure Boot measurements for integrity validation instead of the \ac{PCR} values containing the early boot components \cite{microsoft-windows-bitlocker-group-policy-settings}.
 
-        tpm is used to \emph{seal} and \emph{unseal} \ac{VMK}
-        \TODO{PCR table either here or at TPM section}
-        platform validation profile
-        % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#allow-secure-boot-for-integrity-validation
-        defaults are \acp{PCR} \lstinline|{7, 11}| with PCR7 binding  \lstinline|{0, 2, 4, 11}| without PCR7 binding
-        11 is required
-    \item[Recovery key] recovery key 48 digits of 8 blocks
-        block is converted to a 16-bit value making up a 128-bit key
-        \cite[Section 2.4]{bde-format-spec}
-        % how to obtain
-        when enabling manually, save on non encrypted medium
-        \cite{microsoft-bitlocker-basic-deployment}
+    \item[Recovery key]
+        When BitLocker is activated it always generates a recovery key serving as an additional protector to whatever primary method is selected.
+        This allows users to recover their data when for example the \ac{TPM} fails to unseal the \ac{VMK} or the startup key is lost.
+        The recovery key can be added to the users Microsoft account or saved to unencrypted media.
+        It consists 48 digits divided into 8 blocks, each block is converted into a 16-bit value making up a 128-bit key \cite[Section 2.4]{bde-format-spec}.
 
-        bitlocker device encryption if supported automatically enabled
-        after clean install encrypted with clear key (bitlocker suspended state)
-        non domain account -> recovery key uploaded to microsoft account
-        domain account -> recovery key backed up to active directory domain services (AD DS)
-        clear key removed
-        \cite{microsoft-bitlocker-device-encryption}
+    \item[User key] When BitLocker is used without a \ac{TPM} the \ac{VMK} can be encrypted with the use of a user supplied password with the maximum length of 49 characters. \cite[Section 2.7]{bde-format-spec}
 
-    \item[User key] password with max 49 characters
-        \cite[Section 2.7]{bde-format-spec}
-    \item[Clear key] unprotected 256-bit key stored on the volume to decrypt vmk
-        \cite[Section 2.5]{bde-format-spec}
-        used for suspension
+    \item[Clear key] BitLocker can also be suspended when a user for example wants to update their \ac{PF}.
+        The \ac{VMK} is then encrypted with an unprotected 256-bit key stored on the volume \cite[Section 2.5]{bde-format-spec}.
 
+\end{description}
 
-        \TODO{decide if we add this} With Windows 11 and Windows 10, administrators can turn on BitLocker and the TPM from within the Windows Pre-installation Environment \cite{microsoft-bitlocker-device-encryption}
-
-        \begin{figure}[htb]%
-            \centering
-            \includesvg[width=0.5\textwidth]{bitlocker_volume_access_driver_stack.drawio.svg}
-            \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
-            \label{fig:bitlocker-volume-access-driver-stack}%
-        \end{figure}
-
-\end{itemize}
-
-
-% what is done with the measurements
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-overview
-how are they used
-works with bitlocker to protect user data
-ensure computer has not been tampered with while offline
+\begin{figure}[htb]%
+    \centering
+    \includesvg[width=0.5\textwidth]{bitlocker_volume_access_driver_stack.drawio.svg}
+    \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
+    \label{fig:bitlocker-volume-access-driver-stack}%
+\end{figure}
