@@ -14,6 +14,10 @@ On \code{x64} \ac{CPU} architecture the \ac{PF} hands over execution in \code{64
 Paging is also enabled and the virtual memory is identify mapped, meaning virtual addresses equal physical addresses, while most regions are read, write and execute.
 The \ac{CPU} is in uniprocessor mode and a sufficent amount of stack is available \cite[Section 2.3.4]{uefi-spec}.
 
+Since \ac{UEFI} mainly exists to offer a well\-/defined boot environment for \ac{OS} loaders, its services are not required anymore upon \ac{OS} takeover.
+A large part of \ac{UEFI} can thus be unloaded, leaving only a portition of the intially offered services.
+The remaining runtime services can be used by the \ac{OS} to configure or update the \ac{PF}.
+
 \subsection{\acf{GUID}}
 
 The \ac{UEFI} environment depends on \acp{GUID}, also known \acp{UUID} to uniquely identify a variety of things, such as protocols, files, hard drive paritions.
@@ -49,14 +53,12 @@ They support multiple CPU architectures such as IA, ARM, RISC-V and x86.
 There are three different subtypes of executables: applications, boot and runtime drivers. They mainly differ by their memory type and how it behaves.
 Loading and transferring execution are two separate steps, so that security policies can be applied before executing a loaded image \cite[Section 2.1.1]{uefi-spec}.
 
-Applications are always unloaded when they return execution, while drivers are only unloaded when they return an error code. This allows drivers to install their offered functionality upon intial executions and later calls to these functions jump back into the driver's image which is still loaded.
+Applications are always unloaded when they return execution, while drivers are only unloaded when they return an error code. This allows drivers to install their offered functionality upon intial execution and function calls can jump back into the driver image where the function body remains loaded.
 Boot drivers are unloaded when an \ac{OS} loader application transitions to runtime by taking over the memory management through the call of the boot service function \lstinline{ExitBootServices}, while runtime drivers remain loaded and are translated into the virtual memory mapping. \ac{OS} loaders only return execution in error cases.
-
 
 \subsection{Protocols and Handles}
 
-When \ac{UEFI} binaries are loaded only the entry point is \emph{linked}, the rest of the communication has to be programmatically discovered through protocol interfaces.
-Protocols are created dynamically and provide a mechanism to allow extension of firmware capabilities over time \cite[Section 3.6]{tianocore-edk2-driver-writer-s-guide}.
+Protocols are created and discovered dynamically and provide a mechanism to allow extension of firmware capabilities over time \cite[Section 3.6]{tianocore-edk2-driver-writer-s-guide}.
 They are C structures and may contain services, in the form of function pointers, or other data structures, they are identified by \acp{GUID} and stored in a single global database implemented by the firmware \cite{beyond-bios}.
 This database is called the handle database, handles describe a logical grouping of one or more protocols \cite[Section 3.6]{tianocore-edk2-driver-writer-s-guide}.
 Handles are unique per session and should not be saved across reboots \cite{beyond-bios}.
@@ -81,13 +83,11 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
     \item[Service handles] are used for generic hardware unrelated abstractions.
 \end{description}
 
-\TODO{\ac{I/O} abstractions}
-
 \subsection{\acs{UEFI} Driver Model}
 
 \cite[Section 2.5.2]{uefi-spec} describes the \acs{UEFI} Driver Model, it simplifies the design of device drivers by moving implementation of the device mangement and discovery into the firmware, leaving drivers with only the responsibility to offer interfaces for installation and removal.
 
-We will focus on device drivers, these do not add any new device handles but instead offer protocol abstractions build upon already existing \ac{I/O} abstractions offered by bus drivers.
+We will focus on device drivers, these do not create any new device handles but instead offer additional protocol abstractions upon existing \ac{I/O} abstractions offered through bus drivers.
 A driver following the \ac{UEFI} Driver Model is not allowed to interact with any hardware in its entry point and is instead required to install an instace of the Driver Binding Protocol on its own image handle.
 The Loaded Image Protocol also offers a field where a driver can provide a function to unload itself.
 It may also additionally install the confirguration or diagnostic related protocols.
@@ -100,13 +100,14 @@ The firmware can also call the \code{Stop} of the Driver Binding Protocol functi
 
 \subsection{Systemtable}
 
-The UEFI System Table is an important data structure, it provides access to system configuration information, generic boot and runtime services \cite[Section 3.3]{tianocore-edk2-driver-writer-s-guide}.
-It also serves as the entrance in to the \ac{UEFI} environment, as a loaded images receives a only pointer to the system table as well as its image handle through its entry point. Although the Loaded Image Protocol provides and interface to hand optional load options to the image \cite{beyond-bios}.
+\lstinputlisting[language=C,caption={\ac{UEFI} Image Entry Point},captionpos=b,label=lst:entry-point]{code/entry_point.c}
 
-\autoref{fig:uefi-system-table}
+\autoref{lst:entry-point} shows the entry point of \ac{UEFI} images, when they are loaded it is the only part that is \emph{linked}, the rest of the communication has to be discovered programmatically through the \ac{UEFI} System Table.
+It serves as the entrance door into the \ac{UEFI} environment, providing access to the generic boot and runtime services, as well as system configuration information \cite[Section 3.3]{tianocore-edk2-driver-writer-s-guide}.
+The Loaded Image Protocol instance provides an interface to hand over optional load options to an image \cite{beyond-bios}.
 
-
-\TODO{during boot boot and runtime services are available}
+\autoref{fig:uefi-system-table} shows the system table.
+The functionality of the system table is only available in its entirety during boot as the boot services and structures are eventually unloaded, when the \ac{OS} takes over control.
 
 \begin{figure}[htb]%
     \centering%
@@ -115,10 +116,11 @@ It also serves as the entrance in to the \ac{UEFI} environment, as a loaded imag
     \label{fig:uefi-system-table}%
 \end{figure}
 
-
 \subsubsection{Boot Services}
 
-\ac{UEFI} applcations must use boot services functions to access devices and allocate memory. They are available until an \ac{OS} loader takes control over the system via a call to the boot service \code{ExitBootServices()}, from which on only runtime services are available. \cite[Section 7]{uefi-spec} splits the boot services into five categories:
+\ac{UEFI} applcations must use boot service functions to access devices and allocate memory.
+They are available until an \ac{OS} loader takes over control with \code{ExitBootServices()}.
+\cite[Section 7]{uefi-spec} splits the boot services into five categories:
 
 \begin{description}
     \item [Event, Timer, and Task Priority Services] used to create, close, signal, wait for and check events. Setting timers and raising or restoring task priority levels.
@@ -130,14 +132,13 @@ It also serves as the entrance in to the \ac{UEFI} environment, as a loaded imag
 
 \subsubsection{Runtime Services}
 
-\TODO{me}
+The runtime services only offer minimal functionality for the \ac{OS} to communicate with the \ac{PF} during runtime.
 
 \begin{description}
     \item [Variable Services] used to query, get and set \hyperref[sec:uefi-pi:uefi:variables]{variables}.
     \item [Time Services] used to get and set time as well as a system wakeup timer.
     \item [Virtual Memory Services] relate to enabling virtual memory and translating memory addresses.
-    \item [Image Services] to load, unload and start images. Images can also use these to transfer execution back to the firmware or with \code{ExitBootServices()} assume control over the system
-    \item [Miscellaneous Runtime Services] offer system reset, a monotonic counter and capsule services. Capsules allow the \ac{OS} to pass data to the firmware, this includes firmware managment related data.
+    \item [Miscellaneous Runtime Services] offer system reset, a monotonic counter and capsule services. Capsules allow the \ac{OS} to pass data to the firmware, including firmware updates.
 \end{description}
 
 \subsection{Variables}
@@ -152,6 +153,8 @@ Architecturally defined \ac{UEFI} variables are called Globally Defined Variable
 
 \subsection{Boot Manager}
 \label{sec:uefi-pi:uefi:boot-manager}
+
+\TODO{initialize console}
 
 The \ac{UEFI} boot manager is a firmware component executed after the platform is completely initialized, it decides which \ac{UEFI} drivers or applcations are loaded and when.
 The boot behavior is configured through architecturally defined \ac{NVRAM} global variables\cite[Section 3.1]{uefi-spec}.
