@@ -1,15 +1,19 @@
 % !TeX root = ../../thesis.tex
 
 \subsection{Security}
+\label{sec:uefi-pi:pi:security}
 
-The \ac{PI} specification does not attempt to define a coherent security system and instead only provides optional services and mechanisms for a system designer to use.
+The \ac{PI} specification defines \acp{PPI} and \ac{DXE} protocols which can be used to validate images when loading them.
+During the \ac{PEI} phase the \emph{\ac{PEI} Guided Section Extraction \ac{PPI}} can be used to authenticate of file sections, while the \emph{Security \ac{PPI}} implements the policy response to the authentication result.
+The \ac{DXE} phase has counter parts in the form of \emph{Guided Section Extraction Protocol} and \emph{Security Architectural Protocol}.
+The policy response may be the locking of flash upon authentication failure or attestation logging \cite[Vol. 2, Section 12.9.1]{pi-spec}.
+It also has the architectural protocol \emph{Security2 Architectural Protocol}, which implements Secure Boot validation, \ac{TCG} measured boot and User Identity policy for image loading.
+The implementation of the boot service \code{LoadImage} has to use these protocols in accordance to the rules defined in \cite[Vol. 2, Section 12.9.2]{pi-spec}.
+The Security2 protocol is invoked on every image loaded, with the Security protocol being invoked afterwards on images loaded through the Firmware Volume Protocol.
+When the Security2 protocol is not installed it has to use the Security protocol regardless of the origin.
+
 
 \subsubsection{Hardware Validated Boot}
-
-The \ac{PI} specification defines \acp{PPI} and \ac{DXE} protocols which can be used to validate loaded images before exeuting them.
-During the \ac{PEI} phase the \emph{\ac{PEI} Guided Section Extraction \ac{PPI}} can be used for the authentication of file section, while the \emph{Security \ac{PPI}} implements the policy response to the authentication result.
-The \ac{DXE} phase has similar counter parts in the form of \emph{Guided Section Extraction Protocol}, \emph{Security Architectural Protocol} and \emph{Security2 Architectural Protocol}
-These allows the platform designer to implement policy responses following image authentication, ranging from deferral of execution to locking the system flash.
 
 
 Secure Boot relies on the firmware as its root of trust, hardware validated boot is able to shift this trusts out of the firmware image into hardware, in hopes to reduce attack vectors.
@@ -23,7 +27,7 @@ intel
 
 \subsubsection{Firmware Protection}
 
-The \ac{PI} speficiation defines a \emph{End of Dxe Event}, it indicates the introduction of third party software execution to the platform.
+The \ac{PI} speficiation defines an \emph{End of Dxe Event}, which indicates the introduction of third party software execution to the platform.
 Up until this point it is assumed that the entire system software is under the control of the platform manufacturer.
 Drivers may react to this event by locking critical system resources, by using the \ac{SMM} services \cite[Vol. 2, 5.1.2.1]{pi-spec}.
 The \ac{SMM} is a secure execution environment, achieved by isolation from the rest of the system, through the \ac{CPU} \cite[Vol. 4, Section 1.3]{pi-spec}.

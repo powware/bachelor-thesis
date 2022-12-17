@@ -3,24 +3,33 @@
 \section{Secure Boot}
 \label{sec:attacks:secure-boot}
 
-Our second attack is performed against systems which have Secure Boot enabled.
-we assume that the signature \acp{DB} used do not contain our images hashes.
+Our second attack is performed against systems which have Secure Boot enabled without any complementary Hardware Validated Boot.
+We assume that the signature \acp{DB} used do not contain our images hashes and that the interactive \ac{UEFI} setup menu is password protected.
+Otherwise we could simply turn off Secure Boot.
 
 \subsection{Bootkit}
 
-For the installation via removable media we have to assume that the \ac{BIOS} menu is password protected, as we otherwise could simply turn off Secure Boot.
-This makes the likelihood of an infection via this method smaller since we now solely rely on the boot order/firmware policy to prefer removable media.
-Even given this assumption we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
-The same denial is observable for the bootkit itself, when using our Windows installer.
+The interactive menu being password\-/protected makes the likelihood of an infection via booting into our installer smaller.
+We now solely rely on the boot order/firmware policy to prefer removable media.
+Even if this was to be the case, we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
+When using our Windows installer we observe the same denial for the bootkit itself.
 The Windows Boot Manager boot option pointing to our bootkit is now denied execution, if we were to have overwritten the standard boot entry of the hard drive \lstinline{EFI\Boot\bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
 
 \subsection{Rootkit}
 
-When installing our rootkit on \autoref{sec:test-setup:asrock}, we observe that Secure Boot is not applying its verification to our \ac{DXE} drivers, as they are still being executed without any restrictions.
+In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage}.
+As \code{LoadImage} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
+We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot}, that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherntly unable to verify the behavior of the \ac{PI} process.
+Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot.
 When we look at the reference implementation in \ac{EDK} II, we can see why.
-\autoref{lst:dxe-image-verification-handler} shows, that the image origin dictates which is applied.
-Standard policy for images from a \acf{FV} (\lstinline{IMAGE_FROM_FV}) is to always allow execution. This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
+\autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the Securit2 protocol.
+It shows that the image origin dictates which policy is being applied.
+The standard policy for images from a \acf{FV} (\code{IMAGE\_FROM\_FV}) is to always allow execution.
+This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
 \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here.
-    For example: whether the image is in the system flash \textelp{}}. This behavior was reproducible on all our hardware setups, likely in order to prevent accidentally entirely unbootable firmware or to reduce boot time.
+    For example: whether the image is in the system flash \textelp{}}.
+This behavior was reproducible on all our test setups.
 
-\TODO{MEEE}
+\lstinputlisting[language=C,caption={Policy Selection in DxeImageVerificationHandler (\ac{EDK} II reference implementation of Security2 Architecture Protocol)},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
+
+\clearpage

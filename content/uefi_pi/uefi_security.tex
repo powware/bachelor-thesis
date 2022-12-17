@@ -1,6 +1,12 @@
 % !TeX root = ../../thesis.tex
 
-\subsection{Secure Boot}
+\subsection{Security}
+
+\ac{UEFI} offers security mechanisms restriting what is allowed to modify and be modified on a system.
+This involves authentication of ownership over the platform.
+
+\subsubsection{Secure Boot}
+\label{sec:uefi-pi:uefi:secure-boot}
 
 Secure Boot provides a secure hand-off from the firmware to 3rd party applications used for during the boot process, located on unsecure media \cite{tianocore-understanding-uefi-secure-boot-chain} \cite[Sections 32.2 and 32.5.1]{uefi-spec}.
 It assumes the firmware to be a trusted entity and all 3rd party software to be untrusted, this includes images from hardware vendors in \ac{PCI} option \acp{ROM}, bootloader from \ac{OS} vendors and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
@@ -34,10 +40,15 @@ The current state of Secure Boot is communicated with a secure variable, which t
 % https://papers.vx-underground.org/papers/Other/Advanced%20Malware/UEFI%20Secure%20Boot%20in%20Modern%20Computer%20Security%20Solutions.pdf
 Users, who are physically present, may disable Secure Boot, enroll default or custom keys via an interactive menu. \TODO{find a good cite}
 
-\TODO{maybe secure boot authorization process}
+\subsubsection{Firmware Management}
 
-\subsection{Firmware Management}
-
-The Firmware Management Protocol provides a boot abstraction for authenticated updating and management of \ac{PF} \cite[Section 23]{uefi-spec}.
+The Firmware Management Protocol provides a boot abstraction for authenticated updating and management of the \ac{PF} \cite[Section 23]{uefi-spec}.
 The runtime services \code{QueryCapsuleCapabilities()} and \code{CapsuleUpdate()} may be used by the \ac{OS} to pass updates to the firmware in a persistent manner, so that they can be processed on subsequent boots \cite[Section 23.3]{uefi-spec}.
 \acp{OEM} also often provide their own ways to process firmware updates, for example via dedicated \ac{USB} ports, which allow to process firmware updates upon boot.
+As these are entirely dictated by the platform designer, it is not possible to make vendor independent assessments about their security.
+
+\subsubsection{User Identity Policies}
+
+\ac{UEFI} enables a system to have multiple users with variying levels of privileges.
+This may restrict their ability to enroll other users or to boot off select drives \cite[Section 36.1.2]{uefi-spec}.
+A trusted environment must be maintained for the integrity of the security identification, by restriting which drivers are loaded and securing the storage of drivers \cite[Section 36.1.4]{uefi-spec}.
