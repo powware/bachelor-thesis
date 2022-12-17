@@ -2,31 +2,20 @@
 
 \section{\acs{UEFI} Shell}
 
-Part of the \ac{UEFI} specifications is the \ac{UEFI} Shell Specification
-
-% try in EFI shell
-% what is the EFI shell
-\TODO{better summary of UEFI shell}
 Part of the family of \ac{UEFI} specifications is a shell specification which defines a feature rich \ac{UEFI} shell application to interact with the \ac{UEFI} environment \cite[Section 1.1]{uefi-shell-spec}.
-It offers commands related to boot and general configuration, device and driver management, file system access, networking \cite[Section 5.1]{uefi-shell-spec} and supports scripting \cite[Section 4]{uefi-shell-spec}.
-
-The \ac{UEFI} shell may already be part of the boot options but can always be supplied on a \ac{USB} stick in the default boot path.
-\autoref{fig:uefi-shell} depicts an exemplary output of an \ac{EDK} II \ac{UEFI} shell emulated under QEMU.
-steal me from neither
-
-
-Upon invocation, the shell application performs an initialization during which it \TODO{does what? whats important for us here} and produces output what is equivalent to the output of the execution of the commands \lstinline{ver} and \lstinline{map -terse} \cite[Section 3.3]{uefi-shell-spec}.
-\lstinline{ver} displays the version of the \ac{UEFI} specification the firmware conforms to \cite[Section 5.3]{uefi-shell-spec}.
-
-
-% showing mapping, also available with map command
-% consistent device mapping, comparable to partition names in windows
-The map command is very interesting for file access with the shell, it displays a mapping table between user defined alias names and device handles.
-The aliases can be used instead of a device path when submitting commands via the command line interface.
-The \ac{UEFI} shell also produces default mappings, notably for file systems \cite[Section 3.7.2]{uefi-shell-spec}.
+It offers commands relating to boot and general configuration, device and driver management, file system access, networking \cite[Section 5.1]{uefi-shell-spec} and scripting \cite[Section 4]{uefi-shell-spec}.
+The \ac{UEFI} shell may already be part of the boot options but can always be supplied on removable media in the default boot path.
+During initialization the shell produces default mappings for file systems and block devices, this defines names that can be used interchangably with their device paths when issuing shell commands \cite[Section 3.7.2]{uefi-shell-spec}.
 These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
+It also produces the initial output of what is equivalent to the invocation of the commands \program{ver} and \program{map} \cite[Section 3.3]{uefi-shell-spec}.
+\program{ver} displays the version of the \ac{UEFI} specification the firmware conforms to, while map shows the current device mapping \cite[Section 5.3]{uefi-shell-spec}.
+\autoref{fig:uefi-shell} depicts an exemplary output of the \ac{EDK} II \ac{UEFI} shell.
 
-\TODO{find in spec what precise mapping mechanism}
+The \ac{UEFI} shell is a great tool to visualize the \ac{UEFI} environment.
+With the \program{devtree} command we can see all handles of devices complying with the \ac{UEFI} driver model.
+It is also a great reference to understand device paths.
+
+
 When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices.
 This identification is performed via instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
 % explain Simple File System Protocol

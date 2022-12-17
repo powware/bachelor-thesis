@@ -3,7 +3,8 @@
 \chapter{Test Setup}
 \label{sec:test-setup}
 
-We perform our attacks against Windows 11 on three different setups, as even though all three \ac{UEFI} firmwares used, are \cite{pi-spec} compliant, there still are many things left up to the \acp{OEM} to decide, when implementing a firmware image.
+We perform our attacks against Windows 11 on three different setups.
+Even though all three \ac{UEFI} firmwares are \ac{PI} specification compliant, there is still a lot of freedom for \acp{OEM}, when implementing the \ac{PF}.
 
 \section{\acs{QEMU}}
 \label{sec:test-setup:qemu}
@@ -17,33 +18,18 @@ Accessing the firmware image with this setup is done through simple file access.
 \section{Lenovo Ideapad 5 Pro-16ACH6}
 \label{sec:test-setup:lenovo}
 
-Lenovo Ideapad 5 Pro-16ACH6
-
-% https://www.lenovo.com/de/de/laptops/ideapad/500-series/IdeaPad-5-Pro-16ACH6/p/88IPS501619?orgRef=https%253A%252F%252Fwww.google.com%252F
-
-microsoft device guard
-
-secure boot default keys
-\emph{Microsoft Windows Production PCA 2011}
-
-This can be done by using a spi flash programmer and clamping the physical chip. \TODO{FLASHROM}
+Our first hardware setup is a Lenovo Ideapad 5 Pro-16ACH6, an \ac{AMD} based laptop with a \ac{AMD} Ryzen 9 5900H \cite{lenovo-ideapad}.
+It supports Microsoft Device Guard and \ac{PCR}7 binding when Secure Boot is enabled.
+We can read and write the firmware image with physical hardware access by using an \ac{SPI} flash programmer in combination with the Linux utility \program{flashrom}.
 
 \section{ASRock A520M-HVS}
 \label{sec:test-setup:asrock}
 
-\TODO{describe test setup}
-
-
-secure boot und bitlocker
-
-% https://www.asrock.com/mb/AMD/A520M-HVS/index.asp#BIOS
-
-A520M-HVS 2.30 latest firmware at time of writing
-Ryzen 5 5600X Zen 3
-
-secure boot default keys
-\emph{Microsoft Windows Production PCA 2011}
-
-
-flashrom -p internal
-SPI chip emulator. \TODO{EM100}
+Our second hardware setup is a desktop \ac{PC} with an \ac{AMD} based ASRock A520M-HVS motherboard.
+We use the lastest firmware image as of writing which is of version 2.30.
+This setup also supports \ac{PCR}7 binding when Secure Boot is enabled.
+The \ac{SPI} flash chip on the main board is disabled and instead an \program{EM100} \ac{SPI} flash emulator is attached.
+When the system thinks it is accessing the \ac{SPI} flash chip, it is instead communicating with the emulator.
+Additionally by dualbooting into Linux we can use \program{flashrom} to communicate with the \ac{SPI} chip for read and write access.
+The Linux distribution of our choice, Ubuntu uses a so called Lockdown Mode when Secure Boot is enabled.
+This blocks direct access to the \ac{SPI} chip \cite{man-kernel-lockdown}, but can be disabled while Secure Boot remains enabled \cite{disable-kernel-lockdown}.
