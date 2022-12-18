@@ -7,43 +7,49 @@
 \chapter{Introduction}
 
 
-% what is UEFI
-As the first piece of software that is run on your computer, UEFI holds an immense amount of responsibility during system initialization, attacks targeting your operating system from this environment are executed long before
+Regardless of the \ac{OS} installed on a computer, the \ac{PF} is the very first piece of code that is executed, when powering on the system.
+It performs basic initialization of all platform components and manages the system's resources until the \ac{OS} takes over.
+The \ac{PF} allows for basic system and boot configuration and serves as a means to create a uniform environment for boot applications.
+After discovering and selecting the appropriate boot device it hands over execution to the bootloader and with that subsequently control over the entire system.
 
-what does it different than bios
-this helps write platform independent code
-uefi threats:
+This process has been previously performed by the \ac{BIOS} and while the term supersedes its underlying implementation, modern systems are mostly \ac{UEFI}\-/based with even backwards compatibility being phased out by \acp{OEM}.
+Legacy \ac{BIOS} is dead and \ac{UEFI} is here to stay.
 
-% definition of rootkit and bootkit
-A rootkit is a collection of software designed to grant a threat actor control over a system, typically with malicious intend.
-Rootkits set up a backdoor exploit and may deliver additional malware while leveraging their privileges to remain hidden.
-There are different types of rootkits such as User Mode, Kernel Mode, Bootkits (bootloader rootkits), Hypervisor and Firmware rootkits.
-\cite{crowdstrike, techtarget, microsoft-secure-the-windows-boot-process}
-\TODO{consult abstract for similar definition, how easy uefi makes it to write hardware independent payload}
-Firmware rootkits target the software running during the boot process, which is responsible for the system initialization.
-This is done before the operating system is executed making them particularly hard to find, they are also persistent across operating system installation or hard drive replacements \cite{crowdstrike}.
+\ac{UEFI} as the successor addresses the previous limitations, modernizing the boot process in a standardized fashion.
+Allowing for to fully abstract the underlying hardware, while providing mechanisms for extensibility in the short and long term.
+\ac{UEFI} provides a family of specifications with the \ac{UEFI} specification itself defining the environment and interfaces for boot applications to communicate with the firmware.
+The \ac{UEFI} \ac{PI} specification defines a model for system designers to follow when implementing the \ac{PF}.
+Its design focuses on simplifying the collaboration process between different hardware vendors, whose components come together in a system.
+Dynamic module discovery, disptach and intermodule communication allow for the independent development of early boot components.
+A well\-/defined storage solution brings it all together in a single firmware image.
 
+The extensibility and abstractions can become a double\-/edged sword, when threat actors are introduced to the system, as the same concepts apply to software with malicious intent.
+They can gain control over the system before the \ac{OS} or even its bootloader are executed.
+The early execution environment can be abused to achieve persistence across reboots and with access to the firmware iamge even across \ac{OS} installations.
+They often deploy additional malware further up into the \ac{OS} environment.
+Leveraging their privileges, they remain hidden to the \ac{OS} and its antivirus software.
+Through abstractions of the underlying hardware \ac{UEFI} based attacks can become platform independent and target a host of platforms at once.
 
-\section*{Problem Statement}
-look at past \ac{UEFI} threats that have popped up in the wild and been analysed
-look at boot and rootkits
-how they infected the system/initial execution vector
-categorize them by their attack vector
-whether they attack the windows installation at rest in storage
-or during boot in memory
-analyze \ac{UEFI} environment from the view of a storage\-/base \ac{UEFI} threats in form of boot- and rootkit
-how do we gain initial execution
-what can we use
-what security mechanisms do we encounter
-\ac{UEFI} side
-Windows side
-Windows standard security policies
-we perform attacks in an emulated environment as well as on hardware
-we enable additional security mechanisms
-increasing security mechanisms
-add onto past threats by looking at TPM and bitlocker
+\ac{UEFI} threats fall under the category of rootkits.
+Rootkits are traditonally a collection of software designed to grant a threat actor control over a system.
+There are different types of rootkits depending on their entry vector and where they reside.
+They range from User Mode, Kernel Mode over Hypervisors to bootloaders and firmware \cite{crowdstrike, techtarget, microsoft-secure-the-windows-boot-process}.
+\ac{UEFI} threats are of two categories, bootloader rootkits (Bootkits) or firmware rootkits.
+While bootkits rely on intervening the process when the \ac{PF} hands over execution to boot applications, firmware rootkits reside within the firmware image and are executed as part of the \ac{PI}.
+Within this thesis we will reserve the alone standing term \emph{rootkit} for \ac{UEFI} firmware rootkits and use bootkit for bootloader rootkits.
 
+Dicoveries of \ac{UEFI} threats are still rather rare occurances, which may depend more on the fact that they are hard to detect than the amount of them in existence.
+Despite this in the recent years more and more have been found and analysed by security researchers.
+Bootkits such as FinSpy, ESPecter, Dreamboot or rootkits like Mosaicregressor, LoJax, Moonbounce and CosmicStrand.
+Given the small sample size information about the infection process is very limited.
+Their attack approaches can be categorized into memory\-/ and storage\-/based approaches.
+Memory\-/based attacks the modify boot applications loaded in memory to propagate malicious code execution into the \ac{OS} kernel.
+Storage\-/based attacks do not rely on the \ac{OS} boot process and instead modify the \ac{OS}'s hard drive contents.
 
+By performing our own \ac{UEFI} attacks we look at some infection methods for root\-/ and bootkits, mainly involving physical access.
+We want to analyze Windows security mechanisms and standard security policies and if and how they protect the system.
+Especially focusing on storage\-/based attacks like LoJax and Mosaicregressor, since Windows offers \ac{BDE} with a \ac{TPM} 2.0 to prevent unauthorized access of the hard drive.
+\ac{TPM} measurements provides a mechanism to verify system integrity and should be able to pick up malicious code execution such as rootkits and deny hard drive access and stop the system from booting.
 
 \section*{Structure}
 

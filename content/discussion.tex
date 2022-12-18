@@ -7,12 +7,14 @@
 
 \chapter{Discussion}
 
-Our attacks show that a BitLocker protected Windows 11 installations are less secure against \ac{UEFI} rootkits when using Secure Boot.
-We refute Microsoft's statement that Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}} \cite{microsoft-pcr7-binding}.
+Our attacks show that a BitLocker\-/protected Windows 11 installations are less secure against \ac{UEFI} rootkits when using Secure Boot.
+We refute Microsoft's statement that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}}.
 Disregarding \ac{PCR}0 in the validation profile and instead using Secure Boot for integrity validation is an inherently dangerous approach, as Secure Boot relies on the firmware as its root of trust, meaning it can not verify its integrity.
 \ac{PCR}7 may be able to replace registers 2 and 4 but not 0.
 
-\ac{TPM} integrity measurements are only as effective as the user's reaction to them
+
+\ac{TPM} integrity measurements are only as effective as the user's reaction to them, they are opt\-/out by overriding the security decision with a recovery key.
+
 
 bootkit installation easier than rootkit
 

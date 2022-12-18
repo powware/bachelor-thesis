@@ -13,7 +13,7 @@
 \subsection{Secure Boot}
 
 Devices shipping with Windows 11 must have Secure Boot enabled by default \cite{microsoft-windows-minimum-hardware-requirements-overview}.
-Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB}, to allow non\-/Windows boot loaders, as well as completely disable secure boot.
+Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB}, to allow non\-/Windows bootloaders, as well as completely disable secure boot.
 Windows offers two signature \acp{DB} the \emph{Microsoft Windows Production PCA 2011} required for the Windows boot process and \emph{Microsoft Corporation \ac{UEFI} \ac{CA} 2011}, which is reserved for third party executables signed at Microsoft's discretion after manual review \TODO{better source} \cite{microsoft-uefi-signing}.
 Microsoft advises to only allow other third party \ac{UEFI} applications if necessary and even mandates the exclusion of \acp{DB} other than \emph{Microsoft Windows Production PCA 2011} on Secured\-/core \acp{PC} \cite{microsoft-secure-the-windows-boot-process}.
 
