@@ -36,20 +36,21 @@ There are different types of rootkits depending on their entry vector and where 
 They range from User Mode, Kernel Mode over Hypervisors to bootloaders and firmware \cite{crowdstrike, techtarget, microsoft-secure-the-windows-boot-process}.
 \ac{UEFI} threats are of two categories, bootloader rootkits (Bootkits) or firmware rootkits.
 While bootkits rely on intervening the process when the \ac{PF} hands over execution to boot applications, firmware rootkits reside within the firmware image and are executed as part of the \ac{PI}.
-Within this thesis we will reserve the alone standing term \emph{rootkit} for \ac{UEFI} firmware rootkits and use bootkit for bootloader rootkits.
+Within this thesis we will reserve the alone standing term \emph{rootkit} for \ac{UEFI} firmware rootkits and mostly refer to bootloader rootkits with bootkit.
 
-Dicoveries of \ac{UEFI} threats are still rather rare occurances, which may depend more on the fact that they are hard to detect than the amount of them in existence.
-Despite this in the recent years more and more have been found and analysed by security researchers.
+Dicoveries of \ac{UEFI} threats are still rather rare occurances, which may depend more on the fact that they are hard to detect than the amount of them that exists.
+Despite this, recent years have lead to more and more being found and analysed by security researchers.
 Bootkits such as FinSpy, ESPecter, Dreamboot or rootkits like Mosaicregressor, LoJax, Moonbounce and CosmicStrand.
-Given the small sample size information about the infection process is very limited.
+Given the small sample size the infection method is often unknown and general information very limited.
 Their attack approaches can be categorized into memory\-/ and storage\-/based approaches.
-Memory\-/based attacks the modify boot applications loaded in memory to propagate malicious code execution into the \ac{OS} kernel.
-Storage\-/based attacks do not rely on the \ac{OS} boot process and instead modify the \ac{OS}'s hard drive contents.
+Memory\-/based attacks modify boot applications when they are loaded in memory.
+This allows them to propagate malicious code execution into the \ac{OS} kernel.
+Storage\-/based attacks do not rely on the \ac{OS} boot process and instead modify the \ac{OS}'s hard drive contents \emph{at rest}.
 
 By performing our own \ac{UEFI} attacks we look at some infection methods for root\-/ and bootkits, mainly involving physical access.
-We want to analyze Windows security mechanisms and standard security policies and if and how they protect the system.
-Especially focusing on storage\-/based attacks like LoJax and Mosaicregressor, since Windows offers \ac{BDE} with a \ac{TPM} 2.0 to prevent unauthorized access of the hard drive.
-\ac{TPM} measurements provides a mechanism to verify system integrity and should be able to pick up malicious code execution such as rootkits and deny hard drive access and stop the system from booting.
+We want to analyze Windows security mechanisms and standard security policies, whether they protect the system and if so, how.
+Focusing on storage\-/based attacks comparable to LoJax and Mosaicregressor, as Windows offers \ac{BDE} with \ac{TPM} 2.0 protection to prevent unauthorized access of the hard drive.
+\ac{TPM} measurements provide a mechanism to verify system integrity and should be able to pick up malicious code execution such as rootkits and deny hard drive access and stop the system from booting.
 
 \section*{Structure}
 
