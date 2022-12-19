@@ -9,12 +9,15 @@ Through the manipulation of a Task Scheduler master registry key we were able to
 The execution happens at system boot before login.
 
 We showed that the attack using our rootkit is unaffected by Secure Boot, as Secure Boot relies on the \ac{PF} as its root of trust.
-This leaves Secure Boot unable to verify the behavior of the \ac{PI} when it includes our rootkit.
-As Secure Boot's threat model consists of the hand\-/over process from the plaftorm firmware to \ac{UEFI} images, the attack with our bootkit was successfully mitigated.
+This leaves Secure Boot unable to verify the behavior of the \ac{PI}, including our rootkit.
+As Secure Boot's threat model consists of the hand\-/over process from the plaftorm firmware to \ac{UEFI} images, the attack through our bootkit is successfully mitigated.
 
-We showed that a BitLocker is used with a \ac{TPM} and the default validation profile \code{\{0, 2, 4, 11\}} our root- and bootkit trigger the BitLocker recovery prompt, from which we our \emph{BitLogger} was able to log entered keystrokes to obtain the recovery key.
-We were then able to use the recovery key with our \ac{UEFI} port of Dislocker to mount the encrypted drive, allowing us to repeat our initial attack of deploying payload and modifying the registry.
-In the case of our \ac{UEFI} payload being part of the \ac{TPM} measurements used to encrypt the \ac{VMK} or when a validation profile is used that does not include \ac{PCR}0, we were able to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with Dislocker.
-We showed that this is the case when using a Secure Boot configuration that uses only Microsoft's signature \ac{DB} required to boot Windows.
-This forces a default validation profile of \code{\{7, 11\}}, leaving out \ac{PCR}0.
-Our rootkit attack was able to gain access to this type of system without requiring any prior knowledge or additional user input.
+When the target system uses \ac{BDE} with a \ac{TPM} 2.0 and the default validation profile \code{\{0, 2, 4, 11\}} both our root\-/ and bootkit trigger the BitLocker recovery prompt protecting the hard drive from unauthorized access and stopping the boot process.
+We also show that, Windows giving the user an ability to override the \ac{TPM}'s security reaction, by entering the recovery key, allows us to overcome \ac{BDE}.
+Our \emph{BitLogger} was able to log the entered keystrokes to obtain the recovery key.
+We were then able to use the recovery key with our \ac{UEFI} port of \program{Dislocker} to mount the encrypted drive, allowing us to repeat our initial attack of deploying a payload and modifying the registry.
+
+In the case of our \ac{UEFI} payload being part of the \ac{TPM} measurements used to encrypt the \ac{VMK} or when a validation profile is used that does not include \ac{PCR}0, we were able to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with \program{Dislocker}.
+We showed that this is the case when enabling Secure Boot with a configuration that uses only Microsoft's signature \ac{DB} required to boot Windows.
+Windows then forces BitLocker to use a default validation profile of \code{\{7, 11\}}, leaving out \ac{PCR}0 where our rookit is measured to.
+Our rootkit was able to gain access to this type of system without requiring any prior knowledge or additional user input.

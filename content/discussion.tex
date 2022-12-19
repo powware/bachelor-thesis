@@ -7,20 +7,52 @@
 
 \chapter{Discussion}
 
-Our attacks show that a BitLocker\-/protected Windows 11 installations are less secure against \ac{UEFI} rootkits when using Secure Boot.
-We refute Microsoft's statement that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}}.
-Disregarding \ac{PCR}0 in the validation profile and instead using Secure Boot for integrity validation is an inherently dangerous approach, as Secure Boot relies on the firmware as its root of trust, meaning it can not verify its integrity.
-\ac{PCR}7 may be able to replace registers 2 and 4 but not 0.
+
+The biggest takeaway of our attacks is, that BitLocker\-/protected Windows 11 installations are less secure against \ac{UEFI} rootkits when using Secure Boot.
+We disprove Microsoft's statement that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}}.
+Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
+Secure Boot quite in the contrarty relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
+Secure Boot's purpose is to enforce authentiation when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
+Microsoft's decision to use Secure Boot for integrity validation leaves a lot of systems more vulnerable than they should be.
+Any attacker with read and write access to the firmware image is able to gain control over such a system.
+This is especially easy for attackers with physical access with a stolen laptop being a prime candidate for the attack.
+trade off between false positives and security
+not using \ac{PCR}7 instead of \ac{PCR}0 and 2
+measured boot \TODO{maybe}
+tpm + pin/usb detectability stolen laptop fix
+could also be keylogged, but cant update protectors
+
+
+
+
+
+
+When BitLocker is correctly configured and includes \ac{PCR}0, to use the \ac{TPM} for integrity validation, the security advantage is still highly dependend on the user's reaction to the recovery prompt.
+We argue that the significance of its appearance is dismissed by providing the ability for the user to enter the recovery key.
+Microsoft had to make a trade\-/off between forcing users to take false positives as serious as actual threats and giving the user a security override without any way to differentiat
+the fact that a user can override the security reaction when they enter the recovery key.
+The instead of a recovery prompt the user should be made aware of the inherent loss of system integrity.
+Very dangerous situation to deal with, because on the other hand false positives would require the same attention.
+
+
 
 
 \ac{TPM} integrity measurements are only as effective as the user's reaction to them, they are opt\-/out by overriding the security decision with a recovery key.
+impact and significance
+realistically what is a user gonna do
+generally the bitlocker reocvery prompt can raise suspicion and may lead to investigations and the threat to be found
+BitLogger is more of a last resort and a social engineering aspect comparable to phishing
 
 
 bootkit installation easier than rootkit
 
-rootkit with physical access very doable
+rootkit with physical access many options/easy to do
 
-secure boot defeats bootkit
+
+it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
+didnt prevent firmware update overwriting our payload
+
+
 
 
 Our attacks reveal the differences between \ac{UEFI} firmware rootkits and \ac{UEFI} bootkits.
@@ -46,29 +78,19 @@ rootkit persistence across reinstallations or hard drive replacements
 % \cite{}  https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
 
 % attack assumption reflected to real world aplicability
-didnt prevent firmware update overwriting our payload
-generally the bitlocker reocvery prompt can raise suspicion and may lead to investigations and the threat to be found
-BitLogger is more of a last resort and a social engineering aspect comparable to phishing
-implications of windows secure boot PCR7 binding and use of secure boot system integrity check and validation profile 7, 11 is a bad decision of microsoft, that for example allows
-stolen laptops to be unlocked when infecting the firmware with our rootkit
 
 
-it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
 
 
 \section{Mitigations}
 
-measured boot \TODO{maybe}
 
 bios password against secure boot removal or bootkit installation from USB
-
-windows cant assume what the implementation of ReadKeyStrokeEx looks like (normally function patching might have a jump etc, which we dont even have here)
 
 hardware validated boot to start the validation change from outside the image
 
 inaccessible spi flash
 
-tpm + pin/usb detectability
 
 \subsection{User awareness}
 

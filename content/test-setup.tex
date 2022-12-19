@@ -9,7 +9,7 @@ Even though all three \ac{UEFI} firmwares are \ac{PI} specification compliant, t
 \section{\acs{QEMU}}
 \label{sec:test-setup:qemu}
 
-Our main development setup is an emulated environment using the emulator \program{\ac{QEMU}} \cite{qemu} together with the \ac{OVMF} image, from \ac{EDK} II using version\code{edk2-stable202208}.
+Our main development setup is an emulated environment using the emulator \program{\ac{QEMU}} \cite{qemu} together with the \ac{OVMF} image, from \ac{EDK} II using version \code{edk2-stable202208}.
 For Secure Boot we generate our own \ac{PK} and use the \emph{Microsoft Corporation \acs{KEK} \acsu{CA} 2011} and the two signature \acp{DB} \emph{Microsoft Windows Production PCA 2011} and \emph{Microsoft Corporation UEFI CA 2011} provided by Microsoft.
 For BitLocker and to fullfill Windows 11's general requirement that a \ac{TPM} 2.0 is present, we use \program{swtpm}.
 A \ac{TPM} emulated in software \cite{swtpm}.
