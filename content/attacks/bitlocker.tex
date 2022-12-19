@@ -144,13 +144,13 @@ We want to prevent the user from using this prompt instead of the \ac{UEFI} prom
 This can be done in our \lstinline{ReadKeyStrokeEx} hook, where when a user presses escape we instead return another key to the Windows Boot Manager.
 
 % only necessary because the way dislocker currently checks whether the recovery key is correct is slow and impacts the user experience during recovery prompt
-\TODO{if we want we can explain this}
-\cite{exitbootservices-hooking}
-hook ExitBootServices
-enable hook
-write payload
-import registry key
-disable hook
+% \TODO{if we want we can explain this}
+% \cite{exitbootservices-hooking}
+% hook ExitBootServices
+% enable hook
+% write payload
+% import registry key
+% disable hook
 
 
 % finally update TPM values
