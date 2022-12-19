@@ -7,30 +7,58 @@
 
 \chapter{Discussion}
 
+\section*{Allowing Secure Boot for integrity validation}
 
-The biggest takeaway of our attacks is, that BitLocker\-/protected Windows 11 installations are less secure against \ac{UEFI} rootkits when using Secure Boot.
-We disprove Microsoft's statement that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}}.
+The biggest takeaway of our attacks is, that unintuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
+We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
 Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
 Secure Boot quite in the contrarty relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
-Secure Boot's purpose is to enforce authentiation when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
+Its purpose is to enforce authentiation when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
+Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled  and the \textbf{hardware is capable} of using secure boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
+Hardware Validated Boot moves the root of trust out of the firmware image into hardware and together with Secure Boot would be a sufficient way to replace the early boot component measurements of the \ac{TPM} for BitLocker.
+But as we have shown, the policy does not require Hardware Validated Boot.
 Microsoft's decision to use Secure Boot for integrity validation leaves a lot of systems more vulnerable than they should be.
 Any attacker with read and write access to the firmware image is able to gain control over such a system.
-This is especially easy for attackers with physical access with a stolen laptop being a prime candidate for the attack.
-trade off between false positives and security
-not using \ac{PCR}7 instead of \ac{PCR}0 and 2
+This is especially easy for attackers with physical access, with a stolen laptop being a prime candidate for the attack.
+We can not even argue for Microsoft doing this out of a trade\-/off between security and convenience.
+It is true that leaving out \ac{PCR}0 does significantly reduce the chance of the \ac{TPM} being unable unseal the \ac{VMK} after a firmware update, making validation profiles containing \ac{PCR}0 more prone to false positives in comparison.
+It is also the case that Secure Boot does not enforce its authentication and policies on code that is measured into \ac{PCR}0, but instead \acp{PCR} 2 and 4.
+If Microsoft were to have intentionally made this trade\-/off, Secure Boot would not be the deciding factor on whether to leave our \ac{PCR}0 or not.
+This maintains a similar security across systems with and without Secure Boot.
+A validation profile that maintains a similar security across systems with and without Secure Boot would have been \code{\{2, 4, 11\}} when Secure Boot is disabled.
+With this profile, measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker.
+Microsoft's decision instead causes Secure Boot to come with a hidden hit in security.
+
+As a result, we advice to override the default validation profile settings when using BitLocker.
+For additional security \ac{PCR}0 should be included everytime, as well as enabling Hardware Validated Boot on supported devices.
+Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also add to the security against an attacker trying to gain access to a system without the owner's interaction.
+
 measured boot \TODO{maybe}
-tpm + pin/usb detectability stolen laptop fix
-could also be keylogged, but cant update protectors
 
 
+\section*{Recovery Key as Security Override}
+
+When BitLocker correctly picks up on an integrity violation, the security advantage is highly dependend on the user's reaction to the recovery prompt.
+While BitLocker protects in scenarios where the system owner is not present by preventing unauthorized access to the hard drive, we argue that the significance of its appearance is dismissed by providing the system owner an immediate ability to override the securirty reaction by entering the recovery key.
+This leaves a burden on the user, as it is now their responsibility to be aware of possible causes for its appearance and to act accordingly upon them.
+
+When the user is greeted with the recovery prompt shown in \autoref{fig:bitlocker-recovery-prompt}
+
+Windows allowing this security override sets a dangerous precedence.
+Adjustments in the recovery prompt for more user awareness can be manipulated.
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#configure-the-pre-boot-recovery-message-and-url
+% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bcd-settings-and-bitlocker
+you can change recovery message and URL in BCD hive
+
+Or if the the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
+\TODO{cite this has already been done on legacy \ac{BIOS}}
+
+AFTER ALL the inherent problem is that the system integrity has been violated, in what fashion is now unverifiable.
+Leaving the system in a state where any further trust should not be put into it.
+A decision about whether a false positive or malicious code caused it, is not possible.
+Especially not for the user to decide.
 
 
-
-
-When BitLocker is correctly configured and includes \ac{PCR}0, to use the \ac{TPM} for integrity validation, the security advantage is still highly dependend on the user's reaction to the recovery prompt.
-We argue that the significance of its appearance is dismissed by providing the ability for the user to enter the recovery key.
-Microsoft had to make a trade\-/off between forcing users to take false positives as serious as actual threats and giving the user a security override without any way to differentiat
-the fact that a user can override the security reaction when they enter the recovery key.
 The instead of a recovery prompt the user should be made aware of the inherent loss of system integrity.
 Very dangerous situation to deal with, because on the other hand false positives would require the same attention.
 
@@ -55,19 +83,19 @@ didnt prevent firmware update overwriting our payload
 
 
 
-Our attacks reveal the differences between \ac{UEFI} firmware rootkits and \ac{UEFI} bootkits.
-The barrier of entry for a bootkit is much lower, as through physical access it is only required to boot from a \ac{USB} stick.
-Remote infection by mounting the \ac{ESP}.
-When the \ac{PF} is not password protected the main downside of a bootkit, its  we can disable secure boot
-in case of physical presence it may require to change boot order
-physical presence with bootable usb stick (defeated by secure boot)
-genrally defeated by secure boot where as the rootkit isnt
-even if secure boot was implemented for FV images, it could be patched if the validation change starts within the image
+% Our attacks reveal the differences between \ac{UEFI} firmware rootkits and \ac{UEFI} bootkits.
+% The barrier of entry for a bootkit is much lower, as through physical access it is only required to boot from a \ac{USB} stick.
+% Remote infection by mounting the \ac{ESP}.
+% When the \ac{PF} is not password protected the main downside of a bootkit, its  we can disable secure boot
+% in case of physical presence it may require to change boot order
+% physical presence with bootable usb stick (defeated by secure boot)
+% genrally defeated by secure boot where as the rootkit isnt
+% even if secure boot was implemented for FV images, it could be patched if the validation change starts within the image
 
-barrier of entry is higher
-exploit to overwrite spi flash or be delivered with supply chain difficult
-physical presence remove spi chip and emulate spi chip or modify chip content
-but high payoff with persistence
+% barrier of entry is higher
+% exploit to overwrite spi flash or be delivered with supply chain difficult
+% physical presence remove spi chip and emulate spi chip or modify chip content
+% but high payoff with persistence
 
 % persistence
 bootkit moves with hard drive but can be overwritten by fresh install
@@ -94,9 +122,6 @@ inaccessible spi flash
 
 \subsection{User awareness}
 
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#configure-the-pre-boot-recovery-message-and-url
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bcd-settings-and-bitlocker
-you can change recovery message and URL in BCD hive
 
 
 % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan

@@ -37,8 +37,7 @@ Then it loads the \ac{BCD} and access its entry.
 If not disabled in the \ac{BCD} it loads its own executable into memory for integrity verification \cite[Section 12]{windows-internals-7-part2}.
 Depending on what hibernation status is set within the \ac{BCD} it may launch the \lstinline{Winresume.efi} application, which reads the hibernation file and resumes kernel execution \cite[Section 12]{windows-internals-7-part2}.
 On a full boot it checks the \ac{BCD} for boot entries, if the entry points to a BitLocker encrypted drive, it attempts decryption.
-If this fails it shows a recovery prompt, otherwise it proceeds to load the \lstinline{Windload.efi} \ac{OS} loader \cite[Section 12]{windows-internals-7-part2}.
-\TODO{mention \lstinline{ntoskernel.exe}}
+If this fails it shows a recovery prompt, otherwise it proceeds to load the \ac{OS} loader \program{Windload.efi} which maps the kernel image \program{ntoskernl.exe} into memory. After a call to \code{ExitBootServices()} it transfers execution to the kernel \cite[Section 12]{windows-internals-7-part2}.
 
 \subsection{Runtime}
 
@@ -58,9 +57,5 @@ It also supports ex- and importing registry keys along their subkeys and contain
 Internally the registry is not a single large file but instead a set of file called hives, each hive contains one tree, that is mapped into the Registry as a whole.
 There is no one to one mapping of registry root key to hive file, the \ac{BCD} file for example is also a hive file and is mapped into the Registry under \lstinline{HKEY_LOCAL_MACHINE\BCD00000000} \cite[Section 10]{windows-internals-7-part2}.
 Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
-
-\TODO{maybe fun fact that EFS cant encrypt hives}
-windows also has a feature called Encrypting File System (EFS) with file system level encryption but it cant be used for registry hives
-\cite[Section 9]{windows-internals-6-part2}
 
 \input{content/windows/windows_security}

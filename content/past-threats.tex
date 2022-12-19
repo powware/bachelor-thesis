@@ -42,8 +42,8 @@ Bootkits use the \ac{UEFI} Boot manager to gain execution on a system, there are
 \cite{especter} patches the entrypoint of \program{bootmgfw.efi} and its copy \program{bootx64.efi} in the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path}, so that it executes malicious code upon launch.
 \cite{dreamboot} and \cite{efiguard} are more proof of concept than real attacks and suggest to be used from removable media, but they are also able to be added to the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path} on an \ac{ESP}, or generally added as their own boot entry \cite{efiguard}, as they are both applications which launch the Windows Boot Manager upon execution.
 \TODO{Generally it is possible to mount the \ac{ESP} from within Windows with administrative privileges}
-\subsection{Rootkit}
 
+\subsection{Rootkit}
 
 Firmware rootkits have been rarer and how exactly the firmware images were infected is often not known,
 \cite{vector-edk} requires booting the target machine from a USB key \cite{mosaicregressor}
@@ -78,6 +78,3 @@ The general approach is the same for all memory\-/based attacks, they propagate 
 
 Some attacks patch the kernel to disable Windows Driver signing and then install a kernel driver \cite{efiguard,especter}.
 Others deploy payload with elevated privileges \cite{finspy, dreamboot} or map code directly into kernel space \cite{moonbounce,cosmicstrand}.
-
-
-\TODO{not THAT importan but would be really cool, as it stands out as really exploiting rootkit capabilities}% https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf

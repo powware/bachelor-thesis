@@ -8,6 +8,7 @@ Asides the generation and secure storage of cryptographic keys, the \ac{TPM} can
 Boot code is measured into the \ac{TPM} by the \ac{PF}, providing evidence over the initialization process and making it possible to detect deviations \cite{microsoft-windows-trusted-platform-module-overview}.
 
 \section{\acfp{PCR}}
+\label{sec:tpm:pcr}
 
 \cite{tcg-tpm-library-part1-architecture} defines \acp{PCR} to store the system integrity measurements.
 The registers can only be modified in two ways, either through a complete \ac{TPM} reset or by extending their values.

@@ -27,7 +27,7 @@ This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially
 \end{figure}
 
 BitLocker with \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks and maintains system integrity by discovering deviations in the boot flow.
-But how does the user react to this, after all it is asking them to enter the recovery key to resume booting and not throw out their motherboard.
+But how does the user react to this, after all it is asking them to enter the recovery key to resume the boot process and not throw out their motherboard.
 There are a few options for a user to proceed, they either trust the system and enter their recovery key, mistrust the operating system or mistrust the entire system.
 If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation.
 In the case of our bootkit this gets rid of the threat, but the rootkit remains in the firmware image and would be part of the chain of trust for the fresh installation.

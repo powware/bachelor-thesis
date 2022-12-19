@@ -2,8 +2,14 @@
 
 \chapter{Conclusion}
 
+Our practical analysis of \ac{UEFI} threats against Windows 11 showed that enabling Secure Boot when using BitLocker comes with a hidden hit in security.
+Microsoft missuses Secure Boot in an attempt to provide platform firmware integrity validation, where the \ac{TPM} already offered a perfectly fine solution.
+While also having set a dangerous precedence by offering user the immediate ability to override integrity violations in an inherently untrustworthy system.
+Trade\-/off
+
 
 \section{Achieved Goals}
+
 when we are already in the image we can gain full control over the system
 system cant be trusted anymore e.g. uefi services
 full file access
@@ -13,12 +19,13 @@ on the other hand one could force such a prompt themselves
 mere exisitence of a recovery key is a security flaw
 
 \section{Future Work}
+
 tpm and pin
 capsule update
 exploit in tpm measruement chain that results in not being measured
 can exploit the tg2 hook directly to retrieve the vmk
-memory based rootkit
-hypervisor kernel security
-boot vs runtime rootkit
+look into memory based rootkit with bitlocker and tpm and also what the hypervisor kernel security does to them
+look further into \ac{SMM}
 
-investigate the self measuring \ac{SRTM}
+In \autoref{sec:tpm:pcr} we briefly mentioned that the \ac{RTM} is established by either a \ac{H-CRTM} measing the \ac{SRTM} or the \ac{SRTM} measuring.
+The latter opens up area for further investigations.
