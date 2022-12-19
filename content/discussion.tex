@@ -7,8 +7,6 @@
 
 \chapter{Discussion}
 
-\section*{Allowing Secure Boot for integrity validation}
-
 The biggest takeaway of our attacks is, that unintuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
 We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
 Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
@@ -30,57 +28,43 @@ With this profile, measurements of the \ac{TPM} regarding code that Secure Boot 
 Microsoft's decision instead causes Secure Boot to come with a hidden hit in security.
 
 As a result, we advice to override the default validation profile settings when using BitLocker.
-For additional security \ac{PCR}0 should be included everytime, as well as enabling Hardware Validated Boot on supported devices.
-Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also add to the security against an attacker trying to gain access to a system without the owner's interaction.
+For additional security \ac{PCR}0 should be included, as well as enabling Hardware Validated Boot on supported devices.
+Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction.
 
-measured boot \TODO{maybe}
+\section{Recovery Key as Security Override}
 
+Even when BitLocker correctly picks up on an integrity violation, the security advantage is still highly dependend on the user's reaction to the recovery prompt.
+While BitLocker protects in scenarios where the system owner is not present by preventing unauthorized access to the hard drive, we argue that the significance of the recovery prompts appearance is dismissed by providing the system owner an immediate ability to override the security reaction with a recovery key.
+This leaves the burden of security enforcement to the user.
+It is now their responsibility to be aware of the security related implications of the recovery prompt and to act accordingly upon it.
+When taking appropriate precautions the hard drive should be removed from the system and in inserted into a trustworthy system.
+From here the recovery key can be used to to fullfill its namesake, recovering data from the drive.
 
-\section*{Recovery Key as Security Override}
+Entering the recovery key into the recovery prompt is not data recovery, it is overriding a security mechanism.
+Presumable a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prio BitLocker suspension, boot configuration related changes etc.
+When there is no reasonable assumption for the user to have encounter the recovery prompt they should simply not enter the recovery key.
+After all the inherent problem is that the system integrity has been violated, in what fashion is now unverifiable.
+Leaving the system in a state where no further trust should not be put into the system.
+A distinction about whether a false positive or malicious code has caused the recovery prompt is not possible.
+It is also the only time a user has a chance to correctly react, as with their decision to further put trust the system, from hereinafter the malicious code will be part of the root of trust.
 
-When BitLocker correctly picks up on an integrity violation, the security advantage is highly dependend on the user's reaction to the recovery prompt.
-While BitLocker protects in scenarios where the system owner is not present by preventing unauthorized access to the hard drive, we argue that the significance of its appearance is dismissed by providing the system owner an immediate ability to override the securirty reaction by entering the recovery key.
-This leaves a burden on the user, as it is now their responsibility to be aware of possible causes for its appearance and to act accordingly upon them.
+Windows allowing this security override sets a dangerous precedence with the recovery prompt, especially it does not display any warnings about inherent danger.
+Instead of a recovery prompt the user should be made aware of the inherent loss of system integrity.
+And any future adjustments in the recovery prompt to provide more user awareness can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
+It is already easily possible to modify the message and url of the recovery prompt as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings}, that are read form the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
+Even if the the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
 
-When the user is greeted with the recovery prompt shown in \autoref{fig:bitlocker-recovery-prompt}
-
-Windows allowing this security override sets a dangerous precedence.
-Adjustments in the recovery prompt for more user awareness can be manipulated.
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-group-policy-settings#configure-the-pre-boot-recovery-message-and-url
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bcd-settings-and-bitlocker
-you can change recovery message and URL in BCD hive
-
-Or if the the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
-\TODO{cite this has already been done on legacy \ac{BIOS}}
-
-AFTER ALL the inherent problem is that the system integrity has been violated, in what fashion is now unverifiable.
-Leaving the system in a state where any further trust should not be put into it.
-A decision about whether a false positive or malicious code caused it, is not possible.
-Especially not for the user to decide.
-
-
-The instead of a recovery prompt the user should be made aware of the inherent loss of system integrity.
-Very dangerous situation to deal with, because on the other hand false positives would require the same attention.
+An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
+It is a last resort attack and relying on social engineering and is somewhat comparable to phishing.
 
 
 
+% bootkit installation easier than rootkit
 
-\ac{TPM} integrity measurements are only as effective as the user's reaction to them, they are opt\-/out by overriding the security decision with a recovery key.
-impact and significance
-realistically what is a user gonna do
-generally the bitlocker reocvery prompt can raise suspicion and may lead to investigations and the threat to be found
-BitLogger is more of a last resort and a social engineering aspect comparable to phishing
+% rootkit with physical access many options/easy to do
 
-
-bootkit installation easier than rootkit
-
-rootkit with physical access many options/easy to do
-
-
-it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
-didnt prevent firmware update overwriting our payload
-
-
+% it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
+% didnt prevent firmware update overwriting our payload
 
 
 % Our attacks reveal the differences between \ac{UEFI} firmware rootkits and \ac{UEFI} bootkits.
@@ -98,8 +82,8 @@ didnt prevent firmware update overwriting our payload
 % but high payoff with persistence
 
 % persistence
-bootkit moves with hard drive but can be overwritten by fresh install
-rootkit persistence across reinstallations or hard drive replacements
+% bootkit moves with hard drive but can be overwritten by fresh install
+% rootkit persistence across reinstallations or hard drive replacements
 
 
 % SMM rootkit very powerful, complete control over the system
@@ -118,9 +102,6 @@ bios password against secure boot removal or bootkit installation from USB
 hardware validated boot to start the validation change from outside the image
 
 inaccessible spi flash
-
-
-\subsection{User awareness}
 
 
 
