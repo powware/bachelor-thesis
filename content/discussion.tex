@@ -41,21 +41,21 @@ When taking appropriate precautions the hard drive should be removed from the sy
 From here the recovery key can be used to to fullfill its namesake, recovering data from the drive.
 
 Entering the recovery key into the recovery prompt is not data recovery, it is overriding a security mechanism.
-Presumable a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prio BitLocker suspension, boot configuration related changes etc.
-When there is no reasonable assumption for the user to have encounter the recovery prompt they should simply not enter the recovery key.
+Presumable a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prior BitLocker suspension, boot configuration related changes etc.
+When there is no reasonable assumption for the user to have encounter the recovery prompt they should not enter the recovery key.
 After all the inherent problem is that the system integrity has been violated, in what fashion is now unverifiable.
-Leaving the system in a state where no further trust should not be put into the system.
+It leaves the system in a state where no further trust should be put into it.
 A distinction about whether a false positive or malicious code has caused the recovery prompt is not possible.
-It is also the only time a user has a chance to correctly react, as with their decision to further put trust the system, from hereinafter the malicious code will be part of the root of trust.
+It is also the only time a user has a chance to correctly react, as with their decision to further put trust into an infected system, causes from hereinafter that malicious code will is part of the root of trust.
 
-Windows allowing this security override sets a dangerous precedence with the recovery prompt, especially it does not display any warnings about inherent danger.
-Instead of a recovery prompt the user should be made aware of the inherent loss of system integrity.
-And any future adjustments in the recovery prompt to provide more user awareness can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
-It is already easily possible to modify the message and url of the recovery prompt as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings}, that are read form the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
+Microsoft allowing this security override sets a dangerous precedence, especially since they do not display any warnings about inherent danger.
+Instead of a recovery prompt the user should have been made aware of the inherent loss of system integrity instead of normalising the security override.
+Any future adjustments in the recovery prompt, to provide more user awareness, can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
+It is already possible to  easily modify the message and url displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings}, that are read form the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
 Even if the the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
 
 An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
-It is a last resort attack and relying on social engineering and is somewhat comparable to phishing.
+It is somewhat of a last ditch effort, relying on social engineering and may be compared to phishing.
 
 
 
@@ -94,57 +94,57 @@ It is a last resort attack and relying on social engineering and is somewhat com
 
 
 
-\section{Mitigations}
+% \section{Mitigations}
 
 
-bios password against secure boot removal or bootkit installation from USB
+% bios password against secure boot removal or bootkit installation from USB
 
-hardware validated boot to start the validation change from outside the image
+% hardware validated boot to start the validation change from outside the image
 
-inaccessible spi flash
-
-
-
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan
-
-recovery guide
-
-what causes bitlocker recovery
-- password wrong too often
-- TPM 1.2, changing the BIOS or firmware boot device order
-- Having the CD or DVD drive before the hard drive in the BIOS boot order and then inserting or removing a CD or DVD
-- Failing to boot from a network drive before booting from the hard drive.
-- Docking or undocking a portable computer
-- Changes to the NTFS partition table on the disk including creating, deleting, or resizing a primary partition.
-- Entering the personal identification number (PIN) incorrectly too many times
-- Upgrading critical early startup components, such as a BIOS or UEFI firmware upgrade
-- Updating option ROM firmware graphics card
-- Adding or removing hardware
-- REMOVING, INSERTING, OR COMPLETELY DEPLETING THE CHARGE ON A SMART BATTERY ON A PORTABLE COMPUTER
-- Pressing the F8 or F10 key during the boot process
-what does the recovery screen say \autoref{fig:bitlocker-recovery-prompt}
-
-% https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
-% https://learn.microsoft.com/en-us/mem/configmgr/protect/deploy-use/bitlocker/helpdesk-portal?source=recommendations
-% https://learn.microsoft.com/en-us/microsoft-desktop-optimization-pack/mbam-v25/
-Enables end users to recover encrypted devices independently by using the Self-Service Portal
-
-googeln wie legitime recovery key prompt reaktion aussieht
-
-enterprise policy recovery key einschraenkbar?
-
-enterprise policy on recovery key loss
-
-vermitteln was das prompt bedeuten koennte
-
-aber kann man einfach nicht anzeigen lassen
-
-Security Flaw of entering a Recovery Password in an inheritly unsafe System
-
-enterprise doesnt hand out recovery keys and instead receives hard drive
+% inaccessible spi flash
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!
-without hardware chain of trust a compromised system can patch/change any software and fixes are impossible
 
-phishing prompts on their own
+% % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan
+
+% recovery guide
+
+% what causes bitlocker recovery
+% - password wrong too often
+% - TPM 1.2, changing the BIOS or firmware boot device order
+% - Having the CD or DVD drive before the hard drive in the BIOS boot order and then inserting or removing a CD or DVD
+% - Failing to boot from a network drive before booting from the hard drive.
+% - Docking or undocking a portable computer
+% - Changes to the NTFS partition table on the disk including creating, deleting, or resizing a primary partition.
+% - Entering the personal identification number (PIN) incorrectly too many times
+% - Upgrading critical early startup components, such as a BIOS or UEFI firmware upgrade
+% - Updating option ROM firmware graphics card
+% - Adding or removing hardware
+% - REMOVING, INSERTING, OR COMPLETELY DEPLETING THE CHARGE ON A SMART BATTERY ON A PORTABLE COMPUTER
+% - Pressing the F8 or F10 key during the boot process
+% what does the recovery screen say \autoref{fig:bitlocker-recovery-prompt}
+
+% % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
+% % https://learn.microsoft.com/en-us/mem/configmgr/protect/deploy-use/bitlocker/helpdesk-portal?source=recommendations
+% % https://learn.microsoft.com/en-us/microsoft-desktop-optimization-pack/mbam-v25/
+% Enables end users to recover encrypted devices independently by using the Self-Service Portal
+
+% googeln wie legitime recovery key prompt reaktion aussieht
+
+% enterprise policy recovery key einschraenkbar?
+
+% enterprise policy on recovery key loss
+
+% vermitteln was das prompt bedeuten koennte
+
+% aber kann man einfach nicht anzeigen lassen
+
+% Security Flaw of entering a Recovery Password in an inheritly unsafe System
+
+% enterprise doesnt hand out recovery keys and instead receives hard drive
+
+
+% !!!!!!!!!!!!!!!!!!!!!!!!!
+% without hardware chain of trust a compromised system can patch/change any software and fixes are impossible
+
+% phishing prompts on their own
