@@ -8,7 +8,7 @@
 \chapter{Discussion}
 
 The biggest takeaway of our attacks is, that unintuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
-We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \code{\{0, 2, 4, 11\}} or profile \code{\{7, 11\}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
+We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} or profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
 Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
 Secure Boot quite in the contrarty relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
 Its purpose is to enforce authentiation when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
@@ -20,10 +20,9 @@ Any attacker with read and write access to the firmware image is able to gain co
 This is especially easy for attackers with physical access, with a stolen laptop being a prime candidate for the attack.
 We can not even argue for Microsoft doing this out of a trade\-/off between security and convenience.
 It is true that leaving out \ac{PCR}0 does significantly reduce the chance of the \ac{TPM} being unable unseal the \ac{VMK} after a firmware update, making validation profiles containing \ac{PCR}0 more prone to false positives in comparison.
-It is also the case that Secure Boot does not enforce its authentication and policies on code that is measured into \ac{PCR}0, but instead \acp{PCR} 2 and 4.
+It is also the case that Secure Boot does not enforce its authentication and policies on code that is measured into \ac{PCR}0.
 If Microsoft were to have intentionally made this trade\-/off, Secure Boot would not be the deciding factor on whether to leave our \ac{PCR}0 or not.
-This maintains a similar security across systems with and without Secure Boot.
-A validation profile that maintains a similar security across systems with and without Secure Boot would have been \code{\{2, 4, 11\}} when Secure Boot is disabled.
+A validation profile that maintains a similar security across systems with and without Secure Boot could have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}} when Secure Boot is disabled.
 With this profile, measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker.
 Microsoft's decision instead causes Secure Boot to come with a hidden hit in security.
 

@@ -4,9 +4,9 @@
 Our final attack will target systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 and no additional PIN or startup key configured.
 This leaves the Windows boot partition encrypted, the \ac{ESP} is remains unencrypted, thus not affecting the bootkit installation process.
 Secure Boot can be enabled in combination of BitLocker having the effects as observed in \autoref{sec:attacks:secure-boot}, as well as additionally dictating the BitLocker default validation profile Windows uses as mentioned in \autoref{sec:windows:security:bde}.
-We perform our attack against both default profiles, starting with \lstinline|{0, 2, 4, 11}|.
+We perform our attack against both default profiles, starting with \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}.
 This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of the presence of a signature \ac{DB} other than \emph{Microsoft Windows Production PCA 2011}.
-The default validation profile \lstinline|{7, 11}| used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
+The default validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
 Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two.
 We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
 For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected.
