@@ -4,7 +4,7 @@
 
 \autoref{fig:windows-startup-process}
 
-\begin{figure}[htb]
+\begin{figure}[phtb]
     \centering
     \includegraphics[width=1.0\textwidth]{windows/windows_startup_process.png}
     \caption{Windows startup process (taken from \cite{microsoft-secure-the-windows-boot-process})}
@@ -47,6 +47,13 @@ The \ac{FVEK} is encrypted with a \ac{VMK} which is in turn encrypted with multi
 These encrypted versions of the \ac{VMK} are stored together with the encrypted \ac{FVEK} in an unencrypted meta data portion at the beginning of the BitLocker protected volume \cite[Section 9]{windows-internals-6-part2}.
 The \ac{VMK} can be encrypted by the following protectors:
 
+\begin{figure}[htb]%
+    \centering
+    \includesvg[width=0.5\textwidth]{bitlocker_volume_access_driver_stack.drawio.svg}
+    \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
+    \label{fig:bitlocker-volume-access-driver-stack}%
+\end{figure}
+
 \begin{description}
     \item[Startup key] The Startup key can be storead on removable media such as a \ac{USB} stick and serves as physical proof of ownership.
         The removable media contains a \program{.bek} file, that is named with a \ac{GUID} corresponding to BitLocker meta data entry, as it it possible to have multiple start up keys for the same volume \cite[Section 2.6]{bde-format-spec}\cite{microsoft-windows-prepare-your-org}.
@@ -74,10 +81,3 @@ The \ac{VMK} can be encrypted by the following protectors:
         The \ac{VMK} is then encrypted with an unprotected 256-bit key stored on the volume \cite[Section 2.5]{bde-format-spec}.
 
 \end{description}
-
-\begin{figure}[htb]%
-    \centering
-    \includesvg[width=0.5\textwidth]{bitlocker_volume_access_driver_stack.drawio.svg}
-    \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
-    \label{fig:bitlocker-volume-access-driver-stack}%
-\end{figure}

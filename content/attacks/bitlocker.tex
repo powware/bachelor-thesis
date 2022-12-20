@@ -28,15 +28,12 @@ This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially
 
 BitLocker with \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks and maintains system integrity by discovering deviations in the boot flow.
 But how does the user react to this, after all it is asking them to enter the recovery key to resume the boot process and not throw out their motherboard.
-There are a few options for a user to proceed, they either trust the system and enter their recovery key, mistrust the operating system or mistrust the entire system.
+There are a few options for a user to proceed: they either trust the system and enter their recovery key, mistrust the operating system or mistrust the entire system.
 If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation.
 In the case of our bootkit this gets rid of the threat, but the rootkit remains in the firmware image and would be part of the chain of trust for the fresh installation.
 If they were to mistrust the whole system, they could recover data from the drive with another system, being careful not to accidentally boot from the drive.
 This would deny both our rootkit and bootkit any further access to any sensitive data.
-
-We can look at how the user is influenced in their decision, taking a closer look at the recovery prompt in \autoref{fig:bitlocker-recovery-prompt}, we see that the message suggests a configuration change might have caused the prompt to appear. It is hinting the user that the removal of a disk or \ac{USB} stick might fix the issue (a bootable medium might change boot behavior, invalidating the \acp{PCR}). Of course this will not resolve anything in the case of an infection, but that is all the information displayed about what might have caused the issue. The rest is only about helping the user to find their recovery key to enter.
-This is ground enough to argue that is very reasonable to assume that the average user will react by entering their recovery key without having any malicious behavior in mind.
-
+\TODO{maybe change order}
 
 \subsection{BitLogger}
 

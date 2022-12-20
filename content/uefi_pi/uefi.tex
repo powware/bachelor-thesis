@@ -85,18 +85,32 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
 
 \subsection{\acs{UEFI} Driver Model}
 
-\cite[Section 2.5.2]{uefi-spec} describes the \acs{UEFI} Driver Model, it simplifies the design of device drivers by moving implementation of the device mangement and discovery into the firmware, leaving drivers with only the responsibility to offer interfaces for installation and removal.
+\cite[Section 2.5]{uefi-spec} describes the \acs{UEFI} Driver Model, it is designed to simplify the implementation process of device drivers by moving common device mangement and discovery functionality into the firmware.
+This leaves drivers with only the responsibility to offer interfaces for installation and removal.
 
-We will focus on device drivers, these do not create any new device handles but instead offer additional protocol abstractions upon existing \ac{I/O} abstractions offered through bus drivers.
-A driver following the \ac{UEFI} Driver Model is not allowed to interact with any hardware in its entry point and is instead required to install an instace of the Driver Binding Protocol on its own image handle.
-The Loaded Image Protocol also offers a field where a driver can provide a function to unload itself.
-It may also additionally install the confirguration or diagnostic related protocols.
-Runtime drivers usually register a notification function that is triggered when an \ac{OS} loader calls \code{ExitBootServices}, this allows them to translate any allocated memory to their virtual addresses.
+An \ac{UEFI} platform is assumed to consist of one or more \acp{CPU} to be connected to one or more core chipsets.
+The core chopsets produce host bus controllers which offer initial \ac{I/O} abstractions like the \ac{PCI} Root Birdge \ac{I/O} Protocol.
+Bus drivers can be connected to these host bus controllers to discover and create child controllers, these can either be further buses or devices.
+This forms a tree of buses with devices as leaves.
+Devices can be keyboards, mice, monitors, etc. (for user in\-/and ouput) or hard drives, network adapters, etc. (boot devices) \cite[Section 2.5]{uefi-spec}.
 
-The firmware will try to connect device drivers to a controller by iterating over all instances of the Driver Binding Protocol in the handle database and calling the \code{Supported} function of the Driver Binding Protocol on a controller. The device driver then checks whether it supports the controller by for example looking for specific \ac{I/O} abstraction protocols, that it will want to laters use and further abstract.
-If the driver supports the device the firmware will call the \code{Start} function of the Driver Binding Protocol to have the driver install its offered protocols on the controller handle.
-This is done recursively as the newly installed device driver might now fullfill the requirements for another driver.
-The firmware can also call the \code{Stop} of the Driver Binding Protocol function if it wants a driver to uninstall its protocol instance from a controller, an example for this would be another device driver wanting to exclusively manage a controller. This is done by tracking agents of protocols, in other words the drivers who consume a protocol.
+Device drivers are very similar to bus drivers, but they do not create new device handles, they instead offer abstractions built upon existing bus driver \ac{I/O} abstractions.
+A driver following the \ac{UEFI} Driver Model is not allowed to interact with any hardware in its entry point and instead installs protocols on its own image handle.
+It is required to install the Driver Binding Protocol and may additionally install configuration or diagnostic related protocols.
+The Loaded Image Protocol also offers a field where a driver can provide a function through which it can be unloaded.
+Runtime drivers usually register a notification function that is triggered when an \ac{OS} loader calls \code{ExitBootServices()}, allowing them to translate any allocated memory to their virtual addresses \cite[Section 2.5.2]{uefi-spec}.
+
+The firmware will try to connect device drivers to a controller by using the drivers instance of the Driver Binding Protocol and call the \code{Supported} function on a controller handle.
+The device driver then checks whether it supports the controller.
+This could be, for example, looking for specific \ac{I/O} protocols, that it will want to later use and further abstract.
+If the driver supports the device, the firmware will call the \code{Start} function of the Driver Binding Protocol to have the driver install its offered protocols on the controller handle.
+The firmware connection process can be done recursively as the newly installed device driver might now fullfil the requirements for another driver.
+If a driver needs to be uninstalled from a specific controller, the firmware can call the \code{Stop} of the Driver Binding Protocol function on the controller handle.
+An example for this would be another device driver wanting to exclusively manage a controller.
+To support this functionality all consumers of a protocol are tracked in the form of agent handles \cite[Section 2.5.4]{uefi-spec}.
+
+The part of the firmware that will connect the device drivers is typically the \ac{UEFI} boot manager.
+This allows for fast startup, where it may choose to connect only drivers related to a certain boot device \cite[Section 2.5.6]{uefi-spec}.
 
 \subsection{Systemtable}
 
@@ -153,8 +167,6 @@ Architecturally defined \ac{UEFI} variables are called Globally Defined Variable
 
 \subsection{Boot Manager}
 \label{sec:uefi-pi:uefi:boot-manager}
-
-\TODO{initialize console}
 
 The \ac{UEFI} boot manager is a firmware component executed after the platform is completely initialized, it decides which \ac{UEFI} drivers or applcations are loaded and when.
 The boot behavior is configured through architecturally defined \ac{NVRAM} global variables\cite[Section 3.1]{uefi-spec}.

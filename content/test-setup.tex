@@ -31,5 +31,5 @@ This setup also supports \ac{PCR}7 binding when Secure Boot is enabled.
 The \ac{SPI} flash chip on the main board is disabled and instead an \program{EM100} \ac{SPI} flash emulator is attached.
 When the system thinks it is accessing the \ac{SPI} flash chip, it is instead communicating with the emulator.
 Additionally by dualbooting into Linux we can use \program{flashrom} to communicate with the \ac{SPI} chip for read and write access.
-The Linux distribution of our choice, Ubuntu uses a so called Lockdown Mode when Secure Boot is enabled.
+The Linux distribution of our choice, Ubuntu, uses a so called Lockdown Mode when Secure Boot is enabled.
 This blocks direct access to the \ac{SPI} chip \cite{man-kernel-lockdown}, but can be disabled while Secure Boot remains enabled \cite{disable-kernel-lockdown}.
