@@ -7,20 +7,17 @@ Windows 11 is the latest iteration in the line of desktop \acp{OS} from Microsof
 It is build upon the foundation of Windows 10 and as such shares many security settings and policies with its predecessor \cite{microsoft-windows-11-overview}.
 Simaltaniously it raises the requirements of hardware related security features.
 It does not support legacy \ac{BIOS} anymore, requires the \ac{PF} to conform to at least \ac{UEFI} version 2.3.1 and to be capable of Secure Boot.
-It also requires the presence a \ac{TPM} version 2.0 \cite{microsoft-windows-minimum-hardware-requirements-overview}.
-
+It also requires the presence of a \ac{TPM} version 2.0 \cite{microsoft-windows-minimum-hardware-requirements-overview}.
 
 \section{\acs{UEFI}}
 
-\TODO{me}
+To be able to analyse \ac{UEFI} threats against Windows 11 it is important to understand how Windows interacts with the \ac{UEFI} environment.
 
 \subsection{Installation}
 
-For us to understand how UEFI threats act towards Windows we need to understand how the layout of the Windows installation integrates into the UEFI environment.
-% uefi begins with windows installation
-This begins with the installation process and the partitioning of the hard drive Windows is installed onto.
+The interaction with \ac{UEFI} begins with the installation process and the partitioning of the hard drive Windows is installed onto.
 % creates at least four partitions
-When the Windows Installer is launched, it creates at least four partitions on the target hard drive.
+When the Windows Installer is launched, it creates at least four \ac{GPT} partitions on the target hard drive.
 The \acf{ESP}, a recovery partition, a partition reserved for temporary storage and the boot partition containing the system files.
 Two copies of the Windows Boot Manager \lstinline{bootmgfw.efi} are placed on the \ac{ESP}, one under \lstinline{EFI\\Boot\\bootx64.efi} for the default boot behavior the installed hard drive and one under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} alongside boot resources such as the \ac{BCD}.
 The path of the latter boot manager is saved in a boot load option variable entry \lstinline{Boot####}, which is then added to the \lstinline{BootOrder} list variable.
@@ -42,7 +39,7 @@ If this fails it shows a recovery prompt, otherwise it proceeds to load the \ac{
 \subsection{Runtime}
 
 During runtime Windows uses the variable services to communicate with the \ac{PF} and even exposes these to application developers.
-It also supports firmware or option \ac{ROM} updates via the capsule delivery services.
+It also supports firmware and option\-/\ac{ROM} updates via the capsule delivery services.
 
 \section{Registry}
 

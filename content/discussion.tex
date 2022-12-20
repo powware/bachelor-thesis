@@ -24,15 +24,10 @@ It is also the case that Secure Boot does not enforce its authentication and pol
 If Microsoft were to have intentionally made this trade\-/off, Secure Boot would not be the deciding factor on whether to leave out \ac{PCR}0 or not.
 A validation profile that maintains a similar security across systems with and without Secure Boot could have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}} when Secure Boot is disabled.
 With this profile, measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker.
-Microsoft's decision instead causes Secure Boot to come with a hidden hit in security.
+Microsoft's decision instead causes Secure Boot to come with a hidden degradation of security.
 
 As a result, we advice to override the default validation profile settings when using BitLocker.
 For additional security \ac{PCR}0 should be included, as well as enabling Hardware Validated Boot on supported devices.
-
-
-\TODO{i was stolen from bitlocker, include me somewhere:}
-We can look at how the user is influenced in their decision, taking a closer look at the recovery prompt in \autoref{fig:bitlocker-recovery-prompt}, we see that the message suggests a configuration change might have caused the prompt to appear. It is hinting the user that the removal of a disk or \ac{USB} stick might fix the issue (a bootable medium might change boot behavior, invalidating the \acp{PCR}). Of course this will not resolve anything in the case of an infection, but that is all the information displayed about what might have caused the issue. The rest is only about helping the user to find their recovery key to enter.
-This is ground enough to argue that is very reasonable to assume that the average user will react by entering their recovery key without having any malicious behavior in mind.
 
 
 \section{Recovery Key as Security Override}
@@ -41,9 +36,12 @@ Even when BitLocker correctly picks up on an integrity violation, the security a
 While BitLocker protects in scenarios where the system owner is not present by preventing unauthorized access to the hard drive, we argue that the significance of the recovery prompt's appearance is dismissed by providing the system owner an immediate ability to override the security reaction with a recovery key.
 This leaves the burden of security enforcement to the user.
 It is now their responsibility to be aware of the security related implications of the recovery prompt and to act accordingly upon them.
+We can look at how the user is influenced in their decision, taking a closer look at the recovery prompt in \autoref{fig:bitlocker-recovery-prompt}, we see that the message suggests a configuration change might have caused the prompt to appear.
+It is hinting the user, that the removal of a disk or \ac{USB} stick might fix the issue.
+The rest is only about helping the user to find their recovery key to enter.
+
 When taking appropriate precautions the hard drive should be removed from the system and inserted into a trustworthy system.
 From here the recovery key can be used to to fullfil its namesake, recovering data from the drive.
-
 Entering the recovery key into the recovery prompt is not data recovery, it is overriding a security mechanism.
 Presumably a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prior BitLocker suspension, boot configuration related changes etc.
 When there is no reasonable assumption for the user to have encounter the recovery prompt they should not enter the recovery key.
@@ -100,60 +98,8 @@ It is somewhat of a last ditch effort, relying on social engineering and may be 
 
 \section{Mitigations}
 
-
-\TODO{MEEEEETIGATIONS}
-
+Enabling Hardware Validated Boot should prevent the execution of any malicious code within in the firmware image.
 Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction.
-
-
-bios password against secure boot removal or bootkit installation from USB
-
-hardware validated boot to start the validation change from outside the image
-
-inaccessible spi flash
-
-
-
-% % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-recovery-guide-plan
-
-% recovery guide
-
-% what causes bitlocker recovery
-% - password wrong too often
-% - TPM 1.2, changing the BIOS or firmware boot device order
-% - Having the CD or DVD drive before the hard drive in the BIOS boot order and then inserting or removing a CD or DVD
-% - Failing to boot from a network drive before booting from the hard drive.
-% - Docking or undocking a portable computer
-% - Changes to the NTFS partition table on the disk including creating, deleting, or resizing a primary partition.
-% - Entering the personal identification number (PIN) incorrectly too many times
-% - Upgrading critical early startup components, such as a BIOS or UEFI firmware upgrade
-% - Updating option ROM firmware graphics card
-% - Adding or removing hardware
-% - REMOVING, INSERTING, OR COMPLETELY DEPLETING THE CHARGE ON A SMART BATTERY ON A PORTABLE COMPUTER
-% - Pressing the F8 or F10 key during the boot process
-% what does the recovery screen say \autoref{fig:bitlocker-recovery-prompt}
-
-% % https://learn.microsoft.com/en-us/windows/security/information-protection/bitlocker/bitlocker-device-encryption-overview-windows-10
-% % https://learn.microsoft.com/en-us/mem/configmgr/protect/deploy-use/bitlocker/helpdesk-portal?source=recommendations
-% % https://learn.microsoft.com/en-us/microsoft-desktop-optimization-pack/mbam-v25/
-% Enables end users to recover encrypted devices independently by using the Self-Service Portal
-
-% googeln wie legitime recovery key prompt reaktion aussieht
-
-% enterprise policy recovery key einschraenkbar?
-
-% enterprise policy on recovery key loss
-
-% vermitteln was das prompt bedeuten koennte
-
-% aber kann man einfach nicht anzeigen lassen
-
-% Security Flaw of entering a Recovery Password in an inheritly unsafe System
-
-% enterprise doesnt hand out recovery keys and instead receives hard drive
-
-
-% !!!!!!!!!!!!!!!!!!!!!!!!!
-% without hardware chain of trust a compromised system can patch/change any software and fixes are impossible
-
-% phishing prompts on their own
+When the owner is present to enter the \ac{PIN} into an infected system, it unfortunately does not provide any additional security.
+It is always beneficial to use a password to protect the interactive firmware menu, so that Secure Boot cannot be disabled and booting into malicious removable media is prevented.
+System designers can also take into account to make it harder to acccess the flash, so that an attacker will have trouble modifing the firmware image.

@@ -2,7 +2,7 @@
 
 \chapter{Conclusion}
 
-Our practical analysis of \ac{UEFI} threats against Windows 11 showed that enabling Secure Boot when using BitLocker comes with a hidden hit in security.
+Our practical analysis of \ac{UEFI} threats against Windows 11 showed that enabling Secure Boot when using BitLocker comes with a hidden forfeiture of security.
 Microsoft misuses Secure Boot in an attempt to provide platform firmware integrity validation, where the \ac{TPM} already offers a perfectly fine solution.
 With such a misconfigured BitLocker validation profile our rootkit was able to sniff the communication between the Windows Boot Manager and \ac{TPM} without introducing side effects.
 Through interception of the \emph{unseal} command we gained access to the unencrypted BitLocker \ac{VMK}, to decrypt the hard drive and deploy further payload in the Windows installation.

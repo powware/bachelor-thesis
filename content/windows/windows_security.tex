@@ -2,7 +2,9 @@
 
 \section{Security}
 
-\autoref{fig:windows-startup-process}
+\autoref{fig:windows-startup-process} gives an overview over the security within the Windows startup process.
+With Secure Boot starting the process and Trusted Boot enventually taking over.
+We do not cover Measured Boot in this thesis.
 
 \begin{figure}[phtb]
     \centering
@@ -15,7 +17,7 @@
 
 Devices shipping with Windows 11 must have Secure Boot enabled by default \cite{microsoft-windows-minimum-hardware-requirements-overview}.
 Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB} (to allow executioon of non\-/Windows bootloaders), aditionally a user should be able to completely disable secure boot.
-Windows offers two signature \acp{DB} the \emph{Microsoft Windows Production PCA 2011} required for the Windows boot process and \emph{Microsoft Corporation \ac{UEFI} \ac{CA} 2011}, which is reserved for third party executables signed at Microsoft's discretion after manual review \TODO{better source} \cite{microsoft-uefi-signing}.
+Windows offers two signature \acp{DB} the \emph{Microsoft Windows Production PCA 2011} required for the Windows boot process and \emph{Microsoft Corporation \ac{UEFI} \ac{CA} 2011}, which is reserved for third party executables signed at Microsoft's discretion after manual review \cite{microsoft-uefi-signing}.
 Microsoft advises to only allow other third party \ac{UEFI} applications if necessary and even mandates the exclusion of \acp{DB} other than \emph{Microsoft Windows Production PCA 2011} on Secured\-/core \acp{PC} \cite{microsoft-secure-the-windows-boot-process}.
 
 \subsection{Trusted Boot}

@@ -40,18 +40,6 @@ Interaction with the \ac{TPM} is done via a well\-/defined interface, for extern
     \label{fig:pf-measurement-flow}
 \end{figure}
 
-
-
-\section{Sealing/Unsealing}
-
-The chain of measurements can be used to attest for a trusted system state.
-The \ac{TPM} can be given data, such as a cryptographic key, in a state that is assumed to be trusted.
-This state is reflected by the current \acp{PCR}, consisting of the collection of lead\-/up measurements.
-The \ac{TPM} then seals the data with a policy that describes which \ac{PCR} indexes to use and/or proof of authentication through a \ac{PIN} or passphrase.
-The data can then only be unsealed on subsequent boots when the system is in the same trusted state that it was in, when the data was sealed.
-Any modification of the boot code will be reflected in a deviation of \ac{PCR} values leaving the \ac{TPM} unable to unseal the data.
-\TODO{CITE}
-
 \begin{table}[htb]
     \centering
     \begin{tabular}{cp{30em}}
@@ -98,3 +86,14 @@ Any modification of the boot code will be reflected in a deviation of \ac{PCR} v
     \caption{\ac{PCR} Usage (taken from \cite[Table 1]{tcg-pc-client-platform-firmware-profile-spec} and \cite[Table 9-2]{windows-internals-6-part2})}%
     \label{tab:pcr-usage}%
 \end{table}
+
+
+\section{Sealing/Unsealing}
+
+The chain of measurements can be used to attest for a trusted system state.
+The \ac{TPM} can be given data, such as a cryptographic key, in a state that is assumed to be trusted.
+This state is reflected by the current \acp{PCR}, consisting of the collection of lead\-/up measurements.
+The \ac{TPM} then seals the data with a policy that describes which \ac{PCR} indexes to use and/or proof of authentication through a \ac{PIN} or passphrase.
+The data can then only be unsealed on subsequent boots when the system is in the same trusted state that it was in, when the data was sealed.
+Any modification of the boot code will be reflected in a deviation of \ac{PCR} values leaving the \ac{TPM} unable to unseal the data.
+\TODO{CITE}

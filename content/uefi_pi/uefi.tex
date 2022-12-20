@@ -20,24 +20,24 @@ The remaining runtime services can be used by the \ac{OS} to configure or update
 
 \subsection{\acf{GUID}}
 
-The \ac{UEFI} environment depends on \acp{GUID}, also known \acp{UUID} to uniquely identify a variety of things, such as protocols, files, hard drive paritions.
+The \ac{UEFI} environment depends on \acp{GUID}, also known \acp{UUID} to uniquely identify a variety of things, such as protocols, files, hard drive partitions.
 \acp{GUID} are 128-bit long, statistically unique identifiers and can be generated on demand and without a centralized authority, statistically guaranteeing that there will be no duplicates on a system that combines hard and software from multiple vendors \cite{rfc-4122}.
 
 \subsection{\acf{GPT}}
 
 Partitions allow a disk to be distinctly separated into logical disks, allowing for each to be formatted with a different file systems.
-Prior to \ac{UEFI} disks have been paritioned using the \ac{MBR} parition table, supporting up to 4 different partitions.
+Prior to \ac{UEFI} disks have been partitioned using the \ac{MBR} partition table, supporting up to 4 different partitions.
 The \ac{MBR} is stored within the first sector, also optionally containing 424 bytes of bootable code through which the \ac{BIOS} boots \cite[Section 13.3.1]{uefi-spec}.
 \ac{UEFI} is still backwards compatible with \ac{MBR} partitioned disks and contained on each disk, but \ac{UEFI} does not execute the boot code.
 The \ac{MBR} is used in two different ways by the \ac{UEFI} environment, either as a legacy \ac{MBR} or a protective \ac{MBR}.
-With the legacy \ac{MBR}, \ac{UEFI} uses the partitions defined in the \ac{MBR} parition table, where as the protective \ac{MBR} only has one partition spanning the entire disk.
+With the legacy \ac{MBR}, \ac{UEFI} uses the partitions defined in the \ac{MBR} partition table, where as the protective \ac{MBR} only has one partition spanning the entire disk.
 The protective partition is for legacy devices and in reality \ac{GPT} partitioning is used to separate the disk.
-For this \ac{UEFI} defines two \ac{OS} types used in \ac{MBR} parition entries.
-One identifies the \ac{ESP}, the parition \ac{UEFI} boots from, within the legacy \ac{MBR} partition table and the other indicates that a protective parition is used \cite[Section 5]{uefi-spec}.
+For this \ac{UEFI} defines two \ac{OS} types used in \ac{MBR} partition entries.
+One identifies the \ac{ESP}, the partition \ac{UEFI} boots from, within the legacy \ac{MBR} partition table and the other indicates that a protective partition is used \cite[Section 5]{uefi-spec}.
 \cite[Section 5]{uefi-spec} defines the \ac{GPT} disk layout, with the \ac{GPT} format \ac{LBA} are 64 bit instead of 32 bit, allowing to support drives with up to 9400000000 \ac{TB} of storage, where as \ac{MBR} is limited to 2 \ac{TB}.
 This is accompanied by allowing many more than 4 partitions, with Windows supporting up to 128 \cite{microsoft-windows-and-gpt-faq}.
-\ac{GUID} are used to identify paritions and parition types, but also offering a human readable parition name.
-\ac{GPT} also has a primary and a backup parition table for redundancy pruposes, the primary table follows the \ac{MBR} sector and the backup is at the end of the disk.
+\ac{GUID} are used to identify partitions and partition types, but also offering a human readable partition name.
+\ac{GPT} also has a primary and a backup partition table for redundancy pruposes, the primary table follows the \ac{MBR} sector and the backup is at the end of the disk.
 
 \subsection{\acf{ESP}}
 
