@@ -2,63 +2,85 @@
 
 \section{Neither Secure Boot nor BitLocker}
 
-In our first attack we implement a baseline attack, that we can use to test and build upon against Secure Boot and BitLocker.
-We implement a bootkit and a rootkit, that deviate the regular boot flow to access the Windows installation and deploy a payload that is automatically executed upon Windows boot.
+We start by implementing a baseline attack, that we can use to test against Secure Boot and BitLocker.
+We implement it in the form of a bootkit and a rootkit, with both sharing the same approach and core functionality.
+The general approach of our attack is to access the hard drive containing the Windows installation from within \ac{UEFI} environment.
+We gain then code execution with elevated privileges in the Windows environment by modifying its content.
 
 \subsection{Bootkit}
 \label{sec:attacks:neither:bootkit}
 
+We start with the bootkit.
 
 \subsubsection{Infection}
 
-We have two ways to infect a system, we can either use a bootable medium such as a CD-ROM or \ac{USB} stick with a \ac{UEFI} application installing the bootkit or a Windows executable mounting the \ac{ESP} with admin privileges.
+We have two ways to infect a system, we can either use a bootable medium such as a CD-ROM or \ac{USB} stick with a \ac{UEFI} application installing the bootkit or using a Windows executable.
 Booting into the installer application requires either the firmware implementation or the boot order to prefer booting from the removable media over Windows.
-This can be forced when booting into the \ac{BIOS} menu at startup, given that it is not password protected.
+This can be forced when booting accessing the interactive firmware menu at startup, given that it is not password protected.
+Installation from Windows requires admin privileges to mount and modify the \ac{ESP}.
+
 The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}.
-We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
-Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, the file path \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi} will cause our bootkit to be executed. A dump of the Windows boot entry can be seen in \autoref{fig:windows-boot-entry}.
+We then replace the original with our bootkit as well as dropping all resources required by the bootkit on the \ac{ESP}.
+Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, it will cause our bootkit to be executed.
+\autoref{fig:windows-boot-entry} shows a dump of the Windows boot entry using the \ac{UEFI} shell command \program{bcfg}.
+The entry contains the device path including the file path and optional data.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=1.0\textwidth]{attacks/neither/windows_boot_entry.png}
-    \caption{Windows boot entry dumped via the \ac{UEFI} shell}
+    \caption{Windows boot entry, part of the \ac{UEFI} shell output of \program{bcfg}}
     \label{fig:windows-boot-entry}
 \end{figure}
 
 \subsubsection{File access}
 
-For our storage-based approach we need to access the Windows installation from within the \ac{UEFI} environment to deploy our payload.
-We can use a fork of the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}, that was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
-Using \ac{EDK} II to compile it, we receive a \program{.efi} executable file.
+The most important step for a storage-based approach is gaining access to the Windows installation from within the \ac{UEFI} environment.
+Since \ac{UEFI} does not require the firmware to come with an \ac{NTFS} driver, our attack has to come with its own.
+\ac{EDK} II does not provide one, but we can use the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}.
+It was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
+Using \ac{EDK} II to compile it, we receive a \program{.efi} executable image.
 
+We can use the \ac{UEFI} shell and its file system related commands to test the \ac{NTFS} driver's capabilities.
+When booting into the \ac{UEFI} shell we are greeted with a screen displaying the \ac{UEFI} specification version the firmware supports and a list of default mappings for file systems and block devices.
+These mappings are created by the shell to provide a short name that can be used interchangably with longer device path when issuing commands \cite[Section 3.7.2]{uefi-shell-spec}.
+They are designed to be consistent across reboots as long as the hardware configuration stays the same and are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
+\autoref{fig:mapping} shows the mapping of a partition containing a Windows installation.
+As there is no \ac{NTFS} driver present yet, it is only displayed as a block device.
 
-We can use the \ac{UEFI} shell and its file system related commands to test the \ac{NTFS} driver.
-Our \ac{NTFS} \ac{UEFI} Driver is one such abstraction and needs to be loaded, this is done by first entering the alias, for the file system containing the \lstinline{NtfsDxe.efi}.
-This effectively switches the console's working directory to be the root of the entered file system, now we can invoke \lstinline{load} with the path to the executable.
-The output indicates whether loading the driver was successful.
-% drivers
-% We can now list
-With the command drivers, we can list all currently loaded drivers and some basic information about them, such as number of devices managed.
-We can see that the NTFS driver already manages devices.
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{attacks/neither/mapping}
+    \caption{Mapping of the Windows parition}
+    \label{fig:mapping}
+\end{figure}
 
-% map -r "reset all the default mappings in a system this option is useful if the system configuration has changed since the last boot"
-% new mapping and fs ontop of old blk
-We can now reset all default mappings with the map -r command to receive an updated list including the file systems now provided by the \ac{NTFS} driver.
-The mapping also shows us that the file system now sits on top of a device which previously was only listed as a block device.
+We can enter the mapping name of the file system containing our \ac{NTFS} driver to use it as our current working directory and load the driver using the \program{load} command.
+The command is executed successfully and can the driver is now listed when querying the currently loaded drivers with the command \program{drivers}.
+We can now instruct the default mappings to be reset with the \program{map -r} command, to receive an updated list including the file systems now provided through the \ac{NTFS} driver.
+\autoref{fig:mapping-ntfs} also shows us that the new file system now sit on top of a device which previously was only listed as a block device.
 
-As done before we now type the alias of the new file system to switch to NTFS formatted file system.
-With \lstinline{ls} we can list the current directory's content and confirm by the presence of the Windows folder that we are on the volume containing the Windows installation.
-\TODO{maybe vol} % With \lstinline{vol} we can query information about the current volume, this shows us that our d
-\TODO{Windows file access privileges}
-We now navigate into the Windows folder to test whether we have unrestricted read and write access, since is not the case if done by an unprivileged user when performed from within Windows.
-Accessing folders and viewing their contents is possible but creation of a new folder fails.
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{attacks/neither/mapping_ntfs}
+    \caption{Mapping of the Windows parition after loading the \ac{NTFS} driver}
+    \label{fig:mapping-ntfs}
+\end{figure}
 
-Upon debugging the \ac{NTFS} driver it appears to be that the drivers falls back to read only when it encounters a file that indicates that the Windows system is in hibernation mode.
-Windows seems to have hibernation enabled by default and as such our rootkit should not rely on it being disabled, we can change the code of the \ac{NTFS} driver to not fallback when encountering this file. \TODO{this is might not be the hibernation file but something else}
-On our hardware setups we noticed that the firmware already is shipped with an \ac{NTFS} driver, in the case of our rootkit we would be able to remove this driver, but we can implement a solution applying to both \ac{UEFI} payloads. We can change the \ac{NTFS} driver to install the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \lstinline{gEfiSimpleFileSystemProtocolGuid}, making it possible to install our instance alongside any other driver's instance on the same controller. The\ac{GUID} can then be used to retrieve our specific protocol instance in the root- and bookit. We also open the protocols, consumed by the driver, in a non-exclusive way. This prevents our \ac{NTFS} driver from being removed off of the controller as well as being blocked from opening the protocols in the first place \cite[Section 7.3]{uefi-spec}. This would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[Section 13.5]{uefi-spec}.
+As done before we now type the mapping name of the new file systems, we check the root directories' contents with \program{ls} until we find the partition containing the Windows installation and then enter \program{vol} to check the access rights.
+This reveals that the file system is currently read\-/only.
+Upon debugging the \ac{NTFS} driver it appears to be that the driver falls back to read\-/only when it encounters a file that indicates that the Windows system is in hibernation mode.
+We can remove this fallback from the \ac{NTFS} driver's code and recompile.
 
-We now know that provided we get to load the \ac{NTFS} driver we can now access a Windows installation and subsequently the entire data of unencrypted hard drives.
-Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
+On our hardware setups we noticed that the firmware can already ship with an \ac{NTFS} driver included, which is read\-/only.
+In the case of our rootkit we would be able to remove this driver by modifying the firmware iamge, but we can implement a solution that applies to both types of \ac{UEFI} payload.
+We can change the \ac{NTFS} driver to install its \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \code{gEfiSimpleFileSystemProtocolGuid}.
+This makes it possible to install two instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} alongside each other on the same controller.
+The alternative \ac{GUID} can then be used in our root- and bookit, to retrieve our specific protocol instance with write access.
+The driver also has to open the protocols it uses without demanding exclusive ownership over them.
+This also prevents the \ac{NTFS} driver from being when trying to open a protocols that is already in exclusive ownership \cite[Section 7.3]{uefi-spec}, which would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[Section 13.5]{uefi-spec}.
+
+We now know that provided we get to load the \ac{NTFS} driver we can access the data contained within a Windows installation with read and write.
+\TODO{WEITERMACHEN} Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
 
 The next step is for our bootkit to use the \ac{NTFS} driver to gain file system access and write our payload to the Windows installation.
 During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
