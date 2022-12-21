@@ -129,7 +129,7 @@
 %
 %
 % The xcolor package enables us to create/handle/name different colors
-\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage[dvipsnames,table]{xcolor}
 
 % updates all colors regarding the defined main and accessory
 % color, as well as the defined colorize mode (full, reduced, bw)
@@ -281,7 +281,7 @@
 \KOMAoption{footinclude}{false}      % include footer in body?
 \KOMAoption{footlines}{2.1}         % number of foot lines
 \KOMAoption{mpinclude}{false}       % include marginpar in body?
-\KOMAoption{BCOR}{25mm}             % binding correction
+%\KOMAoption{BCOR}{25mm}             % binding correction -> only for printing
 \KOMAoption{DIV}{12}                % number of page divs (divider)
 %
 %
@@ -394,8 +394,12 @@
 % Header and Footer
 % **************************************************
 
-\automark[section]{chapter}         % automatically marks sections as rightmark
+\clearpairofpagestyles
+
+%\automark[chapter]{section}         % automatically marks sections as rightmark
                                     % and chapters as leftmark
+\automark{section}																		
+																		
 \setlength{\footheight}{120pt}      % avoids scrlayer-scrpage warning:
                                     % footheight to low warning
 \setlength{\footskip}{185pt}        % BAD HACK that moves the foot downwards
@@ -404,37 +408,40 @@
 \setkomafont{pagefoot}{\ctfontfootertext}           % font for footer
 \setkomafont{pagenumber}{\ctfontfooterpagenumber}   % font for page numbers
 
+% plain one-page style with header and pagemark on 
+\ohead[]{\headmark} \ofoot[\pagemark]{\pagemark}
+
 %% Redefinition of the chaptermark (used for footer mark on even (left) pages)
-\renewcommand{\chaptermark}[1]{%
-    \markboth{%
-        \ctfontfootertext
-        % use \@chapapp instead of \chaptername to avoid
-        % 'Chapter A Appendix ...', thanks to @farbverlust (issue #47)
-        {\color{ctcolorfootermark}\textbf{\@chapapp\ \thechapter}}%
-        \quad%
-        \protect\begin{minipage}[t]{.65\textwidth}%
-            #1%
-        \protect\end{minipage}%
-    }{}%
-}
+%\renewcommand{\chaptermark}[1]{%
+    %\markboth{%
+        %\ctfontfootertext
+        %% use \@chapapp instead of \chaptername to avoid
+        %% 'Chapter A Appendix ...', thanks to @farbverlust (issue #47)
+        %{\color{ctcolorfootermark}\textbf{\@chapapp\ \thechapter}}%
+        %\quad%
+        %\protect\begin{minipage}[t]{.65\textwidth}%
+            %#1%
+        %\protect\end{minipage}%
+    %}{}%
+%}
 
 %% Redefinition of the sectionmark (used for footer mark on odd (right) pages)
-\newlength{\lensectionnumber}
-\renewcommand{\sectionmark}[1]{%
-    \markright{%
-        \ctfontfootertext
-        \setlength{\lensectionnumber}{0em}
-        \settowidth{\lensectionnumber}{\textbf{\thesection}\quad}
-        \protect\begin{minipage}[t]{.72\textwidth}%
-            {\ }% bad hack to prevent a wrong baseline for the minipage
-            \protect\raggedleft%
-            \hangindent=\lensectionnumber%
-            {\color{ctcolorfootermark}\textbf{\thesection}}%
-            \quad%
-            #1%
-        \protect\end{minipage}%
-    }%
-}
+%\newlength{\lensectionnumber}
+%\renewcommand{\sectionmark}[1]{%
+    %\markright{%
+        %\ctfontfootertext
+        %\setlength{\lensectionnumber}{0em}
+        %\settowidth{\lensectionnumber}{\textbf{\thesection}\quad}
+        %\protect\begin{minipage}[t]{.72\textwidth}%
+            %{\ }% bad hack to prevent a wrong baseline for the minipage
+            %\protect\raggedleft%
+            %\hangindent=\lensectionnumber%
+            %{\color{ctcolorfootermark}\textbf{\thesection}}%
+            %\quad%
+            %#1%
+        %\protect\end{minipage}%
+    %}%
+%}
 
 %% Vertical line in the footer (between page number and mark)
 \newcommand{\ctfooterline}{%
@@ -466,12 +473,20 @@
 \lohead{}
 \cohead{}
 \rohead{}
+% old definition with alternating page numbering
+%\lefoot[%   > plain
+%    \ctfooterleftpagenumber%
+%]{%         > srcheadings
+%    \ctfooterleftpagenumber%
+%    \hspace*{0.75cm}%
+%    \headmark%
+% new definition with page numbers always on the right side
 \lefoot[%   > plain
-    \ctfooterleftpagenumber%
+    \ctfooterrightpagenumber%
 ]{%         > srcheadings
-    \ctfooterleftpagenumber%
+	\headmark%
     \hspace*{0.75cm}%
-    \headmark%
+    \ctfooterrightpagenumber%
 }
 \cefoot{}
 \refoot{}

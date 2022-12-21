@@ -3,6 +3,7 @@
 % **************************************************
 \documentclass[%
     paper=A4,               % paper size --> A4 is default in Germany
+    twoside=false,          % semi-two-sided printing
     parskip=half,           % spacing value / method for paragraphs
     chapterprefix=true,     % prefix for chapter marks
     11pt,                   % font size
@@ -12,20 +13,9 @@
     titlepage=on,           % own page for each title page
     captions=tableabove,    % display table captions above the float env
     chapterprefix=false,    % do not display a prefix for chapters
-    appendixprefix=false,    % but display a prefix for appendix chapter
+    appendixprefix=false,		% but display a prefix for appendix chapter
     draft=false,            % value for draft version
 ]{scrreprt}%
-
-
-% ******************************************************************************************
-% Added correct packages for character coding and fonts for the document when using PDFLaTeX
-% ******************************************************************************************
-\RequirePackage[utf8]{inputenc}   	% UTF-8 Support
-\RequirePackage[T1]{fontenc}		% T1 Fonts for font encoding -> also set in cleanthesis.sty
-%
-\RequirePackage[T1]{url} 			% Web addresses with T1 encoding
-\urlstyle{tt} 						% Web addresses in tt-style
-%
 
 % **************************************************
 % Set extra options for later-on loaded packages
@@ -36,7 +26,8 @@
 % Additional useful little LaTeX helper packages
 % **************************************************
 \usepackage[section]{placeins}	% Insert float barriers before every section
-\usepackage{flafter}			% Never insert figures before the actual reference
+\usepackage{flafter}						% Never insert figures before the actual reference
+\pdfsuppresswarningpagegroup=1	% https://tex.stackexchange.com/questions/76273/multiple-pdfs-with-page-group-included-in-a-single-page-warning/78020#78020
 
 % **************************************************
 % Setup YOUR thesis document in this file !
@@ -57,8 +48,12 @@
 % --------------------------
 % rename document parts
 % --------------------------
+% redefine ref and autoref names for english (as loaded by babel package in setup.tex)
 \renewcaptionname{english}{\figurename}{Fig.}
 \renewcaptionname{english}{\tablename}{Tab.}
+\renewcaptionname{english}{\chapterautorefname}{Chapter}
+\renewcaptionname{english}{\sectionautorefname}{Section}
+\renewcaptionname{english}{\subsectionautorefname}{Section}
 \renewcommand{\lstlistlistingname}{List of Source Code Listings}
 \renewcommand{\lstlistingname}{Listing}
 
@@ -121,14 +116,14 @@
 % Front matter
 % --------------------------
 \pagenumbering{Alph}
-\pagestyle{empty}				% no header or footers
+\pagestyle{empty}							% no header or footers
 \input{content/titlepages}		% INCLUDE: all titlepages
 \clearpage
 
 \input{content/declaration}
 \clearpage
 
-\input{content/abstract}		% INCLUDE: the abstracts (english and german)
+\input{content/abstract}			% INCLUDE: the abstracts (english and german)
 \clearpage
 
 \input{content/acknowledgement} % INCLUDE: acknowledgement
@@ -138,9 +133,9 @@
 \currentpdfbookmark{\contentsname}{toc}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}		% define depth of toc
-\pagestyle{plain}				% no header or footers
+\pagestyle{plain}						% plain style for header/footer
 \microtypesetup{protrusion=false}
-\tableofcontents				% display table of contents
+\tableofcontents						% display table of contents
 \microtypesetup{protrusion=true}
 \clearpage
 
@@ -148,10 +143,13 @@
 % Body matter
 % --------------------------
 \pagenumbering{arabic}			% arabic page numbering
-\setcounter{page}{1}			% set page counter
-\pagestyle{scrheadings}			% header and footer style
+\setcounter{page}{1}				% set page counter
 
+\pagestyle{plain}						% still plainstyle because we don't have sections in chapter one
 \input{content/introduction}
+\clearpage
+
+\pagestyle{scrheadings}			% scrpage header and footer style defined in cleanthesis
 \input{content/uefi_pi/uefi_pi}
 \input{content/tpm}
 \input{content/windows/windows}
@@ -161,7 +159,6 @@
 \input{content/results}
 \input{content/discussion}
 \input{content/conclusion}
-
 
 % --------------------------
 % Back matter
@@ -175,6 +172,8 @@
     \printbibliography
 }
 \clearpage
+
+\pagestyle{plain}						% switch to plainstyle without section markings in the footer
 
 \microtypesetup{protrusion=false}
 

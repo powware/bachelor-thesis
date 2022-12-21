@@ -41,50 +41,40 @@ Interaction with the \ac{TPM} is done via a well\-/defined interface, for extern
 \end{figure}
 
 \begin{table}[htb]
-    \centering
-    \begin{tabular}{cp{30em}}
-        \toprule
-        \multicolumn{1}{c}{{\bfseries \acs{PCR} Index}} & \multicolumn{1}{c}{{\bfseries Measurements}}                                                             \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \multirow{2}{*}{\textbf{0}}                     & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs and PI Drivers                                \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{1}                                      & Host Platform Configuration                                                                              \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{2}                                      & UEFI driver and application Code                                                                         \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{3}                                      & UEFI driver and application Configuration and Data                                                       \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{4}                                      & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                               \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \multirow{2}{*}{\textbf{5}}                     & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and \ac{GPT}/Partition Table \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{6}                                      & Host Platform Manufacturer Specific                                                                      \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{7}                                      & Secure Boot Policy                                                                                       \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \multirow{2}{*}{\textbf{8}}                     & First \ac{NTFS} boot sector (volume boot record)                                                         \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{9}                                      & Remaining \ac{NTFS} boot sectors (volume boot record)                                                    \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{10}                                     & Boot Manager                                                                                             \\
-        \cmidrule[0.4pt](r){1-1}
-        \cmidrule[0.4pt](l){2-2}
-        \textbf{11}                                     & BitLocker Access Control                                                                                 \\
-        \bottomrule
-    \end{tabular}%
-    \caption{\ac{PCR} Usage (taken from \cite[Table 1]{tcg-pc-client-platform-firmware-profile-spec} and \cite[Table 9-2]{windows-internals-6-part2})}%
     \label{tab:pcr-usage}%
+    \centering
+    \begin{tabularx}{1.0\textwidth}{cX}
+        \toprule
+        \textbf{\acs{PCR} Index}    & \textbf{Measurements}                                                                                    \\
+        \midrule
+        \textbf{0}                  & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs, and PI Drivers                               \\[\defaultaddspace]
+        \arrayrulecolor{gray}
+        \midrule
+        \textbf{1}                  & Host Platform Configuration                                                                              \\[\defaultaddspace]
+        \midrule
+        \textbf{2}                  & UEFI driver and application Code                                                                         \\[\defaultaddspace]
+        \midrule
+        \textbf{3}                  & UEFI driver and application Configuration and Data                                                       \\[\defaultaddspace]
+        \midrule
+        \textbf{4}                  & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                               \\[\defaultaddspace]
+        \midrule
+        \multirow{2}{*}{\textbf{5}} & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and \ac{GPT}/Partition Table \\ \addlinespace[1.0\defaultaddspace]
+        \midrule
+        \textbf{6}                  & Host Platform Manufacturer Specific                                                                      \\[\defaultaddspace]
+        \midrule
+        \textbf{7}                  & Secure Boot Policy                                                                                       \\[\defaultaddspace]
+        \midrule
+        \textbf{8}                  & First \ac{NTFS} boot sector (volume boot record)                                                         \\[\defaultaddspace]
+        \midrule
+        \textbf{9}                  & Remaining \ac{NTFS} boot sectors (volume boot record)                                                    \\[\defaultaddspace]
+        \midrule
+        \textbf{10}                 & Boot Manager                                                                                             \\[\defaultaddspace]
+        \midrule
+        \textbf{11}                 & BitLocker Access Control                                                                                 \\
+        \arrayrulecolor{black}
+        \bottomrule
+    \end{tabularx}%
+    \caption{\ac{PCR} Usage (taken from \cite[Table 1]{tcg-pc-client-platform-firmware-profile-spec} and \cite[Table 9-2]{windows-internals-6-part2})}%
 \end{table}
 
 

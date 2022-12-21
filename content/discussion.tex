@@ -7,12 +7,12 @@
 
 \chapter{Discussion}
 
-The biggest takeaway of our attacks is, that unintuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
-We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} or profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
+The biggest takeaway of our attacks is, that counter\-/intuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
+We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} or profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings-quote}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
 Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
 Quite the contrary, Secure Boot relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
-Its purpose is to enforce authentiation when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
-Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled  and the \textbf{hardware is capable} of using secure boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
+Its purpose is to enforce authentication when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
+Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings-quote}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled  and the \textbf{hardware is capable} of using secure boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
 Hardware Validated Boot moves the root of trust out of the firmware image into hardware and together with Secure Boot would be a sufficient way to replace the early boot component measurements of the \ac{TPM} for BitLocker.
 But as we have shown, the policy does not require Hardware Validated Boot.
 Microsoft's decision to use Secure Boot for integrity validation leaves a lot of systems more vulnerable than they should be.
@@ -53,7 +53,7 @@ It is also the only time a user has a chance to react correctly, as with their d
 Microsoft allowing this security override created a dangerous precedence, especially since they do not display any warnings about inherent danger.
 Instead of a recovery prompt the user should have been made aware of the inherent loss of system integrity instead of normalising the security override.
 Any future adjustments in the recovery prompt, to provide more user awareness, can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
-It is already possible to  easily modify the message and URL displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
+It is already possible to  easily modify the message and \ac{URL} displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings-url}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
 Even if the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
 
 An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
