@@ -1,15 +1,16 @@
 \section{BitLocker}
-% https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/36_protocols_and_handles/365_tag_guid
 
-Our final attack will target systems using BitLocker \ac{FVE} with a \ac{TPM} 2.0 and no additional PIN or startup key configured.
-This leaves the Windows boot partition encrypted, the \ac{ESP} is remains unencrypted, thus not affecting the bootkit installation process.
-Secure Boot can be enabled in combination of BitLocker having the effects as observed in \autoref{sec:attacks:secure-boot}, as well as additionally dictating the BitLocker default validation profile Windows uses as mentioned in \autoref{sec:windows:security:bde}.
+Our final attack is against \ac{BDE} using a \ac{TPM} 2.0 without additional \ac{PIN} or startup key.
+With this the Windows boot partition is encrypted, while the \ac{ESP} remains unencrypted, thus BitLocker does not affect the bootkit infection process.
+When Secure Boot is enabled in combination of BitLocker it has the same effects as observed in \autoref{sec:attacks:secure-boot}.
+It also dictates which default validation profile Windows uses to configure BitLocker, as mentioned in \autoref{sec:windows:security:bde}.
 We perform our attack against both default profiles, starting with \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}.
 This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of the presence of a signature \ac{DB} other than \emph{Microsoft Windows Production PCA 2011}.
-The default validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} used, when Secure Boot takes care of integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
-Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and make no further distinctions between the two.
-We refer to them with the expression \ac{UEFI} payload, not to be confused with our (Windows) payload that is deployed in the Windows installation.
-For the most part of this attack we assume, that the infection is performed after BitLocker has been fully set up, only briefly touching the scenario of a user enabling BitLocker while being infected.
+
+The default validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, used when Windows uses Secure Boot for integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
+
+Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and refer to them with the expression \ac{UEFI} payload, not to be confused with our Windows payload that is deployed in the Windows installation.
+We start by assuming that the infection is performed after BitLocker has been already fully set up, and cover the scenario, that a user enables BitLocker while being infected at the end in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
 
 
 \subsection{Infection}
@@ -17,7 +18,9 @@ For the most part of this attack we assume, that the infection is performed afte
 When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure  on the Windows boot partition, due to the \ac{FVE}.
 Resulting in an inability to further deploy the Windows payload on the target system.
 Additionally, during execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
-This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}, leaving the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from and as a result unable to decrypt the Windows installation \cite[Section 12]{windows-internals-7-part2}.
+This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}.
+The rootkit is measured into \ac{PCR}0 and the bootkit into \ac{PCR}2.
+This leaves the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from the \ac{TPM} and as a result unable to decrypt the Windows installation \cite[Section 12]{windows-internals-7-part2}.
 
 \begin{figure}[htb]
     \centering
@@ -26,38 +29,44 @@ This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially
     \label{fig:bitlocker-recovery-prompt}
 \end{figure}
 
-BitLocker with \ac{TPM} measurements successfully mitigates \ac{UEFI} attacks and maintains system integrity by discovering deviations in the boot flow.
-But how does the user react to this, after all it is asking them to enter the recovery key to resume the boot process and not throw out their motherboard.
+BitLocker discovers the deviation in the boot flow, with \ac{TPM} measurements, and blocks our \ac{UEFI} attack from accessing the Windows installation.
+But how does the user react to this, after all it is asking them to enter their recovery key to resume the boot process and not throw out their motherboard.
 There are a few options for a user to proceed: they either trust the system and enter their recovery key, mistrust the operating system or mistrust the entire system.
-If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation.
-In the case of our bootkit this gets rid of the threat, but the rootkit remains in the firmware image and would be part of the chain of trust for the fresh installation.
-If they were to mistrust the whole system, they could recover data from the drive with another system, being careful not to accidentally boot from the drive.
+If they were to mistrust the whole system, they would could take the hard drive out of the system and use the recovery key on a trusted system to recover data, being careful not to accidentally boot from the drive.
 This would deny both our rootkit and bootkit any further access to any sensitive data.
-\TODO{maybe change order}
+If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation of Windows.
+In the case of our bootkit this would get rid of the threat, but the rootkit remains within the firmware image and would be part of the chain of trust for the fresh installation.
 
 \subsection{BitLogger}
 
-When the user enters their recovery key the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} metadata entry, that was encrypted using the recovery key when BitLocker was set up.
-It then proceeds to access the bitlocked \ac{NTFS} drive containing the \lstinline{Windload.efi} \ac{OS} loader.
-This all still happens during the \ac{UEFI} boot environment, before \lstinline{ExitBootServices} is called.
-Unfortunately we are still unable to access the Windows installation, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
-If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, the \ac{FVEK} and in turn the drive ourselves.
+When the user enters their recovery key, the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} in the metadata entry, that was encrypted using the recovery key when BitLocker was set up.
+It then proceeds to access the BitLocked \ac{NTFS} drive containing the \program{Windload.efi} \ac{OS} loader.
+This all still happens during the \ac{UEFI} boot environment, before \program{ExitBootServices} is called, as this is done within \program{Windload.efi}.
+Unfortunately we remain unable to access the Windows installation during this, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
+If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, then the \ac{FVEK} and in turn the drive ourselves.
 
-We can achieve this by logging the keystrokes performed by a user entering the key in the recovery prompt.
-Since we still are in the \ac{UEFI} boot environment, the Windows Boot Manager uses \ac{UEFI} protocols for user input instead of the own Windows drivers.
-\ac{UEFI} offers two protocols for this purpose the \emph{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}, we can quickly determine which of these is used by the Windows Boot manager by adding a simple \lstinline{Print} statement to the implementation in the \ac{OVMF} source code, this change also is enough to trigger the recovery prompt by invalidating the \ac{PCR} measurements.
-A keystroke now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
-The Windows Boot Manager uses the \lstinline{ReadKeyStrokeEx} function to retrieve the latest pending key press.
-The protocol also offers the \lstinline{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \lstinline{WaitForEvent} Boot service. Example usage of the protocol can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
+This can be achieved by logging the keystrokes a users performs when they enteri the recovery key into the recovery prompt.
+Since the Windows Boot Manager executes in the \ac{UEFI} boot environment, it has to use \ac{UEFI} protocols, instead of the own Windows drivers, to access the hardware.
+This includes user input via the keyboard.
+\ac{UEFI} offers two protocols for this purpose the  \hyperref[lst:simple-text-input-protocol]{Simple Text Input Protocol} and the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}.
+We can quickly determine which of these is used by the Windows Boot manager by adding a simple \code{Print()} statement to the implementation in the \ac{EDK} II source code of the \ac{OVMF} image.
+This change is also already enough to trigger the recovery prompt by invalidating the \ac{PCR} measurements.
+A keystroke during the recovery prompt now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
+The Windows Boot Manager uses the \code{ReadKeyStrokeEx()} function to retrieve the latest pending key press.
+The protocol also offers the \code{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \code{WaitForEvent} boot service. The protocol also allows users to register and unregister a callback function to react upon user input.
+Example usage of the \code{ReadKeyStrokeEx()} can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
 \lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,caption={Example of using \emph{HandleProtocol} to retrieve an instance to the \emph{Simple Text Input Ex Protocol} to use its \emph{ReadKeyStrokeEx} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
 
-We can intercept the \lstinline{ReadKeyStrokeEx} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
-But \ac{UEFI} protocol hooking does not require such an invasive and unportable technique.
+We can intercept the \code{ReadKeyStrokeEx()} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
+\ac{UEFI} protocol hooking does not require such an invasive and processor architecture dependent technique.
 When we take a closer look at how protocols are returned to their user we can see why.
-The \ac{UEFI} Boot Services offer two functions, \lstinline{HandleProtocol} and \lstinline{OpenProtocol}, that can be used to retrieve a protocol instance. \lstinline{HandleProtocol} is a simplified abstraction of \lstinline{OpenProtocol} and is implemented by the latter internally.
-\lstinline{OpenProtocol} offers many additional options such as keeping track of the protocol users and exclusivity \cite[Section 7.3]{uefi-spec}.
-\autoref{lst:handle-protocol-simple-text-input-ex} shows how \lstinline{HandleProtocol} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[Section 4.3]{uefi-spec}.
+The \ac{UEFI} boot services offer two functions, \code{HandleProtocol()} and \code{OpenProtocol()}, that can be used to retrieve a protocol instance.
+\code{HandleProtocol()} is a simplified abstraction of \code{OpenProtocol()} and is implemented by the latter internally.
+\code{OpenProtocol()} offers many additional options such exclusivity and notifying consumers when a protocol is being uninstalled \cite[Section 7.3]{uefi-spec}.
+
+\autoref{lst:handle-protocol-simple-text-input-ex} shows how \code{HandleProtocol()} can be used to receive the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} instance installed on the active console input device \cite[Section 4.3]{uefi-spec}.
+\TODO{HIER WEITER MACHEN}
 The input parameters are a device handle, the \ac{GUID} identifying the protocol and the address of a pointer to the protocol structure.
 When calling \lstinline{HandleProtocol} the value of the pointer is modified to point to the corresponding protocol instance.
 The protocol instance itself is previously allocated by a driver and installed onto the device handle in their Driver Binding Start function \TODO{Driver binding}.

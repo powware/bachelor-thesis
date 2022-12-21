@@ -3,8 +3,8 @@
 \section{Secure Boot}
 \label{sec:attacks:secure-boot}
 
-Our second attack is performed against systems which have Secure Boot enabled without any complementary Hardware Validated Boot.
-We assume that the signature \acp{DB} used do not contain our images hashes and that the interactive \ac{UEFI} setup menu is password protected.
+Our second attack is performed with Secure Boot enabled.
+We assume that the signature \acp{DB} used do not contain our image's hashes and that the interactive \ac{UEFI} setup menu is password protected.
 Otherwise we could simply turn off Secure Boot.
 
 \subsection{Bootkit}
@@ -13,22 +13,24 @@ The interactive menu being password\-/protected makes the likelihood of an infec
 We now solely rely on the boot order/firmware policy to prefer removable media.
 Even if this was to be the case, we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
 When using our Windows installer we observe the same denial for the bootkit itself.
-The Windows Boot Manager boot option pointing to our bootkit is now denied execution, if we were to have overwritten the standard boot entry of the hard drive \lstinline{EFI\Boot\bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
+The Windows Boot Manager boot option pointing to our bootkit is now denied execution.
+If we were to have overwritten the standard boot entry of the hard drive \lstinline{EFI\Boot\bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
 
 \subsection{Rootkit}
 
-In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage}.
+In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage}, and that the Security2 Architectural Protocol is responsible for the implementation of Secure Boot authentication.
 As \code{LoadImage} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
-We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot}, that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherntly unable to verify the behavior of the \ac{PI} process.
-Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot.
-When we look at the reference implementation in \ac{EDK} II, we can see why.
-\autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the Securit2 protocol.
+We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot}, that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherently unable to verify the behavior of the \ac{PI} process.
+
+Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and execute just like before.
+When we look at the reference implementation in \ac{EDK} II, we can see why: \autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the Security2 Architectural Protocol.
 It shows that the image origin dictates which policy is being applied.
 The standard policy for images from a \acf{FV} (\code{IMAGE\_FROM\_FV}) is to always allow execution.
 This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
 \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here.
     For example: whether the image is in the system flash \textelp{}}.
 This behavior was reproducible on all our test setups.
+Even if the \ac{PF} were to apply Secure Boot authentication to \ac{DXE} drivers, as long as the root of trust of authentication is established within the firmware image it can be patched as all code within the firmware image is modifiable.
 
 \lstinputlisting[language=C,caption={Policy Selection in DxeImageVerificationHandler (\ac{EDK} II reference implementation of Security2 Architecture Protocol)},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
 

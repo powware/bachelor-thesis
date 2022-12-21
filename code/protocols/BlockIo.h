@@ -24,12 +24,12 @@ typedef EFI_STATUS(EFIAPI *EFI_BLOCK_FLUSH)(
 
 struct _EFI_BLOCK_IO_PROTOCOL
 {
-  UINT64 Revision;
-  EFI_BLOCK_IO_MEDIA *Media;
-  EFI_BLOCK_RESET Reset;
-  EFI_BLOCK_READ ReadBlocks;
-  EFI_BLOCK_WRITE WriteBlocks;
-  EFI_BLOCK_FLUSH FlushBlocks;
+    UINT64 Revision;
+    EFI_BLOCK_IO_MEDIA *Media;
+    EFI_BLOCK_RESET Reset;
+    EFI_BLOCK_READ ReadBlocks;
+    EFI_BLOCK_WRITE WriteBlocks;
+    EFI_BLOCK_FLUSH FlushBlocks;
 };
 
 extern EFI_GUID gEfiBlockIoProtocolGuid;

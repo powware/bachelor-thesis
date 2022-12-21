@@ -26,11 +26,6 @@
 
 \clearpage
 
-\subsection{Simple Text Input Ex Protocol}
-\lstinputlisting[language=C,firstline=4,caption={Simple Text Input Ex Protocol},captionpos=b,label=lst:simple-text-input-ex-protocol]{code/protocols/SimpleTextInEx.h}
-
-\clearpage
-
 \subsection{Simple File System and File Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Simple File System and File Protocol},captionpos=b,label=lst:simple-file-system-protocol]{code/protocols/SimpleFileSystem.h}
 
@@ -46,15 +41,33 @@
 
 \clearpage
 
-\lstinputlisting[language=C,firstline=4,caption={\ac{TCG}2 Protocol},captionpos=b,label=lst:tcg2-protocol]{code/protocols/Tcg2Protocol.h}
-
-\clearpage
-
-\subsection{\acl{BDS} Protocol}
+\subsection{\acf{BDS} Protocol}
 
 \lstinputlisting[language=C,firstline=4,caption={\ac{BDS} Protocol},captionpos=b,label=lst:tcg2-protocol]{code/protocols/Bds.h}
 
 \clearpage
+
+\subsection{Firmware Volume2 Protocol}
+
+\lstinputlisting[language=C,firstline=4,caption={\ac{BDS} Protocol},captionpos=b,label=lst:firmware-volume2-protocol]{code/protocols/FirmwareVolume2.h}
+
+\clearpage
+
+\subsection{Simple Text Input Protocol}
+\lstinputlisting[language=C,firstline=4,caption={Simple Text Input Ex Protocol},captionpos=b,label=lst:simple-text-input-protocol]{code/protocols/SimpleTextIn.h}
+
+\clearpage
+
+\subsection{Simple Text Input Ex Protocol}
+\lstinputlisting[language=C,firstline=4,caption={Simple Text Input Ex Protocol},captionpos=b,label=lst:simple-text-input-ex-protocol]{code/protocols/SimpleTextInEx.h}
+
+\clearpage
+
+\subsection{\acs{TCG}2 Protocol}
+\lstinputlisting[language=C,firstline=4,caption={\ac{TCG}2 Protocol},captionpos=b,label=lst:tcg2-protocol]{code/protocols/Tcg2Protocol.h}
+
+\clearpage
+
 
 \section{Firmware File Types}
 
@@ -64,46 +77,46 @@
     \small
     \begin{tabularx}{1.05\textwidth}{XcX}
         \toprule
-        \textbf{Name}                                                            & \textbf{Value}          & \textbf{Description}                                                                                                        \\
+        \textbf{Name}                                                                  & \textbf{Value}          & \textbf{Description}                                                                                                        \\
         \midrule
-        \code{EFI\_FV\_FILETYPE\_RAW}                                            & \code{0x01}             & Binary data                                                                                                                 \\
+        \code{EFI\_FV\_FILETYPE\_RAW}                                                  & \code{0x01}             & Binary data                                                                                                                 \\
         \arrayrulecolor{gray}
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_FREEFORM}                                       & \code{0x02}             & Sectioned data                                                                                                              \\
+        \code{EFI\_FV\_FILETYPE\_FREEFORM}                                             & \code{0x02}             & Sectioned data                                                                                                              \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_SECURITY\_CORE}                                 & \code{0x03}             & Platform core code used during the SEC phase                                                                                \\
+        \code{EFI\_FV\_FILETYPE\_SECURITY\_CORE}                                       & \code{0x03}             & Platform core code used during the SEC phase                                                                                \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_PEI\_CORE}                                      & \code{0x04}             & PEI Foundation                                                                                                              \\
+        \code{EFI\_FV\_FILETYPE\_PEI\_CORE}                                            & \code{0x04}             & PEI Foundation                                                                                                              \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_DXE\_CORE}                                      & \code{0x05}             & DXE Foundation                                                                                                              \\
+        \code{EFI\_FV\_FILETYPE\_DXE\_CORE}                                            & \code{0x05}             & DXE Foundation                                                                                                              \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_PEIM}                                           & \code{0x06}             & PEI module (PEIM)                                                                                                           \\
+        \code{EFI\_FV\_FILETYPE\_PEIM}                                                 & \code{0x06}             & PEI module (PEIM)                                                                                                           \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_DRIVER}                                         & \code{0x07}             & DXE driver                                                                                                                  \\
+        \code{EFI\_FV\_FILETYPE\_DRIVER}                                               & \code{0x07}             & DXE driver                                                                                                                  \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_COMBINED\_PEIM\_DRIVER}                         & \code{0x08}             & Combined PEIM/DXE driver                                                                                                    \\
+        \code{EFI\_FV\_FILETYPE\_COMBINED\_PEIM\_DRIVER}                               & \code{0x08}             & Combined PEIM/DXE driver                                                                                                    \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_APPLICATION}                                    & \code{0x09}             & Application                                                                                                                 \\
+        \code{EFI\_FV\_FILETYPE\_APPLICATION}                                          & \code{0x09}             & Application                                                                                                                 \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_MM}                                             & \code{0x0A}             & Contains a PE32+ image that will be loaded into MMRAM in MM Traditional Mode.                                               \\
+        \code{EFI\_FV\_FILETYPE\_MM}                                                   & \code{0x0A}             & Contains a PE32+ image that will be loaded into MMRAM in MM Traditional Mode.                                               \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_FIRMWARE\_VOLUME\_IMAGE}                        & \code{0x0B}             & Firmware volume image                                                                                                       \\
+        \code{EFI\_FV\_FILETYPE\_FIRMWARE\_VOLUME\_IMAGE}                              & \code{0x0B}             & Firmware volume image                                                                                                       \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_COMBINED\_MM\_DXE}                              & \code{0x0C}             & Contains PE32+ image that will be dispatched by the DXE Dispatcher and will also be loaded into MMRAM in MM Tradition Mode. \\
+        \code{EFI\_FV\_FILETYPE\_COMBINED\_MM\_DXE}                                    & \code{0x0C}             & Contains PE32+ image that will be dispatched by the DXE Dispatcher and will also be loaded into MMRAM in MM Tradition Mode. \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_MM\_CORE}                                       & \code{0x0D}             & MM Foundation that support MM Traditional Mode.                                                                             \\
+        \code{EFI\_FV\_FILETYPE\_MM\_CORE}                                             & \code{0x0D}             & MM Foundation that support MM Traditional Mode.                                                                             \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_MM\_STANDALONE}                                 & \code{0x0E}             & Contains a PE32+ image that will be loaded into MMRAM in MM Standalone Mode.                                                \\
+        \code{EFI\_FV\_FILETYPE\_MM\_STANDALONE}                                       & \code{0x0E}             & Contains a PE32+ image that will be loaded into MMRAM in MM Standalone Mode.                                                \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_MM\_CORE\_STANDALONE}                           & \code{0x0F}             & MM Foundation that support MM Tradition Mode and MM Standalone Mode.                                                        \\
+        \code{EFI\_FV\_FILETYPE\_MM\_CORE\_STANDALONE}                                 & \code{0x0F}             & MM Foundation that support MM Tradition Mode and MM Standalone Mode.                                                        \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_OEM\_MIN \dots EFI\_FV\_FILETYPE\_OEM\_MAX}     & \code{0xC0}-\code{0xDF} & OEM File Types                                                                                                              \\
+        \code{EFI\_FV\_FILETYPE\_OEM\_MIN\dots} \code{EFI\_FV\_FILETYPE\_OEM\_MAX}     & \code{0xC0}-\code{0xDF} & OEM File Types                                                                                                              \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_DEBUG\_MIN \dots EFI\_FV\_FILETYPE\_DEBUG\_MAX} & \code{0xE0}-\code{0xEF} & Debug/Test File Types                                                                                                       \\
+        \code{EFI\_FV\_FILETYPE\_DEBUG\_MIN\dots} \code{EFI\_FV\_FILETYPE\_DEBUG\_MAX} & \code{0xE0}-\code{0xEF} & Debug/Test File Types                                                                                                       \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_FFS\_MIN \dots EFI\_FV\_FILETYPE\_FFS\_MAX}     & \code{0xF0}-\code{0xFF} & Firmware File System Specific File Types                                                                                    \\
+        \code{EFI\_FV\_FILETYPE\_FFS\_MIN\dots} \code{EFI\_FV\_FILETYPE\_FFS\_MAX}     & \code{0xF0}-\code{0xFF} & Firmware File System Specific File Types                                                                                    \\
         \midrule[0.3pt]
-        \code{EFI\_FV\_FILETYPE\_FFS\_PAD}                                       & \code{0xF0}             & Pad File For FFS                                                                                                            \\
+        \code{EFI\_FV\_FILETYPE\_FFS\_PAD}                                             & \code{0xF0}             & Pad File For FFS                                                                                                            \\
         \arrayrulecolor{black}
         \bottomrule
     \end{tabularx}
