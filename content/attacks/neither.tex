@@ -2,10 +2,9 @@
 
 \section{Neither Secure Boot nor BitLocker}
 
-We start by implementing a baseline attack, that we can use to test against Secure Boot and BitLocker.
-We implement it in the form of a bootkit and a rootkit, with both sharing the same approach and core functionality.
-The general approach of our attack is to access the hard drive containing the Windows installation from within \ac{UEFI} environment.
-We gain then code execution with elevated privileges in the Windows environment by modifying its content.
+We start by implementing a baseline attack, that we can use to test against Secure Boot and BitLocker and further build upon.
+The implementation in the form of a bootkit and a rootkit both share the same approach and core functionality.
+The general approach of our attack is to access the Windows installation from within \ac{UEFI} environment and gain elevated code execution by modifying its contents.
 
 \subsection{Bootkit}
 \label{sec:attacks:neither:bootkit}
@@ -19,7 +18,7 @@ Booting into the installer application requires either the firmware implementati
 This can be forced when booting accessing the interactive firmware menu at startup, given that it is not password protected.
 Installation from Windows requires admin privileges to mount and modify the \ac{ESP}.
 
-The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \lstinline{EFI\\Microsoft\\Boot\\bootmgfw.efi}.
+The installation process is identical for both options, we access the \ac{ESP} and create a copy of the Windows Boot Manager located under \program{EFI\textbackslash Microsoft\textbackslash Boot\textbackslash bootmgfw.efi}.
 We then replace the original with our bootkit as well as dropping all resources required by the bootkit on the \ac{ESP}.
 Now that our bootkit is in place of the Windows Boot Manager, when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, it will cause our bootkit to be executed.
 \autoref{fig:windows-boot-entry} shows a dump of the Windows boot entry using the \ac{UEFI} shell command \program{bcfg}.
@@ -36,7 +35,7 @@ The entry contains the device path including the file path and optional data.
 
 The most important step for a storage-based approach is gaining access to the Windows installation from within the \ac{UEFI} environment.
 Since \ac{UEFI} does not require the firmware to come with an \ac{NTFS} driver, our attack has to come with its own.
-\ac{EDK} II does not provide one, but we can use the open source \ac{NTFS} driver \lstinline{ntfs-3g} from Tuxera \cite{ntfs-3g}.
+\ac{EDK} II does not provide one, but we can use the open source \ac{NTFS} driver \program{ntfs-3g} from Tuxera \cite{ntfs-3g}.
 It was ported to the \ac{UEFI} environment by \emph{pbatard} \cite{ntfs-3g-uefi}.
 Using \ac{EDK} II to compile it, we receive a \program{.efi} executable image.
 
@@ -81,85 +80,81 @@ We can remove this fallback from the \ac{NTFS} driver's code and recompile.
 
 On our hardware setups we noticed that the firmware can already ship with an \ac{NTFS} driver included, which is read\-/only.
 In the case of our rootkit we would be able to remove this driver by modifying the firmware iamge, but we can implement a solution that applies to both types of \ac{UEFI} payload.
-We can change the \ac{NTFS} driver to install its \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a different \ac{GUID} instead of \code{gEfiSimpleFileSystemProtocolGuid}.
+We can change the \ac{NTFS} driver to install its \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} under a \ac{GUID} different to the regular \code{gEfiSimpleFileSystemProtocolGuid}.
 This makes it possible to install two instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} alongside each other on the same controller.
-The alternative \ac{GUID} can then be used in our root- and bookit, to retrieve our specific protocol instance with write access.
+The alternative \ac{GUID} can then searched for by our root- and bookit, to retrieve our specific protocol instance with write access.
 The driver also has to open the protocols it uses without demanding exclusive ownership over them.
-This also prevents the \ac{NTFS} driver from being when trying to open a protocols that is already in exclusive ownership \cite[Section 7.3]{uefi-spec}, which would be a likely scenario as filesystem drivers are encouraged to get exclusive control over their block device \cite[Section 13.5]{uefi-spec}.
+This prevents the \ac{NTFS} driver from being when denied access, when trying to open a protocols that is already in exclusive ownership \cite[Section 7.3]{uefi-spec}, which would be a likely occurrence as filesystem drivers are encouraged to get exclusive control over their block device \cite[Section 13.5]{uefi-spec}.
 
-We now know that provided we get to load the \ac{NTFS} driver we can access the data contained within a Windows installation with read and write.
-\TODO{WEITERMACHEN} Since our rootkit will not use the UEFI shell we need to have the \ac{NTFS} driver load as part of the boot process.
-
-The next step is for our bootkit to use the \ac{NTFS} driver to gain file system access and write our payload to the Windows installation.
-During our bootkit infection process we place the \ac{NTFS} driver on the \ac{ESP}, so that our bootkit can load it.
-In our bootkit, we can use the Loaded Image Protocol, that is installed to the handle of the bootkit's image in memory to retrieve the handle of the device our bootkit was loaded from \cite[Section 9.1]{uefi-spec}.
-This handle can then be used to call the Boot Services \lstinline{LoadImage} and \lstinline{StartImage} to load and execute the NTFS driver.
-Since the driver conforms to the UEFI Driver Model, we need to also reconnect all controllers recursively, so it can assume controller over the NTFS formatted volumes, by installing the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
-Loading the payload and other non-executable files into memory is done differently, here we use the handle from the Loaded Image Protocol to open the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} installed onto the \ac{ESP}, we can then call the \lstinline{OpenVolume} resulting in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[Section 13.4]{uefi-spec}.
-This instance can then be used to open and read our payload with the absolute path on the \ac{ESP} into memory.
+We now know that, provided we get to load the \ac{NTFS} driver, we can read and write the files of a Windows installation.
+Thus we drop the driver together with the bootkit onto the \ac{ESP} as part of our infection process.
+When our bootkit is executed, we use the \hyperref[lst:loaded-image-protocol]{Loaded Image Protocol} of our own image handle to retrieve the source device handle, our bootkit was loaded from \cite[Section 9.1]{uefi-spec}.
+As both files reside within the same volume, we can use this handle to call the boot services \code{LoadImage} and \code{StartImage} to execute the driver.
+Since the driver conforms to the \ac{UEFI} Driver Model, we also need to connect the driver to device representing the Windows parition using the \hyperref[lst:driver-binding-protocol]{Driver Binding Protocol}.
+We can do this by retrieving all protocol instances and iterating over all controllers, to connect them recursively.
+This way so the driver can assume controller over all \ac{NTFS} formatted volumes and install an instance of \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
 
 \subsubsection{Payload deployment}
 
-To perform the write operation we now need a handle we did not yet interact with, at least directly.
-We can use the Boot Service \lstinline{LocateHandleBuffer} to receive an array of all handles that support the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}, this includes volumes such as the \ac{ESP} but also the Windows recovery partition.
-We can iterate over all handles to open the volume and attempting to create a new file with a file path that's inside of the Windows installation.
-This operation fails on volumes not containing a Windows installation which we can just skip.
-Eventually the volume containing Windows is found and the file is created and opened successfully, we can then write our payload, that we read into memory earlier, onto the disk and close the file again.
+Before we can deploy our payload we first need to read it into memory.
+\code{LoadImage} is reserved to be used for \ac{UEFI} images, non\-/executable files are read directly with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
+The \ac{ESP}'s device handle can be used with the boot service \code{HandleProtocol} to retrieve its instance of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
+A call to \lstinline{OpenVolume} results in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[Section 13.4]{uefi-spec}.
+The root directory can then be used to open and read our payload with an absolute path.
 
-Now the question arises as to where to write our payload to, we want automatic and elevated execution.
-Earlier we discovered that the \ac{NTFS} \ac{DXE} driver disregards the file access permission model \TODO{Windows File Permissions} so we are not restricted in the same way an unprivileged user would be when accessing the disk.
+To perform the write operation we need the device handle of the volume containing the Windows installation.
+We can use the boot service \code{LocateHandleBuffer} to receive an array of all handles that support the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}, this includes volumes such as the Windows recovery partition or the \ac{ESP} we just used.
+We can iterate over all handles and search for the Windows folder to identify the correct volume.
+
+Now the question arises as to where we write our payload to, our goal is automatic and elevated execution.
 \emph{MosaicRegressor} writes its payload to the Windows startup folder, a folder whose contents are automatically executed at system startup.
 The programs within the startup folder are unfortunately not automatically run at an elevated level, so this isn't a suitable target location.
+We also cannot trivially overwrite or modify executables that are part of the Windows startup process, as \ac{KMCI} will verify their code integrity before execution.
 
-\TODO{DLL proxy loading}
-\TODO{modifying Windows Executables KMCI}
-
-% Task Scheduler
+Our approach is to use the Task Scheduler.
 The Task Scheduler is a Windows service responsible for managing the automatic execution of background tasks \cite[Section 10]{windows-internals-7-part2}.
 Tasks are performed on certain triggers, which may be time-based (periodically or on a specific time) or event-based, for example on user logon or system boot \cite{microsoft-task-scheduler-triggers}.
-A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, but we will focus on command execution.
+A task can perform various actions upon invocation \cite{microsoft-task-scheduler-actions}, we will focus on command execution.
 Most tasks will simply execute other programs as their action, this execution is performed under specified a security context \cite{microsoft-task-scheduler-security-contexts}.
-The idea of our attack is to have a task, that performs its action with a high privilege level, execute our payload.
-The task of our choosing is called \lstinline{Autochk\Proxy}, that performs the command
+The idea is to have a task, that performs its action with a high privilege level, execute our payload.
+The task of our choosing is called \program{Proxy} and found under the \program{Autochk} folder, its properties can be seen in \autoref{fig:proxy}.
 
-\begin{lstlisting}
-%windir%\system32\rundll32.exe /d acproxy.dll,PerformAutochkOperations
-\end{lstlisting}
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=1.0\textwidth]{attacks/neither/proxy}
+    \caption{\program{Proxy} Task shown using the Task Scheduler Configuration Tool}
+    \label{fig:proxy}
+\end{figure}
 
-30 minutes after system boot, the executable \lstinline{rundll32.exe} loads the \ac{DLL} \lstinline{acproxy.dll} and invokes the exported function \lstinline{PerformAutochkOperations} \cite{microsoft-rundll32}.
-The function name as well as the task name suggest the performed action relates to the Windows utility \emph{autochk} which verifies the integrity of \ac{NTFS} file systems \cite{microsoft-autochk}.
-The Task Scheduler keeps book of its active tasks in the registry under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache}, grouped by four subkeys Boot, logon, plain and Maintenance.
-These entries consist only of a \ac{GUID} that is used to look up the task descriptor saved under their respective task master (registry) keys, these task master keys are located under \lstinline{HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks} \cite[Section 10]{windows-internals-7-part2}.
-There also exist a secondary copy of the task descriptors, on the regular file system under \lstinline{%windir%\system32\Task}, stored as \ac{XML} files.
+The \program{Proxy} task is triggered at system startup (with a 30 minute delay) and its action is to start the program \program{rundll32.exe} with the options \code{/d acproxy.dll,PerformAutochkOperations}.
+This causes \program{rundll32.exe} to load the \program{acproxy.dll} \ac{DLL} into memory and invoke its exported function \code{PerformAutochkOperations()} \cite{microsoft-rundll32}.
+The function name as well as the task name suggest the performed action relates to the Windows utility \program{autochk} which verifies the integrity of \ac{NTFS} file systems \cite{microsoft-autochk}.
+Under security options we can see, that the task is executed using the built\-/in \emph{SYSTEM} account.
+Over all this task is the perfect candidate to run our payload.
 
-We can use the Task Scheduler Configuration Tool to modify the target task on a system under our control, we change the executable path as well as remove the configured delay.
-We then use the Windows registry editor \lstinline{reged.exe} to navigate to the task descriptor store, there we search for the task master key belonging to our task and export this key.
+The Task Scheduler keeps book of its active tasks in the registry under \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache}.
+The tasks are grouped by four subkeys \program{Boot}, \program{logon}, \program{plain} and \program{Maintenance}.
+The entries under these subkeys consist only of a \ac{GUID}, the \ac{GUID} references the task descriptors that are saved using task master (registry) keys, these task master keys are located under \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache\textbackslash Tasks} \cite[Section 10]{windows-internals-7-part2}.
+There also exist a secondary copy of the task descriptors, on the regular file system under \program{\%windir\%\textbackslash system32\textbackslash Task}, stored as \ac{XML} files.
 
-\includegraphics[width=\textwidth]{attacks/neither/05_taskscheduler_autochk.png}
-
-% edit with start cmd.exe and trigger manually
-% whoami
-% We modify the task's action, to run our payload instead.
-To verify the privileges our payload is executed with, we can save the output of \lstinline{whoami /all} into a file.
-The \lstinline{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
-After manually triggering the task through the configuration tool, we see that our payload was run from the \lstinline{nt authority\system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+We can use the Task Scheduler Configuration Tool to modify the \program{Proxy} task on a system under our control, changing the executable path as well as remove the delay configured in its trigger.
+To verify the privileges our payload is executed with, we can save the output of \program{whoami /all} into a file.
+The \program{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
+After manually triggering the task through the configuration tool, we see that our payload was run from the \emph{nt authority\textbackslash system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
 
 \TODO{whoami /all snippet}
 
-% chntpw and reged
-% edit Task in machine under Control
-We can use this exported key and import it on our victim's system as part of our attack.
-This way, instead of modifying a single value of the registry key, the victim's key maintains its integrity as we also overwrite the hash value with correct data.
-To import the key on an offline system, we can use a Linux utility called \lstinline{chntpw} whose primary purpose it is to reset the password of local Windows user accounts \cite{chntpw}.
-The library does this by editing the registry of a Windows installation and as such the author also offers a standalone registry editor called \lstinline{reged}.
-% test
-% dual boot
-We can test the Linux tool when dual-booting a Linux and a Windows installation.
-We place our payload in the Windows installation and then boot into Linux, where we can open the \lstinline{HKEY_LOCAL_MACHINE/SOFTWARE} hive in \lstinline{reged} and import our modified registry key.
-% import and overwrite registry key on target machine
-This overwrite the task descriptor and when booting into Windows our payload is executed.
+With the Windows registry editor \program{reged.exe} we can navigate to the task descriptor store and search for the task master key belonging to our task.
+We can then export the task master key and import it on our victim's system as part of our attack.
+By importing an entire registry key, instead of modifying a single value of an existing registry key, the victim's registry keys maintains their integrity, as with a full overwrite the registry key's hash value is also changed.
+To import the key we can use a Linux utility called \program{chntpw} whose primary purpose it is to reset the password of local Windows user accounts \cite{chntpw}.
+It does this by editing the hive files of a Windows installation and as such the author also offers a standalone registry editor called \program{reged}.
+We can test the Linux tool when dual\-/booting Linux and Windows.
+For now we place our payload manually in the Windows installation and then boot into Linux, where we can open the \program{HKEY\_LOCAL\_MACHINE/SOFTWARE} hive in \program{reged} and import our modified registry key.
+This overwrites the task descriptor and when booting into Windows our payload is executed.
 
-% port to uefi
+\TODO{starts here}
+
 The next step is to port the \lstinline{reged} utility so that it works in the UEFI environment, so we can use it as part of our bootkit.
 % most stdlib stuff is just mapping to UEFIlib stuff with equivalents or using gcc implementations
 The porting process boils down to providing semantically equivalent definitions of external function calls, such as c standard library and Linux kernel functions, to link against.
@@ -176,22 +171,29 @@ We then match for the name value of the key.
 Now that we modified the Windows installation to execute our payload upon boot, we need to transfer execution from the bootkit to the original Windows Boot Manager.
 Loading the original application is inspired by how the UEFI Boot Manger loads boot options, this includes relaying the \lstinline{LoadOptions} and \lstinline{ParentHandle} of the \emph{\ac{EFI} Loaded Image Protocol} \cite[Section 9.1]{uefi-spec} instance installed to our bootkit to the Windows Boot Manager.
 
+\TODO{ends here}
+
 
 \subsection{Rootkit}
 
-Performing the same attack in the form of a rootkit is very similar and mainly differs in the infection process.
-The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of an application.
-When placed in the \ac{DXE} volume it is automatically loaded by the \ac{DXE} Dispatcher iterating over the \ac{FV}, loading  drivers whose dependencies are resolved.
-The core functionality of our \ac{UEFI} payload is identical with the exception that we don't have to manually load the \ac{NTFS} driver anymore and accessing the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the \cite[Section 3.4.1]{pi-spec}, instead of \emph{Simple Filesystem Protocol}. There are no traditional file names on a firmware volume, and we have to search for files using the module \acp{GUID}.
+Performing the attack in the form of a rootkit is very similar and mainly differs in the infection process.
+The \ac{UEFI} payload is now compiled as a \ac{DXE} driver instead of a regular \ac{UEFI} application.
+When it is placed in a \ac{DXE} volume it is automatically loaded by the \ac{DXE} Dispatcher iterating over the \ac{FV}, loading  drivers whose dependencies are resolved.
+The core functionality of our \ac{UEFI} payload is identical with the exception that we don't have to manually load the \ac{NTFS} driver anymore and accessing the Windows payload is now done with the \emph{Firmware Volume2 Protocol} defined in the \cite[Section 3.4.1]{pi-spec}, instead of \emph{Simple Filesystem Protocol}.
+There are no traditional file names in a \ac{FFS}, and we have to search for files using the files's \acp{GUID}, which is read from the \ac{EDK} II module file.
 
 \subsubsection{Infection}
 
-Infection with the rootkit is has a much higher barrier of entry, as it requires read and write access to the firmware image, which often requires physical access.
-\autoref{sec:test-setup} potentially exploit \ac{OEM} specific flash mechanism, signing with stolen private key, part of the supply chain, might also be physical \TODO{LIST ALL OPTIONS}
+Infection with the rootkit is has a much higher barrier of entry, as it requires read and write access to the firmware image.
+\autoref{sec:test-setup} lists how we access the firmware images on our target systems.
+\TODO{MEEE}
+But there are also other ways to do this, \autoref{sec:past-threats} vector\-/edk potentially exploit \ac{OEM} specific flash mechanism, signing with stolen private key, part of the supply chain, might also be physical \TODO{LIST ALL OPTIONS}
 
-We have to retrieve the image, insert our payload into a \ac{DXE} volume and deploy the modified image.
-In UEFITool we navigate to the \ac{DXE} Volume containing the \ac{DXE} Core and \ac{DXE} drivers.
-% since files are part of file sections we cant drop in the .efi
+We we are in possession of the image, we need to insert our payload into a \ac{DXE} volume and redeploy the modified image.
+We can do this using \program{UEFITool}, where we navigate to a \ac{DXE} volume, they are identified by containing \ac{DXE} drivers.
+On our \autoref{sec:test-setup:lenovo} system the firmware image did not contain enough free space to allow for the addition of our payload.
+By deleting network related drivers
+
 We cannot directly drop our \ac{UEFI} payload in form of \lstinline{.efi} files with UEFITool, because \ac{DXE} drivers have three mandatory sections: the \ac{PE32} executable section, composed of the \lstinline{.efi} file content, a version section and the \ac{DEPEX} section \cite[Vol. 3, 2.1.4.1.4]{pi-spec}.
 % compile dxe driver within ovmf
 % generate unused volume to receive .ffs file with version, depex, user interface and pe section

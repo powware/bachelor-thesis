@@ -3,8 +3,9 @@
 \chapter{Attacks}
 \label{sec:attacks}
 
-We implement our own storage-based \ac{UEFI} attacks in three different scenarios with increasing levels of security mechanisms.
-The first attack is with Secure Boot and BitLocker disabled, the second attack with Secure Boot enabled and the third attack with both Secure Boot and BitLocker enabled.
+We implement our own storage-based \ac{UEFI} attacks in the form of a bootkit and a rootkit and test them against our setups using three different escalating levels of security.
+The first attack uses standard Windows security policies that are to be expected after a fresh installation, Secure Boot and BitLocker are disabled.
+For the second attack we enable Secure Boot and for the third attack Windows will additionnly use \ac{BDE} with \ac{TPM} protection.
 
 \input{content/attacks/neither}
 \input{content/attacks/secure_boot}

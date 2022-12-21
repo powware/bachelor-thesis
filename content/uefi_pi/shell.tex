@@ -11,8 +11,8 @@ With the \program{devtree} command, for example, we can see the tree of all hand
 This also serves a great reference of how device paths are formed.
 \autoref{fig:devtree} shows the output of \program{devtree} cropped to show a \ac{GPT} formatted hard drive and its logical partitions.
 When the firmware discovers a block device it is also required to search for a partition table and create a device handle for each partition.
-Device drivers abstracting file systems can then be connected to a partition handle and check if it is formatted.
-The first partition here, listed as \emph{FAT File System}, is the \ac{ESP} of this drive.
+Device drivers abstracting file systems can then be connected to a partition handle and check whether a supported file system formatting is present.
+The first partition listed in \autoref{fig:devtree}, as\emph{FAT File System}, is the \ac{ESP} of this drive.
 
 \begin{figure}[htb]
     \centering
@@ -33,17 +33,3 @@ The command also lists the agent handles of each protocol and how the protocol w
     \caption{Shortened \ac{UEFI} shell output of \program{openinfo}}
     \label{fig:openinfo}
 \end{figure}
-
-
-
-% During initialization the shell produces default mappings for file systems and block devices, this defines names that can be used interchangably with their device paths when issuing shell commands \cite[Section 3.7.2]{uefi-shell-spec}.
-% These mappings are designed to be consistent across reboots as long as the hardware configuration stays the same, they are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
-% It also produces the initial output of what is equivalent to the invocation of the commands \program{ver} and \program{map} \cite[Section 3.3]{uefi-shell-spec}.
-% \program{ver} displays the version of the \ac{UEFI} specification the firmware conforms to, while map shows the current device mapping \cite[Section 5.3]{uefi-shell-spec}.
-% \autoref{fig:uefi-shell} depicts an exemplary output of the \ac{EDK} II \ac{UEFI} shell.
-
-% When we inspect the mapping table we can see \lstinline{FSx:} and \lstinline{BLKx:} aliases, \lstinline{FSx:} maps to file systems and \lstinline{BLKx:} to block devices.
-% This identification is performed via instances of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} and \TODO{double check} Block \ac{I/O} Protocol.
-% % explain Simple File System Protocol
-% The \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} \cite[Section 13.4]{uefi-spec} provides, together with the \hyperref[lst:simple-file-system-protocol]{File Protocol}, file-type access to the device it is installed on \cite[Section 13.5]{uefi-spec}.
-% The two protocols are independent of the underlying file system the media is formatted with.
