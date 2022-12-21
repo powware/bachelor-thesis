@@ -57,12 +57,12 @@ As there is no \ac{NTFS} driver present yet, it is only displayed as a block dev
 We can enter the mapping name of the file system containing our \ac{NTFS} driver to use it as our current working directory and load the driver using the \program{load} command.
 The command is executed successfully and can the driver is now listed when querying the currently loaded drivers with the command \program{drivers}.
 We can now instruct the default mappings to be reset with the \program{map -r} command, to receive an updated list including the file systems now provided through the \ac{NTFS} driver.
-\autoref{fig:mapping-ntfs} also shows us that the new file system now sit on top of a device which previously was only listed as a block device.
+\autoref{fig:mapping-ntfs} also shows us that the new file system now sits on top of a device which previously was only listed as a block device.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=0.8\textwidth]{attacks/neither/mapping_ntfs}
-    \caption{Mapping of the Windows parition after loading the \ac{NTFS} driver}
+    \caption{Mapping of the mounted Windows parition}
     \label{fig:mapping-ntfs}
 \end{figure}
 
@@ -70,6 +70,14 @@ As done before we now type the mapping name of the new file systems, we check th
 This reveals that the file system is currently read\-/only.
 Upon debugging the \ac{NTFS} driver it appears to be that the driver falls back to read\-/only when it encounters a file that indicates that the Windows system is in hibernation mode.
 We can remove this fallback from the \ac{NTFS} driver's code and recompile.
+
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{attacks/neither/vol}
+    \caption{Volume Information of the Windows File System}
+    \label{fig:mapping-ntfs}
+\end{figure}
 
 On our hardware setups we noticed that the firmware can already ship with an \ac{NTFS} driver included, which is read\-/only.
 In the case of our rootkit we would be able to remove this driver by modifying the firmware iamge, but we can implement a solution that applies to both types of \ac{UEFI} payload.
