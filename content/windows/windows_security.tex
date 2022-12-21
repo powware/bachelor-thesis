@@ -2,9 +2,8 @@
 
 \section{Security}
 
-\autoref{fig:windows-startup-process} gives an overview over the security within the Windows startup process.
-With Secure Boot starting the process and Trusted Boot enventually taking over.
-We do not cover Measured Boot in this thesis.
+\autoref{fig:windows-startup-process} gives an overview of the security within the Windows startup process, with \emph{Secure Boot} starting the process and \emph{Trusted Boot} eventually taking over.
+We do not cover \emph{Measured Boot} in this thesis.
 
 \begin{figure}[phtb]
     \centering
@@ -16,7 +15,7 @@ We do not cover Measured Boot in this thesis.
 \subsection{Secure Boot}
 
 Devices shipping with Windows 11 must have Secure Boot enabled by default \cite{microsoft-windows-minimum-hardware-requirements-overview}.
-Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB} (to allow executioon of non\-/Windows bootloaders), aditionally a user should be able to completely disable secure boot.
+Windows certified devices generally must allow users to enroll custom keys and signature \acp{DB} (to allow execution of non\-/Windows bootloaders), aditionally a user should be able to completely disable secure boot.
 Windows offers two signature \acp{DB} the \emph{Microsoft Windows Production PCA 2011} required for the Windows boot process and \emph{Microsoft Corporation \ac{UEFI} \ac{CA} 2011}, which is reserved for third party executables signed at Microsoft's discretion after manual review \cite{microsoft-uefi-signing}.
 Microsoft advises to only allow other third party \ac{UEFI} applications if necessary and even mandates the exclusion of \acp{DB} other than \emph{Microsoft Windows Production PCA 2011} on Secured\-/core \acp{PC} \cite{microsoft-secure-the-windows-boot-process}.
 
@@ -24,7 +23,7 @@ Microsoft advises to only allow other third party \ac{UEFI} applications if nece
 
 Trusted Boot picks up where Secure Boot left off and maintains the code integrity chain through the kernel into the Windows startup process.
 \ac{KMCI} verifies the digital signature of Windows boot components, including boot drivers, startup files and the \ac{ELAM} driver \cite{microsoft-trusted-boot}.
-\ac{ELAM} provides antimalware software developers an interface to be intialized early in the boot process, before other third\-/party components, to monitor the subsequent boot process \cite{micosoft-windows-elam}.
+\ac{ELAM} provides antimalware software developers an interface to be initialized early in the boot process, before other third\-/party components, to monitor the subsequent boot process \cite{micosoft-windows-elam}.
 \cite{understanding-windows-trusted-boot} gives a detailed walkthrough of the trusted boot process.
 
 Microsoft can also leverage hardware virtualization features called \ac{VSM} for \ac{VBS}.
@@ -37,7 +36,7 @@ Microsoft has since retired the term to prevent confusion, as there is no direct
 \label{sec:windows:security:bde}
 
 Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} \cite[Section 9]{windows-internals-6-part2}.
-Windows uses BitLocker, an integrated \ac{FVE}, aimed to protect system files and data from unauthorized accecss while at rest \cite{microsoft-bitlocker-overview}.
+Windows uses BitLocker, an integrated \ac{FVE}, aimed to protect system files and data from unauthorized access while at rest \cite{microsoft-bitlocker-overview}.
 It also serves as a mechanism to verify boot integrity when used with in combination of a \ac{TPM} \cite[Section 9]{windows-internals-6-part2}.
 The en- and decryption of the volume is done by a filter driver beneath the \ac{NTFS} driver as shown in \autoref{fig:bitlocker-volume-access-driver-stack}.
 The \ac{NTFS} driver translates file and directory access into block-wise operations on the volume.
@@ -57,11 +56,11 @@ The \ac{VMK} can be encrypted by the following protectors:
 \end{figure}
 
 \begin{description}
-    \item[Startup key] The Startup key can be storead on removable media such as a \ac{USB} stick and serves as physical proof of ownership.
+    \item[Startup key] The Startup key can be stored on removable media such as a \ac{USB} stick and serves as physical proof of ownership.
         The removable media contains a \program{.bek} file, that is named with a \ac{GUID} corresponding to BitLocker meta data entry, as it it possible to have multiple start up keys for the same volume \cite[Section 2.6]{bde-format-spec}\cite{microsoft-windows-prepare-your-org}.
 
     \item[TPM]
-        When a \ac{TPM} is used to seal the \ac{VMK}, BitLocker can ensure integrity of early boot components and boot configuration, as the unseal operation fails upon modifcation of the boot flow.
+        When a \ac{TPM} is used to seal the \ac{VMK}, BitLocker can ensure integrity of early boot components and boot configuration, as the unseal operation fails upon modification of the boot flow.
         The \ac{TPM} can, in combination to the \ac{PCR} values, use a startup key, a pin or both to seal the \ac{VMK} \cite{microsoft-bitlocker-countermeasures}.
         The collection of \ac{PCR} indexes used to instruct the \ac{TPM} when initially sealing the \ac{VMK} is called a validation profile.
         The validation profile is configurable through Windows group policy settings, and\ac{PCR}11 is always required as its contents measure the BitLocker Access Control.

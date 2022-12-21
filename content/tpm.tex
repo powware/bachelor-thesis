@@ -1,6 +1,7 @@
 % !TeX root = ../thesis.tex
 
 \chapter{\acf{TPM}}
+\label{sec:tpm}
 
 With the \ac{TPM} the \ac{TCG} specifies a system component designated for security\-/related functions, providing the ability to establish trust in a system \cite{microsoft-windows-trusted-platform-module-overview}.
 Its implementation can be accomplished through dedicated hardware or by using the \ac{CPU}'s isolated \ac{SMM} \cite[Section 9.3]{tcg-tpm-library-part1-architecture}.
@@ -64,9 +65,9 @@ Interaction with the \ac{TPM} is done via a well\-/defined interface, for extern
         \midrule
         \textbf{7}                  & Secure Boot Policy                                                                                       \\[\defaultaddspace]
         \midrule
-        \textbf{8}                  & First \ac{NTFS} boot sector (volume boot record)                                                         \\[\defaultaddspace]
+        \textbf{8}                  & First \acsu{NTFS} boot sector (volume boot record)                                                       \\[\defaultaddspace]
         \midrule
-        \textbf{9}                  & Remaining \ac{NTFS} boot sectors (volume boot record)                                                    \\[\defaultaddspace]
+        \textbf{9}                  & Remaining \acsu{NTFS} boot sectors (volume boot record)                                                  \\[\defaultaddspace]
         \midrule
         \textbf{10}                 & Boot Manager                                                                                             \\[\defaultaddspace]
         \midrule

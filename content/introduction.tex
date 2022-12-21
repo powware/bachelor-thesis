@@ -5,61 +5,60 @@
 % https://www.scribbr.com/dissertation/introduction-structure/
 
 \chapter{Introduction}
+\label{sec:introduction}
 
-
-Regardless of the \ac{OS} installed on a computer, the \ac{PF} is the very first piece of code that is executed, when powering on the system.
+Regardless of the \ac{OS} installed on a computer, the \ac{PF} is the very first piece of code that is executed when powering on the system.
 It performs basic initialization of all platform components and manages the system's resources until the \ac{OS} takes over.
 The \ac{PF} allows for basic system and boot configuration and serves as a means to create a uniform environment for boot applications.
-After discovering and selecting the appropriate boot device it hands over execution to the bootloader and with that subsequently control over the entire system.
+After discovering and selecting the appropriate boot device it hands over execution to the bootloader and with that subsequently the control over the entire system.
 
 This process has been previously performed by the \ac{BIOS} and while the term supersedes the underlying implementation, modern systems are mostly \ac{UEFI}\-/based, with even backwards compatibility being phased out by \acp{OEM}.
 Legacy \ac{BIOS} is dead and \ac{UEFI} is here to stay.
 
-\ac{UEFI} as the successor addresses the previous limitations, modernizing the boot process in a standardized fashion.
-Allowing for to fully abstract the underlying hardware, while providing mechanisms for extensibility in the short and long term.
+\ac{UEFI}, as the successor, addresses the previous \ac{BIOS} limitations, modernizing the boot process in a standardized fashion, and allowing to fully abstract the underlying hardware while providing mechanisms for extensibility in the short and long term.
 \ac{UEFI} provides a family of specifications with the \ac{UEFI} specification itself defining the environment and interfaces for boot applications to communicate with the firmware.
 The \ac{UEFI} \ac{PI} specification defines a model for system designers to follow when implementing the \ac{PF}.
 Its design focuses on simplifying the collaboration process between different hardware vendors, whose components come together in a system.
-Dynamic module discovery, disptach and intermodule communication allow for the independent development of early boot components.
+Dynamic module discovery, dispatch, and inter-module communication allow for the independent development of early boot components.
 A well\-/defined storage solution brings it all together in a single firmware image.
 
 The extensibility and abstractions can become a double\-/edged sword, when threat actors are introduced to the system, as the same concepts apply to software with malicious intent.
 They can gain control over the system before the \ac{OS} or even its bootloader are executed.
-The early execution environment can be abused to achieve persistence across reboots and with access to the firmware iamge even across \ac{OS} installations.
+The early execution environment can be abused to achieve persistence across reboots and, with access to the firmware image, even across \ac{OS} installations.
 They often deploy additional malware further up into the \ac{OS} environment.
 Leveraging their privileges, they remain hidden to the \ac{OS} and its antivirus software.
-Through abstractions of the underlying hardware \ac{UEFI} based attacks can become platform independent and target a host of platforms at once.
+Through abstractions of the underlying hardware, \ac{UEFI}-based attacks can become platform-independent and target a host of platforms at once.
 
 \ac{UEFI} threats fall under the category of rootkits.
-Rootkits are traditonally a collection of software designed to grant a threat actor control over a system.
+Rootkits are traditionally a collection of software designed to grant a threat actor control over a system.
 There are different types of rootkits depending on their entry vector and where they reside.
 They range from User Mode, Kernel Mode over Hypervisors to bootloaders and firmware \cite{crowdstrike, techtarget, microsoft-secure-the-windows-boot-process}.
 \ac{UEFI} threats are of two categories, bootloader rootkits (Bootkits) or firmware rootkits.
 While bootkits rely on intervening the process when the \ac{PF} hands over execution to boot applications, firmware rootkits reside within the firmware image and are executed as part of the \ac{PI}.
-Within this thesis we will reserve the alone standing term \emph{rootkit} for \ac{UEFI} firmware rootkits and mostly refer to bootloader rootkits with bootkit.
+Within this thesis we will reserve the standalone term \emph{rootkit} for \ac{UEFI} firmware rootkits and mostly refer to bootloader rootkits with the term \emph{bootkit}.
 
-Discoveries of \ac{UEFI} threats are still rather rare occurances, which may depend more on the fact that they are hard to detect than the amount of them that exists.
-Despite this, recent years have lead to more and more being found and analysed by security researchers.
-Bootkits such as FinSpy, ESPecter, Dreamboot or rootkits like Mosaicregressor, LoJax, Moonbounce and CosmicStrand.
-Given the small sample size the infection method is often unknown and general information very limited.
-Their attack approaches can be categorized into memory\-/ and storage\-/based approaches.
+Discoveries of \ac{UEFI} threats are still rather rare occurrences, which may depend more on the fact that they are hard to detect than the amount of them that exists.
+Despite this, recent years have lead to more and more being found and analyzed by security researchers.
+Examples for bootkits are FinSpy, ESPecter, Dreamboot and exemplary rootkits are Mosaicregressor, LoJax, Moonbounce, and CosmicStrand.
+Given the small sample size the infection method is often unknown and general information is typically very limited.
+The attack approaches can be categorized into memory\-/ and storage\-/based approaches.
 Memory\-/based attacks modify boot applications when they are loaded in memory.
 This allows them to propagate malicious code execution into the \ac{OS} kernel.
 Storage\-/based attacks do not rely on the \ac{OS} boot process and instead modify the \ac{OS}'s hard drive contents \emph{at rest}.
 
 By performing our own \ac{UEFI} attacks we look at some infection methods for root\-/ and bootkits, mainly involving physical access.
-We want to analyze Windows security mechanisms and standard security policies, whether they protect the system and if so, how.
-Focusing on storage\-/based attacks comparable to LoJax and Mosaicregressor, as Windows offers \ac{BDE} with \ac{TPM} 2.0 protection to prevent unauthorized access of the hard drive.
+We want to analyze Windows security mechanisms and standard security policies, whether they protect the system and, if so, how.
+We furthermore focus on storage\-/based attacks comparable to LoJax and Mosaicregressor, as Windows offers \ac{BDE} with \ac{TPM} 2.0 protection to prevent unauthorized access to the hard drive.
 \ac{TPM} measurements provide a mechanism to verify system integrity and should be able to pick up malicious code execution such as rootkits and deny hard drive access and stop the system from booting.
 
 \section*{Structure}
 
-We start off in Chapter 2 by introducing all necessary knowledge about the \ac{UEFI} environment, defined through the family of \ac{UEFI} specifications, listing the interface and its implementation.
-We briefly go over relevant security concepts of the \ac{TPM} and its interaction with the \ac{PF} in Chapter 3.
-This allows us to go over Windows~11's interaction with the \ac{UEFI} environment as well as relevant security mechanisms in Chapter 4.
-With this knowledge we then look at analyses of previously discovered \ac{UEFI} threats in Chapter 5, categorizing them by their attack vector and threat model.
-In Chapter 6 we discuss the test setups, we performed our attacks on, consisting of emulation and hardware.
-We then lay out our practical approach of implementing our own \ac{UEFI} attacks in Chapter 7, analyzing security mechanism faced when attempting attacks from the UEFI environment.
-Chapter 8 describes the results reflected through our attacks.
-Afterwards we discuss the impact of our findings, the restrictions that apply, as well as potential mitigation techniques in Chapter 9.
-Chapter 10 concludes the thesis by summarizing the achievements of our attacks and lays out potential future topics.
+We start off in \autoref{sec:uefi-pi} by introducing all necessary knowledge about the \ac{UEFI} environment, defined through the family of \ac{UEFI} specifications, listing the interface and its implementation.
+We briefly go over relevant security concepts of the \ac{TPM} and its interaction with the \ac{PF} in \autoref{sec:tpm}.
+This allows us to go over Windows~11's interaction with the \ac{UEFI} environment as well as relevant security mechanisms in \autoref{sec:windows}.
+With this knowledge we then look at analyzes of previously discovered \ac{UEFI} threats in \autoref{sec:past-threats}, categorizing them by their attack vector and threat model.
+In \autoref{sec:test-setup} we discuss the test setups, we performed our attacks on, consisting of emulation and hardware.
+We then lay out our practical approach of implementing our own \ac{UEFI} attacks in \autoref{sec:attacks}, analyzing security mechanisms faced when attempting attacks from the \ac{UEFI} environment.
+\autoref{sec:results} describes the results reflected through our attacks.
+Afterwards, we discuss the impact of our findings, the restrictions that apply, as well as potential mitigation techniques in \autoref{sec:discussion}.
+\autoref{sec:conclusion} concludes the thesis by summarizing the achievements of our attacks and laying out topics of further interest.
