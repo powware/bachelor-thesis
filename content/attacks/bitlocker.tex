@@ -56,7 +56,7 @@ The Windows Boot Manager uses the \code{ReadKeyStrokeEx()} function to retrieve 
 The protocol also offers the \code{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \code{WaitForEvent} boot service. The protocol also allows users to register and unregister a callback function to react upon user input.
 Example usage of the \code{ReadKeyStrokeEx()} can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
-\lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,caption={Example of using \emph{HandleProtocol} to retrieve an instance to the \emph{Simple Text Input Ex Protocol} to use its \emph{ReadKeyStrokeEx} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,caption={Example of using \code{HandleProtocol()} to retrieve an instance to the \protect{\hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}} to use its \code{ReadKeyStrokeEx()} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}
 
 We can intercept the \code{ReadKeyStrokeEx()} function call by using a technique called function hooking, there are various ways of doing this, for example patching a jump instruction at the beginning of the target function to detour the execution flow.
 \ac{UEFI} protocol hooking does not require such an invasive and processor architecture dependent technique.

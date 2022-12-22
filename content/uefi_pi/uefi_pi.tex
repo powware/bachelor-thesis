@@ -33,7 +33,7 @@ As for the other specifications, we briefly summarize the content relevant for u
 \section{\acs{EDK} II}
 
 \ac{EDK} II, maintained by \emph{TianoCore}, is an open source implementation of \ac{UEFI}, offering a modern, feature-rich, cross-platform firmware development environment for the \ac{UEFI} and \ac{PI} specifications \cite{tianocore}.
-It can be used to build modules of all types defined in the \ac{PI} and \ac{UEFI} specification and supports the generation of \ac{PF} images, option\-/\acp{ROM} and bootable media.
+It serves as the build tool for all types modules defined in the \ac{PI} and \ac{UEFI} specification and supports the generation of \ac{PF} images, option\-/\acp{ROM} and bootable media, thus we also use \ac{EDK} II to generate the binaries for our attacks.
 On top of implementing the \ac{PI} and \ac{UEFI} specifications, it defines a lot of helpful libraries and protocols that can be used to simplify the development process.
 With events that require policiy defined reactions, it often already offers well\-/defined interfaces for a platform designer to pick up on.
 The build process is flexible, as it can use different compilers such as \program{GCC} and \program{MSVC}.
