@@ -22,16 +22,14 @@ This is especially easy for attackers with physical access, with a stolen laptop
 We cannot even argue for Microsoft doing this out of a trade\-/off between security and convenience.
 It is true that leaving out \ac{PCR}0 does significantly reduce the chance of the \ac{TPM} being unable unseal the \ac{VMK} after a firmware update, making validation profiles containing \ac{PCR}0 more prone to false positives in comparison.
 It is also the case that Secure Boot does not enforce its authentication and policies on code that is measured into \ac{PCR}0.
-If Microsoft were to have intentionally made this trade\-/off, Secure Boot would not be the deciding factor on whether to leave out \ac{PCR}0 or not.
-A validation profile that maintains a similar security across systems with and without Secure Boot could have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}} when Secure Boot is disabled.
-With this profile, measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker.
-Microsoft's decision instead causes Secure Boot to come with a hidden degradation of security.
+If Microsoft were to have intentionally made this trade\-/off, Secure Boot should not be the deciding factor on whether to leave out \ac{PCR}0 or not.
+A validation profile that maintains a similarly, to \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, reduced security for systems without Secure Boot would have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}}.
+With this profile, only measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker, and \ac{PCR}0 would have also been left out for convenience.
+Microsoft's decision, instead, causes different levels of security across systems with and without Secure Boot, with systems using Secure Boot being at the short end of the stick.
+Secure Boot effectively leads to a hidden degradation of security.
 
 As a result, we advice to override the default validation profile settings when using BitLocker.
-For additional security \ac{PCR}0 should be included, as well as enabling Hardware Validated Boot on supported devices.
-
-
-PCR7 BINDING \TODO{it provides with greater flexibility to manage the preboot configuration}
+For additional security \ac{PCR}0 should always be included.
 
 \section{Recovery Key as Security Override}
 
@@ -62,47 +60,10 @@ Even if the recovery prompt were to be removed in the future, phishing attacks c
 An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
 It is somewhat of a last ditch effort, relying on social engineering and may be compared to phishing.
 
-
-
-% bootkit installation easier than rootkit
-
-% rootkit with physical access many options/easy to do
-
-% it is generally very easy to attack windows from the \ac{UEFI} environment and there is little that they can do, as especially all windows code can be patched
-% didnt prevent firmware update overwriting our payload
-
-
-% Our attacks reveal the differences between \ac{UEFI} firmware rootkits and \ac{UEFI} bootkits.
-% The barrier of entry for a bootkit is much lower, as through physical access it is only required to boot from a \ac{USB} stick.
-% Remote infection by mounting the \ac{ESP}.
-% When the \ac{PF} is not password protected the main downside of a bootkit, its  we can disable secure boot
-% in case of physical presence it may require to change boot order
-% physical presence with bootable usb stick (defeated by secure boot)
-% genrally defeated by secure boot where as the rootkit isnt
-% even if secure boot was implemented for FV images, it could be patched if the validation change starts within the image
-
-% barrier of entry is higher
-% exploit to overwrite spi flash or be delivered with supply chain difficult
-% physical presence remove spi chip and emulate spi chip or modify chip content
-% but high payoff with persistence
-
-% persistence
-% bootkit moves with hard drive but can be overwritten by fresh install
-% rootkit persistence across reinstallations or hard drive replacements
-
-
-% SMM rootkit very powerful, complete control over the system
-% \cite{}  https://pdfs.semanticscholar.org/68e7/42523f493b78111031a5a221a8cf767064f4.pdf
-
-% attack assumption reflected to real world aplicability
-
-
-
-
 \section{Mitigations}
 
 Enabling Hardware Validated Boot should prevent the execution of any malicious code within in the firmware image.
-Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction.
+Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction, preventing the stolen laptop scenario, even if only \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used.
 When the owner is present to enter the \ac{PIN} into an infected system, it unfortunately does not provide any additional security.
 It is always beneficial to use a password to protect the interactive firmware menu, so that Secure Boot cannot be disabled and booting into malicious removable media is prevented.
 System designers can also take into account to make it harder to acccess the flash, so that an attacker will have trouble modifing the firmware image.

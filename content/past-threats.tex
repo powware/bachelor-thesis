@@ -9,25 +9,27 @@
 Before we implement our own \ac{UEFI} attacks, we first take a look at how past \ac{UEFI} threats have approached this problem.
 The threats discussed range from actual attacks found in the wild and analyzed by security researchers, over attacks, which have similarly been implemented for research purposes, to tools to enable system owners more advanced control over their systems.
 
+
 \begin{center}
     \begin{tabular}{lll}
         \toprule
         {\bfseries Approach}               & {\bfseries Bootkit} & {\bfseries Rootkit} \\
+        \arrayrulecolor{gray}
         \cmidrule[0.4pt](r){1-1}
-        % \cmidrule[0.4pt](lr){2-2}
-        \cmidrule[0.4pt](l){2-3}
-        \multirow{4}{4em}{Storage\-/based} & \textbf{ours}       & Vector-edk          \\
+        \cmidrule[0.4pt](lr){2-2}
+        \cmidrule[0.4pt](l){3-3}
+        \multirow{4}{4em}{Storage\-/based} & \textbf{ours}       & VectorEDK           \\
                                            &                     & Mosaicregressor     \\
                                            &                     & LoJax               \\
                                            &                     & \textbf{ours}       \\
-        % \hline
         \cmidrule[0.4pt](r){1-1}
-        % \cmidrule[0.4pt](lr){2-2}
-        \cmidrule[0.4pt](l){2-3}
-        \multirow{3}{4em}{Memory\-/based}  & Efiguard            & Moonbounce          \\
-                                           & ESPecter            & Cosmicstrand        \\
+        \cmidrule[0.4pt](lr){2-2}
+        \cmidrule[0.4pt](l){3-3}
+        \multirow{3}{4em}{Memory\-/based}  & Efiguard            & MoonBounce          \\
+                                           & ESPecter            & CosmicStrand        \\
                                            & Dreamboot           &                     \\
                                            & FinSpy              &                     \\
+        \arrayrulecolor{black}
         \bottomrule
     \end{tabular}
 \end{center}
@@ -39,33 +41,48 @@ The infection is the most important part of an attack, as it dictates when and i
 \subsection{Bootkit}
 
 Bootkits use the \ac{UEFI} Boot manager to gain execution on a system, there are a variety of methods using different options of the boot mechanism.
-\cite{finspy} backs up and replaces the Windows Boot Manager \program{bootmgfw.efi} on the \ac{ESP}.
-\cite{especter} patches the entrypoint of \program{bootmgfw.efi} and its copy \program{bootx64.efi} in the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path}, so that it executes malicious code upon launch.
-\cite{dreamboot} and \cite{efiguard} are more proof of concept than real attacks and suggest to be used from removable media, but they are also able to be added to the \hyperref[sec:uefi-pi:uefi:boot-manager]{default boot path} on an \ac{ESP}, or generally added as their own boot entry \cite{efiguard}, as they are both applications which launch the Windows Boot Manager upon execution.
-\TODO{Generally it is possible to mount the \ac{ESP} from within Windows with administrative privileges}
+FinSpy backs up and replaces the Windows Boot Manager \program{bootmgfw.efi} on the \ac{ESP} \cite{finspy}.
+ESPecter patches the entrypoint of the Windows Boot Manager \program{bootmgfw.efi} and its copy \program{bootx64.efi} in the default boot path, so that it executes malicious code upon launch \cite{especter} .
+Dreamboot and EFIGuard are more proof of concept than real attacks and suggest to be booted into using removable media, but they are also able to be added to the default boot path on an \ac{ESP}, or generally added as their own new boot entry \cite{efiguard}.
+They are both applications which launch the Windows Boot Manager, through its boot entry, upon execution \cite{dreamboot, efiguard}.
 
 \subsection{Rootkit}
 
-Firmware rootkits have been rarer and how exactly the firmware images were infected is often not known,
-\cite{vector-edk} requires booting the target machine from a USB key \cite{mosaicregressor}
-\TODO{SPI read/write} \cite{lojax}
-dump
+Firmware rootkits have been rarer and how exactly the firmware images were infected is not often known,
+VectorEDK uses \ac{OEM}'s software tooling to generate a firmware update utility on a bootable \ac{USB} stick, it can then be insereted with physical access to the system \cite{mosaicregressor}.
+RWEverything legitimate driver for hardware information
+reading and writing memory mapped \ac{I/O} and \ac{PCI} Configuration registers
+to find spi flash mapping and read from it
 remove previous NTFS driver
 add DXE drivers
 reflash image
+\ac{BIOS} control register with \ac{BIOS} write enable bit and \ac{BIOS} lock enable bit
+the locking mechanism has to be implemented by firmware designers through \ac{SMM} interrupts
+\ac{BIOS} write enable bit is initially written but the interrupt resets it to 0
+when not correctly implemented this does not happen
+and on old platforms a race condition with multi\-/core and multi\-/threadding
+where one thread sets the write bit enable to 1 and the other tries to write to the \ac{SPI} flash
+\cite{lojax}
 
-The payload itself has usually simply been \ac{DXE} drivers residing in a firmware volume \cite{mosaicregressor,lojax}, as they are automatically executed by the \ac{DXE} dispatcher. \cite{efiguard} compiles its main \ac{UEFI} payload as a \ac{DXE} driver and suggesting its usage as a firmware rootkit. \cite{moonbounce} does something different and instead patches the \ac{DXE} Core over adding files to \acp{FV}. While the approach could fundamentally be done in the form of a \ac{DXE} driver, it makes tge detection harder \cite{moonbounce}.
+The payload itself has usually simply been \ac{DXE} drivers residing in a firmware volume \cite{mosaicregressor-technical-details,lojax}, as they are automatically executed by the \ac{DXE} dispatcher.
+MoonBounce and CosmicStrand do something different and instead patches existing file in the firmware image.
+MoonBounce patches the \ac{DXE} Core \cite{moonbounce}, while CosmicStrand patches an existing \ac{DXE} driver \cite{cosmicstrand}.
+While both their approaches could fundamentally be done in the form of an added \ac{DXE} driver, it makes the detection harder.
 
 \section{Approach}
 
 We can categorize the threats by their attack vector, rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment prior to the Windows boot process.
 We found that their approach can mainly be divided into storage\-/based and memory\-/based attacks.
-Storage\-/based attacks mostly gain execution in the operating system  environment by writing their payload into the Windows installation and modifying configuration data on disk. These attacks are often performed offline, before any parts of the operating system are executed. Memory\-/based attacks instead hook into the operating system's boot process to execute malicious code alongside operating system in memory. For storage\-/based attacks we were only able to find examples of rootkits \cite{vector-edk,mosaicregressor,lojax}, memory\-/based attacks were performed by both root- and bootkit \cite{dreamboot,efiguard,especter,finspy,moonbounce,cosmicstrand}.
-There is no technical limitation as we show in \autoref{sec:attacks:neither:bootkit} when we implement our own storage\-/based bootkit, but more likely a general perference for memory\-/based attacks as they are more sophisticated. Storage\-/based attacks face more restrictions such as BitLocker and code integrity checks.
+Storage\-/based attacks mostly gain execution in the operating system environment by writing their payload into the Windows installation and modifying configuration data on disk.
+These attacks are often performed offline, before any parts of the operating system are executed.
+Memory\-/based attacks instead hook into the operating system's boot process to execute malicious code alongside operating system in memory.
+For storage\-/based attacks we were only able to find examples of rootkits \cite{vector-edk,mosaicregressor-technical-details,lojax}, memory\-/based attacks were performed by both root- and bootkit \cite{dreamboot,efiguard,especter,finspy,moonbounce,cosmicstrand}.
+There is no technical limitation as we show in \autoref{sec:attacks:neither:bootkit} when we implement our own storage\-/based bootkit, but more likely a general perference for memory\-/based attacks as they are more sophisticated.
+Storage\-/based attacks face more restrictions such as BitLocker and code integrity checks.
 
 \subsection{Storage-based}
 
-Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[Section 13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \program{C:\textbackslash Windows\textbackslash SysWOW64\textbackslash autoche.exe} and then modifies the registry entry \program{HKEY\_LOCAL\_MACHINE\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Control\textbackslash Session Manager\textbackslash BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
+Storage\-/based attacks need file based access to the Windows installation to modify its content, the primarey partition is \ac{NTFS} formatted and due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[Section 13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack. \cite{mosaicregressor-technical-details} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver. \cite{lojax} deploys its payload under the file path \program{C:\textbackslash Windows\textbackslash SysWOW64\textbackslash autoche.exe} and then modifies the registry entry \program{HKEY\_LOCAL\_MACHINE\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Control\textbackslash Session Manager\textbackslash BootExecute}, so that their payload is executed instead of the original executable. \cite{mosaicregressor-technical-details} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon startup.
 
 \subsection{Memory-based}
 
