@@ -53,7 +53,7 @@ We can quickly determine which of these is used by the Windows Boot manager by a
 This change is also already enough to trigger the recovery prompt by invalidating the \ac{PCR} measurements.
 A keystroke during the recovery prompt now shows us that the \hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol} is being used, the protocol structure is depicted in \autoref{lst:simple-text-input-ex-protocol}.
 The Windows Boot Manager uses the \code{ReadKeyStrokeEx()} function to retrieve the latest pending key press.
-The protocol also offers the \code{WaitForKeyEx} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \code{WaitForEvent} boot service. The protocol also allows users to register and unregister a callback function to react upon user input.
+The protocol also offers the \code{WaitForKeyEx()} event, signaling when keystrokes are available, execution can be blocked until this event is emitted with the \code{WaitForEvent} boot service. The protocol also allows users to register and unregister a callback function to react upon user input.
 Example usage of the \code{ReadKeyStrokeEx()} can be seen in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
 \lstinputlisting[language=C,captionpos=b,label=lst:handle-protocol-simple-text-input-ex,firstline=7,caption={Example of using \code{HandleProtocol()} to retrieve an instance to the \protect{\hyperref[lst:simple-text-input-ex-protocol]{Simple Text Input Ex Protocol}} to use its \code{ReadKeyStrokeEx()} function to wait for and read a pending key press}]{code/handle_protocol_simple_text_input_ex.c}

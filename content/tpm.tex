@@ -12,37 +12,39 @@ Boot code is measured into the \ac{TPM} by the \ac{PF}, providing evidence over 
 \label{sec:tpm:pcr}
 
 \cite{tcg-tpm-library-part1-architecture} defines \acp{PCR} to store the system integrity measurements.
-The registers can only be modified in two ways, either through a complete \ac{TPM} reset or by extending their values.
-Extending a \ac{PCR} is done by concatenating the hashed measurements together with the current \ac{PCR} values to form the new contents.
-This creates a chain of measurements where from one diverging measurement on, all subsequent \ac{PCR} extensions result in entirely differnt values.
+The registers can only be modified in two ways: either through a complete \ac{TPM} reset or by extending their values.
+Extending a \ac{PCR} is done by concatenating the hashed measurements together with the current \ac{PCR} values to form the new contents, as depicted in \autoref{eqn:pcr-extend}.
+This creates a chain of measurements where from one diverging measurement on, all subsequent \ac{PCR} extensions result in entirely different values.
 
 \begin{equation}
     PCR[i]_{(new)}\:=\:Hash(PCR[i]_{(old)}\:||\:Hash(Measurement))
+    \label{eqn:pcr-extend}
 \end{equation}
 
-The \ac{TPM} is a passive system components, relying on the host processor to perform measurements and extend the \acp{PCR}.
+The \ac{TPM} is a passive system component, relying on the host processor to perform measurements and extend the \acp{PCR}.
 The measurement chain starts with a point called the \ac{CRTM}, consisting of the first instructions executed to establish a chain of trust.
-A Root of trust in a system is an element that must be trusted as its behavior is non\-/verifiable \cite{tcg-tpm-library-part1-architecture}.
+A root of trust in a system is an element that must be trusted as its behavior is non\-/verifiable \cite{tcg-tpm-library-part1-architecture}.
 \cite[3.2.2]{tcg-pc-client-platform-firmware-profile-spec} requires this chain to start in an immutable portion of the \ac{PI} process, the \ac{SRTM}.
 \cite[3.2.3.1]{tcg-pc-client-platform-firmware-profile-spec} defines the \ac{PF} to be composed of a Boot Block and the \ac{UEFI} firmware, the Boot Block consists of the \ac{SEC} and \ac{PEI} phase as well as the \ac{IBB}.
 The Boot Block forms the \ac{SRTM}, while the \ac{UEFI} firmware is only part of the chain of trust by being measured from the \ac{SRTM}.
 The \ac{RTM} can either start with the \ac{SRTM} measuring itself or a \ac{H-CRTM} measuring the \ac{SRTM}.
-It falls under the responsibility of the \ac{PF} to perform the integrity measurements \cite{tcg-pc-client-platform-firmware-profile-spec}, different parts of the boot process are measured into separate \acp{PCR}.
+It falls under the responsibility of the \ac{PF} to perform the integrity measurements \cite{tcg-pc-client-platform-firmware-profile-spec}.
+Different parts of the boot process are measured into separate \acp{PCR}.
 \autoref{fig:pf-measurement-flow} shows a high level measurement flow.
-\autoref{tab:pcr-usage} shows \ac{PCR} indexes and their type of content, that is measured, relevant for this thesis.
+\autoref{tab:pcr-usage} on \pageref{tab:pcr-usage} shows \ac{PCR} indexes relevant for this thesis and the type of measurements performed to extend them.
 
-Interaction with the \ac{TPM} is done via a well\-/defined interface, for external chips this is done over hardware busses such as \ac{LPC} or \ac{SPI}.
-\ac{TCG} specifies the \hyperref[lst:tcg2-protocol]{\ac{TCG}2 Protocol} for the \ac{UEFI} environment, providing an abstracted communication interface indepdenent of the underlying implementation.
+Interaction with the \ac{TPM} is done via a well\-/defined interface.
+For external chips this is done over hardware buses such as \ac{LPC} or \ac{SPI}.
+\ac{TCG} specifies the \hyperref[lst:tcg2-protocol]{\ac{TCG}2 Protocol} for the \ac{UEFI} environment, providing an abstracted communication interface independent of the underlying implementation.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=1.0\textwidth]{tpm/tpm_measurements}
-    \caption{\ac{PF} Measurement Flow (taken from \cite[Figure 3]{tianocore-trusted-boot-chain})}
+    \caption[\acs{PF} Measurement Flow]{\acs{PF} Measurement Flow (taken from \cite[Figure 3]{tianocore-trusted-boot-chain})}
     \label{fig:pf-measurement-flow}
 \end{figure}
 
 \begin{table}[htb]
-    \label{tab:pcr-usage}%
     \centering
     \begin{tabularx}{1.0\textwidth}{cX}
         \toprule
@@ -75,16 +77,16 @@ Interaction with the \ac{TPM} is done via a well\-/defined interface, for extern
         \arrayrulecolor{black}
         \bottomrule
     \end{tabularx}%
-    \caption{\ac{PCR} Usage (taken from \cite[Table 1]{tcg-pc-client-platform-firmware-profile-spec} and \cite[Table 9-2]{windows-internals-6-part2})}%
+    \caption[\acs{PCR} Usage]{\ac{PCR} Usage (taken from \cite[Table 1]{tcg-pc-client-platform-firmware-profile-spec} and \cite[Table 9-2]{windows-internals-6-part2})}%
+    \label{tab:pcr-usage}%
 \end{table}
 
 
 \section{Sealing/Unsealing}
 
 The chain of measurements can be used to attest for a trusted system state.
-The \ac{TPM} can be given data, such as a cryptographic key, in a state that is assumed to be trusted.
+The \ac{TPM} can be given data, for example a cryptographic key, in a state that is assumed to be trusted.
 This state is reflected by the current \acp{PCR}, consisting of the collection of lead\-/up measurements.
 The \ac{TPM} then seals the data with a policy that describes which \ac{PCR} indexes to use and/or proof of authentication through a \ac{PIN} or passphrase.
 The data can then only be unsealed on subsequent boots when the system is in the same trusted state that it was in, when the data was sealed.
-Any modification of the boot code will be reflected in a deviation of \ac{PCR} values leaving the \ac{TPM} unable to unseal the data.
-\TODO{CITE}
+Any modification of the boot code will be reflected in a deviation of \ac{PCR} values leaving the \ac{TPM} unable to unseal the data \cite[Section 3.3.6]{trusted-computing-platforms}.

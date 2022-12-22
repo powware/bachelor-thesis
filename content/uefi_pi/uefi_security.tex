@@ -2,42 +2,43 @@
 
 \subsection{Security}
 
-\ac{UEFI} offers security mechanisms restriting what is allowed to modify and be modified on a system.
+\ac{UEFI} offers security mechanisms restricting what is allowed to modify and be modified on a system.
 This involves authentication of ownership over the platform.
 
 \subsubsection{Secure Boot}
 \label{sec:uefi-pi:uefi:secure-boot}
 
-Secure Boot provides a secure hand-off from the firmware to 3rd party applications used for during the boot process, located on unsecure media \cite{tianocore-understanding-uefi-secure-boot-chain} \cite[Sections 32.2 and 32.5.1]{uefi-spec}.
-It assumes the firmware to be a trusted entity and all 3rd party software to be untrusted, this includes images from hardware vendors in \ac{PCI} option \acp{ROM}, bootloader from \ac{OS} vendors and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
+Secure Boot provides a secure hand-off from the firmware to 3rd party applications used during the boot process, located on insecure media \cite{tianocore-understanding-uefi-secure-boot-chain} \cite[Sections 32.2 and 32.5.1]{uefi-spec}.
+It assumes the firmware to be a trusted entity and all 3rd party software to be untrusted, this includes images from hardware vendors in the \ac{PCI} option \acp{ROM}, bootloader from \ac{OS} vendors, and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
 Digital signatures, embedded within the \ac{UEFI} images, can be used to authenticate origin and/or integrity \cite[Section 32.2]{uefi-spec}.
-This is done through asymmetric signing, component provider must sign their executables with their private key and publish the public key.
-The public keys are stored in a signature \ac{DB} and before execution the signed executable can be verified against the database.
+This is done through asymmetric signing. Component providers must sign their executables with their private key and publish the public key.
+The public keys are stored in a signature \ac{DB} and the signed executable can be verified against the database before execution.
 Multiple signatures can be embedded within the same image \cite[Section 32.2.2]{uefi-spec}.
 The signatures are created by first calculating a hash over select parts of the executable and then signing it with a private key.
 The output of this hashing is called a digest and the algorithm for obtaining the digest is defined in \cite{microsoft-pe-signature-format}.
 Secure Boot also disallows legacy booting through the \ac{CSM}.
 
-Secure Boot is managed through three components, a \ac{PK}, one or more \ac{KEK} and the signature \acp{DB}.
+Secure Boot is managed through three components: a \ac{PK}, one or more \ac{KEK}, and the signature \acp{DB}.
 
 \begin{description}
-    \item[\ac{PK}]
+    \item[\acf{PK}]
         The \ac{PK} establishes a trust relationship between platform owner and firmware, the public half is enrolled into the firmware.
         The private half represents platform ownership, as it can be used to change or delete the \ac{PK} as well as enroll or modify \acp{KEK}.
-    \item[\ac{KEK}]
+    \item[\acf{KEK}]
         The \ac{KEK} establishes a trust relationship between \ac{OS} and firmware, as its private half is used to modify the signature \acp{DB}.
     \item[Signature \acfp{DB}]
         Signature \acp{DB} contain image hashes and certificates, to either allow or deny execution of associated images.
 \end{description}
 
-Internally these are all implemented by authenticated variables, residing in tamper resistant non-volatile storage \cite[Section 32.3]{uefi-spec}.
-The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[Section 32.4.1]{uefi-spec}, the variable services can be used to append entries or to read and write the list as a whole \cite[Sections 32.3.5 and 32.5.3]{uefi-spec}.
-The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variavble also exist a variant reserved for default entries.
-These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization by a user.
+Internally, these are all implemented by authenticated variables, residing in tamper resistant non-volatile storage \cite[Section 32.3]{uefi-spec}.
+The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[Section 32.4.1]{uefi-spec}.
+The variable services can be used to append entries or to read and write the list as a whole \cite[Sections 32.3.5 and 32.5.3]{uefi-spec}.
+The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variable there also exists a variant reserved for default entries.
+These can be used by an \ac{OEM} to supply platform\-/defined values, used for example during Secure Boot initialization by a user.
 Their contents can be copied to their live versions, to then be used during Secure Boot operation.
-The current state of Secure Boot is communicated with a secure variable, which the the \ac{OS} can probe \cite[Section 3.3]{uefi-spec}.
+The current state of Secure Boot is communicated with a secure variable, which the \ac{OS} can probe \cite[Section 3.3]{uefi-spec}.
 
-Users, who are physically present, may disable Secure Boot, enroll default or custom keys via an interactive menu \cite[Section 3.3]{uefi-spec}.
+Users, who are physically present, may disable Secure Boot as well as enroll default or custom keys via an interactive menu \cite[Section 3.3]{uefi-spec}.
 
 \subsubsection{Firmware Management}
 
@@ -48,6 +49,6 @@ As these are entirely dictated by the platform designer, it is not possible to m
 
 \subsubsection{User Identity Policies}
 
-\ac{UEFI} enables a system to have multiple users with variying levels of privileges.
-This may restrict their ability to enroll other users or to boot off select drives \cite[Section 36.1.2]{uefi-spec}.
-A trusted environment must be maintained for the integrity of the security identification, by restriting which drivers are loaded and securing the storage of drivers \cite[Section 36.1.4]{uefi-spec}.
+\ac{UEFI} enables a system to have multiple users with varying levels of privileges.
+This may restrict their ability to enroll other users or to boot from select drives \cite[Section 36.1.2]{uefi-spec}.
+A trusted environment must be maintained for the integrity of the security identification, by restricting which drivers are loaded and securing the storage of drivers \cite[Section 36.1.4]{uefi-spec}.

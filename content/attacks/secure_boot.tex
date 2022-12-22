@@ -14,12 +14,12 @@ We now solely rely on the boot order/firmware policy to prefer removable media.
 Even if this was to be the case, we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
 When using our Windows installer we observe the same denial for the bootkit itself.
 The Windows Boot Manager boot option pointing to our bootkit is now denied execution.
-If we were to have overwritten the standard boot entry of the hard drive \lstinline{EFI\Boot\bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
+If we were to have overwritten the standard boot entry of the hard drive \program{EFI\textbackslash Boot\textbackslash bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
 
 \subsection{Rootkit}
 
-In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage}, and that the Security2 Architectural Protocol is responsible for the implementation of Secure Boot authentication.
-As \code{LoadImage} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
+In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage()}, and that the Security2 Architectural Protocol is responsible for the implementation of Secure Boot authentication.
+As \code{LoadImage()} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
 We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot}, that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherently unable to verify the behavior of the \ac{PI} process.
 
 Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and execute just like before.

@@ -88,7 +88,7 @@ This prevents the \ac{NTFS} driver from being when denied access, when trying to
 We now know that, provided we get to load the \ac{NTFS} driver, we can read and write the files of a Windows installation.
 Thus we drop the driver together with the bootkit onto the \ac{ESP} as part of our infection process.
 When our bootkit is executed, we use the \hyperref[lst:loaded-image-protocol]{Loaded Image Protocol} of our own image handle to retrieve the source device handle, our bootkit was loaded from \cite[Section 9.1]{uefi-spec}.
-As both files reside within the same volume, we can use this handle to call the boot services \code{LoadImage} and \code{StartImage} to execute the driver.
+As both files reside within the same volume, we can use this handle to call the boot services \code{LoadImage()} and \code{StartImage} to execute the driver.
 Since the driver conforms to the \ac{UEFI} Driver Model, we also need to connect the driver to device representing the Windows parition using the \hyperref[lst:driver-binding-protocol]{Driver Binding Protocol}.
 We can do this by retrieving all protocol instances and iterating over all controllers, to connect them recursively.
 This way so the driver can assume controller over all \ac{NTFS} formatted volumes and install an instance of \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} on their handles.
@@ -96,13 +96,13 @@ This way so the driver can assume controller over all \ac{NTFS} formatted volume
 \subsubsection{Payload deployment}
 
 Before we can deploy our payload we first need to read it into memory.
-\code{LoadImage} is reserved to be used for \ac{UEFI} images, non\-/executable files are read directly with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
-The \ac{ESP}'s device handle can be used with the boot service \code{HandleProtocol} to retrieve its instance of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
-A call to \lstinline{OpenVolume} results in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[Section 13.4]{uefi-spec}.
+\code{LoadImage()} is reserved to be used for \ac{UEFI} images, non\-/executable files are read directly with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
+The \ac{ESP}'s device handle can be used with the boot service \code{HandleProtocol()} to retrieve its instance of the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}.
+A call to \code{OpenVolume()} results in an instance of the \hyperref[lst:simple-file-system-protocol]{File Protocol} representing the root folder of the volume \cite[Section 13.4]{uefi-spec}.
 The root directory can then be used to open and read our payload with an absolute path.
 
 To perform the write operation we need the device handle of the volume containing the Windows installation.
-We can use the boot service \code{LocateHandleBuffer} to receive an array of all handles that support the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}, this includes volumes such as the Windows recovery partition or the \ac{ESP} we just used.
+We can use the boot service \code{LocateHandleBuffer()} to receive an array of all handles that support the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol}, this includes volumes such as the Windows recovery partition or the \ac{ESP} we just used.
 We can iterate over all handles and search for the Windows folder to identify the correct volume.
 
 Now the question arises as to where we write our payload to, our goal is automatic and elevated execution.
@@ -153,7 +153,7 @@ For now we place our payload manually in the Windows installation and then boot 
 This overwrites the task descriptor and when booting into Windows our payload is executed.
 
 Our \ac{UEFI} payload now needs to perform the registry modification from within the \ac{UEFI} environment.
-For this we port the \program{reged} utility, so that our bootkit can use it, it is already written in C saving us a lot of work.
+For this we port the \program{reged} utility, so that our bootkit can use it, it is already written in \code{C} saving us a lot of work.
 The porting process boils down to providing semantically equivalent definitions for all external function the program links against.
 These are mostly C standard library and Linux kernel related.
 Declarations and macros are still supplied by the local compiler's system headers.
