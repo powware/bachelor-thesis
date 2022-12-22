@@ -8,7 +8,7 @@ We do not cover \emph{Measured Boot} in this thesis.
 \begin{figure}[phtb]
     \centering
     \includegraphics[width=1.0\textwidth]{windows/windows_startup_process.png}
-    \caption{Windows startup process (taken from \cite{microsoft-secure-the-windows-boot-process})}
+    \caption[Windows startup process]{Windows startup process (taken from \cite{microsoft-secure-the-windows-boot-process})}
     \label{fig:windows-startup-process}
 \end{figure}
 
@@ -51,7 +51,7 @@ The \ac{VMK} can be encrypted by the following protectors:
 \begin{figure}[htb]%
     \centering
     \includesvg[width=0.5\textwidth]{bitlocker_volume_access_driver_stack.drawio.svg}
-    \caption{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
+    \caption[BitLocker Volume Access Driver Stack]{BitLocker Volume Access Driver Stack (inspired by \cite[Figure 9-24]{windows-internals-6-part2})}%
     \label{fig:bitlocker-volume-access-driver-stack}%
 \end{figure}
 
@@ -62,13 +62,12 @@ The \ac{VMK} can be encrypted by the following protectors:
     \item[TPM]
         When a \ac{TPM} is used to seal the \ac{VMK}, BitLocker can ensure integrity of early boot components and boot configuration, as the unseal operation fails upon modification of the boot flow.
         The \ac{TPM} can, in combination to the \ac{PCR} values, use a startup key, a pin or both to seal the \ac{VMK} \cite{microsoft-bitlocker-countermeasures}.
-        The collection of \ac{PCR} indexes used to instruct the \ac{TPM} when initially sealing the \ac{VMK} is called a validation profile.
-        The validation profile is configurable through Windows group policy settings, and\ac{PCR}11 is always required as its contents measure the BitLocker Access Control.
-        Windows configures BitLocker with a default validation profile of \code{\{0, 2, 4, 11\}} \cite{microsoft-windows-bitlocker-group-policy-settings}.
-        When Secure Boot is enabled and correctly configured, Microsoft defines this as only using their \emph{Microsoft Windows Production PCA 2011} signature \ac{DB}, BitLocker defaults to a validation profile of \code{\{7, 11\}} \cite{microsoft-pcr7-binding}.
-        The measurements that extend \ac{PCR}7 are defined in \cite{microsoft-trusted-execution-environment}.
-        The content reflects the current state and configuration of Secure Boot, including trusted keys.
-        BitLocker then makes use of the Secure Boot measurements for integrity validation instead of the \ac{PCR} values containing the early boot components \cite{microsoft-windows-bitlocker-group-policy-settings}.
+        The collection of \ac{PCR} indexes used to instruct the \ac{TPM} when initially sealing the \ac{VMK} is called a \emph{validation profile}.
+        The validation profile is optionally configurable through Windows group policy settings, and \ac{PCR}11 is always required, as its contents measure the BitLocker Access Control.
+        Windows configures BitLocker with a default validation profile of \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} \cite{microsoft-windows-bitlocker-group-policy-settings}.
+        BitLocker can also use Secure Boot for integrity validation, where it \hypertarget{pcr7-binding}{\emph{binds to \ac{PCR}7}} instead of using the \acp{PCR} \hyperref[tab:pcr-usage]{\code{\{0, 2, 4\}}}, resulting in the validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} \cite{microsoft-windows-bitlocker-group-policy-settings-pcr7}.
+        The \ac{PF} measures the Secure Boot state and configuration, such as trusted keys, into \ac{PCR}7 \cite{microsoft-windows-bitlocker-group-policy-settings-pcr7}, following the rules stated in \cite{microsoft-trusted-execution-environment}.
+        \emph{Binding of \ac{PCR}7} is only possible when Secure Boot is configured to use the \emph{Microsoft Windows Production PCA 2011} signature \ac{DB}, any additional \acp{DB} will prevent the binding process and cause BitLocker to revert to the default valdiation profile \cite{microsoft-pcr7-binding}.
 
     \item[Recovery key]
         When BitLocker is activated it always generates a recovery key serving as an additional protector to whatever primary method is selected.

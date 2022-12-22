@@ -5,7 +5,7 @@ With this the Windows boot partition is encrypted, while the \ac{ESP} remains un
 When Secure Boot is enabled in combination of BitLocker it has the same effects as observed in \autoref{sec:attacks:secure-boot}.
 It also dictates which default validation profile Windows uses to configure BitLocker, as mentioned in \autoref{sec:windows:security:bde}.
 We perform our attack against both default profiles, starting with \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}.
-This means either Secure Boot is disabled or \ac{PCR}7 is not bound, because of the presence of a signature \ac{DB} other than \emph{Microsoft Windows Production PCA 2011}.
+This means either Secure Boot is disabled or \hyperlink{pcr7-binding}{\ac{PCR}7 is not bound}.
 
 The default validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, used when Windows uses Secure Boot for integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
 
