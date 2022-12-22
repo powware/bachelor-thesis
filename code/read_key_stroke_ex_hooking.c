@@ -4,7 +4,7 @@
 EFI_STATUS EFIAPI ReadKeyStrokeExHook(IN EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL *This,
                                       OUT EFI_KEY_DATA *KeyData);
 {
-    SimpleTextInputExHook *Hook = GetHookFromProtocol(this);
+    SimpleTextInputExHook *Hook = GetHookFromProtocol(This);
     Hook->ReadKeyStrokeExOriginal(This, KeyData);
 
     // log keystrokes
