@@ -7,10 +7,10 @@ It also dictates which validation profile Windows uses to configure BitLocker, a
 We perform our attack against both validation profiles, starting with \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}.
 This means either Secure Boot is disabled or \hyperlink{pcr7-binding}{\ac{PCR}7 is not bound}.
 
-The validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, used when BitLocker uses Secure Boot for integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
+The validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, used when BitLocker uses Secure Boot for integrity validation is covered in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-key}.
 
 Due to the boot- and rootkit still sharing their core functionality we keep the approach abstract and refer to them with the expression \ac{UEFI} payload, not to be confused with our Windows payload that is deployed in the Windows installation.
-We start by assuming that the infection is performed after BitLocker has been already fully set up, and cover the scenario, that a user enables BitLocker while being infected at the end in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}.
+We start by assuming that the infection is performed after BitLocker has been already fully set up, and cover the scenario, that a user enables BitLocker while being infected at the end in \autoref{sec:attacks:bitlocker:bitlocker-access-without-recovery-key}.
 
 
 \subsection{Infection}
@@ -145,53 +145,43 @@ In our hooked \code{ReadBlocks} and \code{WriteBlocks} functions we simply call 
 This way Dislocker can choose which blocks to perform its operations on, as well as freely remap underlying sectors.
 The general hooking process is depicted in \autoref{lst:block-io-hooking}.
 
-\lstinputlisting[language=C,captionpos=b,label=lst:block-io-hooking,firstline=4,caption={Simplified example of hooking the \emph{Block \ac{I/O} Protocol}}]{code/block_io_hooking.c}
+\lstinputlisting[language=C,captionpos=b,label=lst:block-io-hooking,firstline=4,caption={Simplified example of hooking the \protect{\hyperref[lst:block-io-protocol]{Block \ac{I/O} Protocol}}}]{code/block_io_hooking.c}
 
+For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \program{HKLM\textbackslash SOFTWARE} registry hive, thus simplu performing the deployment as soon as the \ac{UEFI} payload is executed was an option, as this happens before any Windows boot related actions are performed.
+With BitLocker we have to deploy after \emph{BitLogger} was able to obtain the recovery key.
+We then initialize Dislocker with the recovery key, to enable the transparent \hyperref[lst:block-io-protocol]{Block \ac{I/O} Protocol} hook layer.
+We then to reconnect all \hyperref[lst:driver-binding-protocol]{Driver Binding Protocol} instances to all controllers to trigger a (re-)evaluation.
+The BitLocker encrypted drive now appears unencrypted to the driver, allowing it to install its \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} instance on the device.
+From here we simply perform our attack, as developed in \autoref{sec:attacks:neither}, to deploy the Windows payload and import our modified registry key.
+After doing this we need to disable the Dislocker hook layer again, as otherwise Windows is unable to boot and instead attempts Windows recovery.
 
-% execute after NTFS driver by doing it in an ExitBootServices hook
-For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \lstinline{HKLM\SOFTWARE} registry hive, thus performing the deployment as soon as the \ac{UEFI} payload is executed suffices, as this happens before any Windows boot related actions are performed.
-With BitLocker we have to deploy after our BitLogger was able to obtain the recovery key.
-After initializing Dislocker with the recovery key we enable the transparent \emph{Block \ac{I/O} Protocol} hook layer, so we can trigger the \ac{NTFS} driver to (re-)evaluate which device handles it supports.
-The BitLocker encrypted drive now appearing unencrypted allows the driver to install its \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} instance.
-This allows us to deploy the payload and import our modified registry key.
-After doing this we need to disable the Dislocker layer again, as otherwise Windows is unable to boot and instead attempts Windows recovery, showing a second recovery prompt, but now outside the \ac{UEFI} environment with their own device drivers.
-This recovery environment is located on the unencrypted \ac{NTFS} partition created during installation and also accessible when pressing the escape key during the initial \ac{UEFI} environment recovery prompt.
-We want to prevent the user from using this prompt instead of the \ac{UEFI} prompt, as our \emph{BitLogger} would not be able to obtain the recovery key.
-This can be done in our \lstinline{ReadKeyStrokeEx} hook, where when a user presses escape we instead return another key to the Windows Boot Manager.
+Windows recovery causes the recovery environment to show a second recovery prompt, but now outside of the \ac{UEFI} environment with their own device drivers.
+This recovery environment is located on the unencrypted \ac{NTFS} partition created during installation.
+It is also accessible when pressing the escape key during the initial \ac{UEFI} environment's recovery prompt.
+We want to prevent the user from switching environments, as our \emph{BitLogger} would not be able to obtain the recovery key.
+In our \code{ReadKeyStrokeEx} hook, we can suppress the user's escape keystroke and return a different key to the Windows Boot Manager.
 
-% only necessary because the way dislocker currently checks whether the recovery key is correct is slow and impacts the user experience during recovery prompt
-% \TODO{if we want we can explain this}
-% \cite{exitbootservices-hooking}
-% hook ExitBootServices
-% enable hook
-% write payload
-% import registry key
-% disable hook
-
-
-% finally update TPM values
 If we were to attack Windows 10 we would be done now, but Windows 11 will show the recovery prompt every boot.
-Windows 10 seems to automatically reseal the \ac{VMK}, whereas Windows 11 doesn't, so our \ac{UEFI} payload keeps invalidating the \ac{PCR} values.
-We can add a few calls to the BitLocker management tool \lstinline{manage-bde} \cite{microsoft-bitlocker-manage-bde} within our Windows payload, deleting the old \ac{TPM} protector and adding a new one.
-Now our \ac{UEFI} payload is part of the measurements and considered trusted.
-Execution does not trigger the BitLocker recovery prompt anymore.
+Windows 10 seems to automatically reseal the \ac{VMK} with the new \ac{PCR} values, whereas Windows 11 does not, so our \ac{UEFI} payload keeps invalidating the \ac{PCR} values.
+We can add a few calls to the BitLocker management tool \program{manage-bde} \cite{microsoft-bitlocker-manage-bde} within our Windows payload, deleting the old \ac{TPM} protector and adding a new one.
+Now our \ac{UEFI} payload is part of the measurements and considered trusted and subsequent boots do not trigger the BitLocker recovery prompt anymore.
 
-\subsection{BitLocker Access without Recovery Prompt}
-\label{sec:attacks:bitlocker:bitlocker-access-without-recovery-prompt}
+\subsection{BitLocker Access without Recovery Key}
+\label{sec:attacks:bitlocker:bitlocker-access-without-recovery-key}
 
-When either the BitLocker validation profile is misconfigured (for example \lstinline|{7, 11}|) or the \ac{TPM} protector already includes our \ac{UEFI} payload in its \ac{PCR} measurements, the \ac{TPM} yields the Windows Boot Manager the unencrypted \ac{VMK} with which it is able access the drive.
-We are unable to receive a recovery key as none has to be entered and in turn we cannot decrypt the drive.
-In the case of our own \ac{TPM} protector update, we could simply save the recovery key in an unencrypted region of the drive, but there is a solution which does not require any prior knowledge about the recovery key.
+When BitLocker uses a validation profile that does not include \ac{PCR} values where our \ac{UEFI} payload is measured into or the \ac{TPM} protector already included our \ac{UEFI} payload when the \ac{VMK} was sealed, the \ac{TPM}'s unseal operation yields the Windows Boot Manager the unencrypted \ac{VMK}, despite our \ac{UEFI} payload being executed.
+This is the case for our rootkit, when BitLocker uses Secure Boot for integrity validation and \hyperlink{pcr7-binding}{\ac{PCR}7 is bound}.
+The validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used, while our rootkit is part of the measurements in \ac{PCR}0.
 
-Under these circumstances execution of our \ac{UEFI} payload does not influence the outcome of the interaction between the Windows boot manager and the \ac{TPM} when unsealing the encrypted \ac{VMK}.
-This allows us to be a spectator without interrupting the process.
+The recovery prompt is not triggered and we are unable to receive a recovery key and cannot initialize Dislocker.
+In the case of our own \ac{TPM} protector update following the \emph{BitLogger} attack, we could simply save the recovery key in an unencrypted region of the drive.
+This is not necessary as we are now in a position where we can gain access to the drive without the recovery key.
+
+Under these circumstances, execution of our \ac{UEFI} payload, does not influence the outcome of the interaction between the Windows boot manager and the \ac{TPM} when unsealing the encrypted \ac{VMK}.
+This allows us to be a spectator of the process without interrupting it.
 \cite{tpm-spi-sniffing, tpm-lpc-sniffing} have proven the viability of sniffing the \ac{TPM} communication directly off the hardware bus.
-Inspired by this we can hook the \emph{\ac{TCG}2 Protocol} that is used to abstract \ac{TPM} communication for the \ac{UEFI} environment.
-The function \code{SubmitCommand()} is used to perform request the unseal operation.
+In a similar fashion we can sniff the communication hooking the \hyperref[lst:tcg2-protocol]{\ac{TCG}2 Protocol}, which is used to abstract the \ac{TPM} communication in the \ac{UEFI} environment.
+The \code{SubmitCommand()} function is used to request the unseal operation from the \ac{TPM}.
 We can hook this function and filter for the correct command submission using the header structures of the request and response.
-We then extract the \ac{VMK} from the command response as done in \cite{tpm-lpc-sniffing}.
-The unencrypted \ac{VMK} can then be simply passed to dislocker for the initialization of hard drive decryption.
-
-This increases the persistence and applicability of our attack immensely.
-
-\clearpage
+We then extract the unencypted \ac{VMK} from the command response, as already done in \cite{tpm-lpc-sniffing}.
+The \ac{VMK} can then be simply passed to Dislocker for the initialization of our hook layer.
