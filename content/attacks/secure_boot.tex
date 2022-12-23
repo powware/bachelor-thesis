@@ -1,10 +1,10 @@
 % !TeX root = ../../thesis.tex
 
-\section{Secure Boot}
+\section{Secure Boot Enabled}
 \label{sec:attacks:secure-boot}
 
 Our second attack is performed with Secure Boot enabled.
-We assume that the signature \acp{DB} used do not contain our image's hashes and that the interactive \ac{UEFI} setup menu is password protected.
+We assume that the used signature \acp{DB} do not contain our image's hashes and that the interactive \ac{UEFI} setup menu is password protected.
 Otherwise we could simply turn off Secure Boot.
 
 \subsection{Bootkit}
@@ -18,12 +18,12 @@ If we were to have overwritten the standard boot entry of the hard drive \progra
 
 \subsection{Rootkit}
 
-In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage()}, and that the Security2 Architectural Protocol is responsible for the implementation of Secure Boot authentication.
+In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification defines the usage of its two security architectural protocols, with them being required to be invoked on every call to \code{LoadImage()}, and that the \nameref{lst:security2-architectural-protocol} is responsible for the implementation of Secure Boot authentication.
 As \code{LoadImage()} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
-We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot}, that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherently unable to verify the behavior of the \ac{PI} process.
+We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot} that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherently unable to verify the behavior of the \ac{PI} process.
 
 Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and execute just like before.
-When we look at the reference implementation in \ac{EDK} II, we can see why: \autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the Security2 Architectural Protocol.
+When we look at the reference implementation in \ac{EDK} II, we can see why: \autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the \nameref{lst:security2-architectural-protocol}.
 It shows that the image origin dictates which policy is being applied.
 The standard policy for images from a \acf{FV} (\code{IMAGE\_FROM\_FV}) is to always allow execution.
 This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
@@ -32,6 +32,8 @@ This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware P
 This behavior was reproducible on all our test setups.
 Even if the \ac{PF} were to apply Secure Boot authentication to \ac{DXE} drivers, as long as the root of trust of authentication is established within the firmware image it can be patched as all code within the firmware image is modifiable.
 
-\lstinputlisting[language=C,caption={Policy Selection in DxeImageVerificationHandler (\ac{EDK} II reference implementation of Security2 Architecture Protocol)},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
+\vspace{1em}
+
+\lstinputlisting[language=C,caption={Policy Selection in DxeImageVerificationHandler (\ac{EDK} II reference implementation of \nameref{lst:security2-architectural-protocol})},captionpos=b,label=lst:dxe-image-verification-handler]{code/dxe_image_verification_handler.c}
 
 \clearpage

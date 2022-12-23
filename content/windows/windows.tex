@@ -4,38 +4,39 @@
 \chapter{Windows 11}
 \label{sec:windows}
 
-Windows 11 is the latest iteration in the line of desktop \acp{OS} from Microsoft, at the time of writing.
-It is build upon the foundation of Windows 10 and as such shares many security settings and policies with its predecessor \cite{microsoft-windows-11-overview}.
-Simaltaniously it raises the requirements of hardware related security features.
+Windows 11 is, at the time of writing, the latest iteration in the line of desktop \acp{OS} from Microsoft.
+It is build upon the foundation of Windows 10 and, as such, shares many security settings and policies with its predecessor \cite{microsoft-windows-11-overview}.
+Simultaneously, it raises the requirements of hardware\-/related security features.
 It does not support legacy \ac{BIOS} anymore, requires the \ac{PF} to conform to at least \ac{UEFI} version 2.3.1 and to be capable of Secure Boot.
 It also requires the presence of a \ac{TPM} version 2.0 \cite{microsoft-windows-minimum-hardware-requirements-overview}.
 
 \section{\acs{UEFI}}
 
-To be able to analyse \ac{UEFI} threats against Windows 11 it is important to understand how Windows interacts with the \ac{UEFI} environment.
+To be able to analyze \ac{UEFI} threats against Windows 11 it is important to understand how Windows interacts with the \ac{UEFI} environment.
 
 \subsection{Installation}
 
 The interaction with \ac{UEFI} begins with the installation process and the partitioning of the hard drive Windows is installed onto.
 % creates at least four partitions
-When the Windows Installer is launched, it creates at least four \ac{GPT} partitions on the target hard drive.
-The \acf{ESP}, a recovery partition, a partition reserved for temporary storage and the boot partition containing the system files.
-Two copies of the Windows Boot Manager \program{bootmgfw.efi} are placed on the \ac{ESP}, one under \program{EFI\textbackslash Boot\textbackslash bootx64.efi} for the default boot behavior the installed hard drive and one under \program{EFI\textbackslash Microsoft\textbackslash Boot\textbackslash bootmgfw.efi} alongside boot resources such as the \ac{BCD}.
+When the Windows Installer is launched, it creates at least four \ac{GPT} partitions on the target hard drive: the \acf{ESP}, a recovery partition, a partition reserved for temporary storage, and the boot partition containing the system files.
+Two copies of the \emph{Windows Boot Manager} \program{bootmgfw.efi} are placed on the \ac{ESP}, one under \program{EFI\textbackslash Boot\textbackslash bootx64.efi} for the default boot behavior (i.e., booting from the installed hard drive) and one under \program{EFI\textbackslash Microsoft\textbackslash Boot\textbackslash bootmgfw.efi} alongside boot resources such as the \ac{BCD}.
 The path of the latter boot manager is saved in a boot load option variable entry \code{Boot\#\#\#\#}, which is then added to the \code{BootOrder} list variable.
-The boot load option contains optional data consiting of a GUID identifying the Windows Boot Manager entry in the \ac{BCD}.
+The boot load option contains optional data consisting of a \ac{GUID} identifying the Windows Boot Manager entry in the \ac{BCD}.
 The \ac{BCD}, as its name suggests, contains arguments used to configure various steps of the boot process \cite[Section 12]{windows-internals-7-part2}.
-The boot partition is the primary Windows partition and is formatted with the \ac{NTFS} file system containing the Windows installation.
-This is also the location of the final step of the Windows UEFI boot process, \program{Windload.efi}, the application repsonsible for loading the kernel into memory \cite[12. The Windows OS Loader]{windows-internals-7-part2}.
+The boot partition is the primary Windows partition.
+It is formatted with the \ac{NTFS} file system containing the Windows installation.
+This is also the location of the final step of the Windows \ac{UEFI} boot process, \program{Windload.efi}, the application responsible for loading the kernel into memory \cite[12. The Windows OS Loader]{windows-internals-7-part2}.
 
 \subsection{Boot}
 
-Now that we established the basic structure of the Windows UEFI boot environment, we can discuss the boot process.
-The Windows boot process begins after the UEFI Boot Manager launches the Windows Boot Manager, which starts by retrieving its own executable path and the \ac{BCD} entry GUID from the boot load options.
+Now that we have established the basic structure of the Windows \ac{UEFI} boot environment, we can discuss the boot process.
+The Windows boot process begins after the \ac{UEFI} Boot Manager launches the Windows Boot Manager, which starts by retrieving its own executable path and the \ac{BCD} entry \ac{GUID} from the boot load options.
 Then it loads the \ac{BCD} and access its entry.
-If not disabled in the \ac{BCD} it loads its own executable into memory for integrity verification \cite[Section 12]{windows-internals-7-part2}.
-Depending on what hibernation status is set within the \ac{BCD} it may launch the \program{Winresume.efi} application, which reads the hibernation file and resumes kernel execution \cite[Section 12]{windows-internals-7-part2}.
-On a full boot it checks the \ac{BCD} for boot entries, if the entry points to a BitLocker encrypted drive, it attempts decryption.
-If this fails it shows a recovery prompt, otherwise it proceeds to load the \ac{OS} loader \program{Windload.efi} which maps the kernel image \program{ntoskernl.exe} into memory. After a call to \code{ExitBootServices()} it transfers execution to the kernel \cite[Section 12]{windows-internals-7-part2}.
+It loads its own executable into memory for integrity verification \cite[Section 12]{windows-internals-7-part2} if not disabled in the \ac{BCD}.
+Depending on what hibernation status is set within the \ac{BCD}, it may launch the \program{Winresume.efi} application, which reads the hibernation file and resumes the kernel execution \cite[Section 12]{windows-internals-7-part2}.
+On a full boot it checks the \ac{BCD} for boot entries.
+If the entry points to a BitLocker encrypted drive, it attempts decryption.
+If this fails a recovery prompt is displayed, otherwise the system proceeds to load the \ac{OS} loader \program{Windload.efi} which maps the kernel image \program{ntoskernl.exe} into memory. After a call to \code{ExitBootServices()} it transfers execution to the kernel \cite[Section 12]{windows-internals-7-part2}.
 
 \subsection{Runtime}
 
@@ -44,16 +45,18 @@ It also supports firmware and option\-/\ac{ROM} updates via the capsule delivery
 
 \section{Registry}
 
-A crucial part to the whole Windows ecosystem is the Registry, it is a system database containing information required to boot, such as what drivers to load, general system wide configuration as well as application configuration \cite[Section 1]{windows-internals-7-part1}.
-The Registry is a hierachical database containing keys and values, keys can contain other keys or values, forming a tree structure.
+A crucial part to the whole Windows ecosystem is the \emph{Registry}.
+It is a system database containing information required to boot, what drivers to load, general system wide configuration as well as application configuration \cite[Section 1]{windows-internals-7-part1}.
+The Registry is a hierarchical database containing keys and values, whereas keys can contain other keys or values, forming a tree\-/like structure.
 Values store data through various data types.
-It is comparable to a file system structure with keys behaving like directories and values like files \cite[Section 10]{windows-internals-7-part2}.
+It is comparable to a file system structure with keys behaving like directories and values behaving like files \cite[Section 10]{windows-internals-7-part2}.
 At the top level it has 9 different keys \cite[Section 10]{windows-internals-7-part2}.
 Normally Windows users are not required to change Registry values directly and instead interact with it through applications providing setting abstractions.
-Though some more advanced options may not be exposed and can be accessed through the \program{regedit.exe} application which provides a graphical user interface to travere and modify the Registry \cite[Section 10]{windows-internals-7-part2}.
-It also supports ex- and importing registry keys along their subkeys and contained values.
-Internally the registry is not a single large file but instead a set of file called hives, each hive contains one tree, that is mapped into the Registry as a whole.
-There is no one to one mapping of registry root key to hive file, the \ac{BCD} file for example is also a hive file and is mapped into the Registry under \program{HKEY\_LOCAL\_MACHINE\textbackslash BCD00000000} \cite[Section 10]{windows-internals-7-part2}.
+Although some more advanced options may not be exposed and can be accessed through the \program{regedit.exe} application which provides a graphical user interface to traverse and modify the Registry \cite[Section 10]{windows-internals-7-part2}.
+It also supports importing and exporting registry keys along their subkeys and contained values.
+Internally, the registry is not a single large file but instead a set of files called hives.
+Each hive contains one tree that is mapped into the Registry as a whole.
+There is no one\-/to\-/one mapping of a registry root key to a hive file, the \ac{BCD} file, for example, is also a hive file and is mapped into the Registry under \program{HKEY\_LOCAL\_MACHINE\textbackslash BCD00000000} \cite[Section 10]{windows-internals-7-part2}.
 Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
 
 \input{content/windows/windows_security}

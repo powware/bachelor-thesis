@@ -4,23 +4,22 @@
 \label{sec:results}
 
 We were able to implement \ac{UEFI} attacks in the form of a \ac{UEFI} firmware rootkit and a \ac{UEFI} bootloader rootkit (bootkit).
-Both were able to deploy Windows level payload from within the \ac{UEFI} environment using an \ac{NTFS} drivers.
-By porting the Linux utility \program{reged} to \ac{UEFI} we were able to modify the Windows Registry.
+Both were able to deploy Windows level payload from within the \ac{UEFI} environment using an \ac{NTFS} driver.
+We were able to modify the Windows Registry by porting the Linux utility \program{reged} to \ac{UEFI}.
 Through the manipulation of a Task Scheduler master registry key we were able to have our Windows payload executed with the privileges of the built-in local system account.
 The execution happens at system boot before login.
 
 We showed that the attack using our rootkit is unaffected by Secure Boot, as Secure Boot relies on the \ac{PF} as its root of trust.
 This leaves Secure Boot unable to verify the behavior of the \ac{PI}, including our rootkit.
-As Secure Boot's threat model consists of the hand\-/over process from the plaftorm firmware to \ac{UEFI} images, the attack through our bootkit is successfully mitigated.
+As Secure Boot's threat model consists of the hand\-/over process from the platform firmware to \ac{UEFI} images, the attack through our bootkit is successfully mitigated.
 
-When the target system uses \ac{BDE} with a \ac{TPM} 2.0 and the default validation profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} both our root\-/ and bootkit trigger the BitLocker recovery prompt protecting the hard drive from unauthorized access and stopping the boot process.
-We also show that, Windows giving the user an ability to override the \ac{TPM}'s security reaction, by entering the recovery key, allows us to overcome \ac{BDE}.
+When the target system uses \ac{BDE} with a \ac{TPM} 2.0 and the default validation profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}, both our root\-/ and bootkit trigger the BitLocker recovery prompt protecting the hard drive from unauthorized access and stopping the boot process.
+We also show that Windows, giving the user an ability to override the \ac{TPM}'s security reaction by entering the recovery key, allows us to overcome \ac{BDE}.
 Our \emph{BitLogger} was able to log the entered keystrokes to obtain the recovery key.
 We were then able to use the recovery key with our \ac{UEFI} port of \program{Dislocker} to mount the encrypted drive, allowing us to repeat our initial attack of deploying a payload and modifying the registry.
 
 In the case of our \ac{UEFI} payload being part of the \ac{TPM} measurements used to encrypt the \ac{VMK} or when a validation profile is used that does not include the measurements of our payload.
 We showed that this is the case when Secure Boot is enabled and \hyperlink{pcr7-binding}{\ac{PCR}7 is bound}.
 Binding is possible when Secure Boot only uses Microsoft's signature \ac{DB} required to boot Windows.
-BitLocker then uses a validation profile of \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, leaving out \ac{PCR}0 where our rookit is measured into.
-This provides us a chance to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with \program{Dislocker}.
-Making it possible for our rootkit to gain access to the system without requiring any prior knowledge or additional user input.
+BitLocker then uses a validation profile of \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, leaving out \ac{PCR}0 where our rootkit is measured into.
+This provides us a chance to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with \program{Dislocker}, making it possible for our rootkit to gain access to the system without requiring any prior knowledge or additional user input.

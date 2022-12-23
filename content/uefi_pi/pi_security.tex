@@ -5,9 +5,9 @@
 
 The \ac{PI} specification defines \acp{PPI} and \ac{DXE} protocols which can be used to validate images when loading them.
 During the \ac{PEI} phase, the \emph{\ac{PEI} Guided Section Extraction \ac{PPI}} can be used to authenticate file sections, while the \emph{Security \ac{PPI}} implements the policy response to the authentication result.
-The \ac{DXE} phase has counter parts in the form of the \emph{Guided Section Extraction Protocol} and the \emph{Security Architectural Protocol}.
+The \ac{DXE} phase has counter parts in the form of the Guided Section Extraction Protocol and the \nameref{lst:security-architectural-protocol}.
 The policy response may be the locking of flash upon authentication failure or attestation logging \cite[Vol. 2, Section 12.9.1]{pi-spec}.
-It also has the architectural protocol \emph{Security2 Architectural Protocol}, which implements Secure Boot validation, \ac{TCG} measured boot, and User Identity policy for image loading.
+It also has the architectural protocol \nameref{lst:security2-architectural-protocol}, which implements Secure Boot validation, \ac{TCG} measured boot, and User Identity policy for image loading.
 The implementation of the boot service \code{LoadImage()} has to use these protocols in accordance to the rules defined in \cite[Vol. 2, Section 12.9.2]{pi-spec}.
 The Security2 protocol is invoked on every loaded image, with the Security protocol being invoked afterwards on images loaded through the Firmware Volume Protocol.
 When the Security2 protocol is not installed it uses the Security protocol regardless of the image's origin.

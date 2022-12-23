@@ -11,6 +11,8 @@ struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
 };
 
+extern EFI_GUID gEfiSimpleFileSystemProtocolGuid;
+
 struct _EFI_FILE_PROTOCOL
 {
   UINT64 Revision;
@@ -29,5 +31,3 @@ struct _EFI_FILE_PROTOCOL
   EFI_FILE_WRITE_EX WriteEx;
   EFI_FILE_FLUSH_EX FlushEx;
 };
-
-extern EFI_GUID gEfiSimpleFileSystemProtocolGuid;

@@ -23,7 +23,7 @@ The first partition listed in \autoref{fig:devtree} as a \emph{FAT File System} 
 
 With \program{openinfo} we can see the group of protocols that a handle represents.
 \autoref{fig:openinfo} shows the output when querying the handle of an \ac{ESP}.
-Since this \ac{ESP} is installed in a logical partition, an instance of the Partition Information Protocol is present.
+Since this \ac{ESP} is installed in a logical partition, an instance of the \nameref{lst:partition-information-protocol} is present.
 The command also lists the agent handles of each protocol and how the protocol was accessed.
 \code{TestProt} is often used in the \code{Supported()} function of a driver, while \code{GetProt} is then used to open the protocol for consumption within the \code{Start()} function.
 

@@ -42,7 +42,7 @@ Users, who are physically present, may disable Secure Boot as well as enroll def
 
 \subsubsection{Firmware Management}
 
-The Firmware Management Protocol provides a boot abstraction for authenticated updating and management of the \ac{PF} \cite[Section 23]{uefi-spec}.
+The \nameref{lst:firmware-management-protocol} provides a boot abstraction for authenticated updating and management of the \ac{PF} \cite[Section 23]{uefi-spec}.
 The runtime services \code{QueryCapsuleCapabilities()} and \code{CapsuleUpdate()} may be used by the \ac{OS} to pass updates to the firmware in a persistent manner, so that they can be processed on subsequent boots \cite[Section 23.3]{uefi-spec}.
 \acp{OEM} also often provide their own ways to process firmware updates, for example via dedicated \ac{USB} ports, which allow to process firmware updates upon boot.
 As these are entirely dictated by the platform designer, it is not possible to make vendor independent assessments about their security.

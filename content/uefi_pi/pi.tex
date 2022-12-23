@@ -91,17 +91,17 @@ Thus the foundation has to provide the most basic services, required to load and
 \ac{DXE} drivers implementing architectural protocols are called early drivers, as they cannot assume that all \ac{UEFI} system table services are already available to them and as they do not follow the \ac{UEFI} driver model \cite[Vol. 2, 11.2.1]{pi-spec}.
 To guarantee that some of the architectural drivers are loaded before others, an \emph{a priori} file can be used.
 When an \emph{a priori} file is present on a \ac{FV}, it is read to provide a deterministic order of drivers, which are to be executed before the dispatcher starts its regular \ac{DXE} driver discovery and \ac{DEPEX} evaluation on the rest of the architectural drivers \cite[Vol. 2, 10.3]{pi-spec}.
-\ac{DXE} drivers, which follow the \ac{UEFI} driver model, have an empty \ac{DEPEX}, as installing the Driver Binding Protocol to its own image handle does not require any architectural protocols.
+\ac{DXE} drivers, which follow the \ac{UEFI} driver model, have an empty \ac{DEPEX}, as installing the \nameref{lst:driver-binding-protocol} to its own image handle does not require any architectural protocols.
 They are still only dispatched after all architectural protocols have been installed \cite[Vol. 2, 11.2.2]{pi-spec}.
-The dispatcher also makes use of a \emph{Security Architectural Protocol} to authenticate each \ac{DXE} driver to decide whether or not to execute it \cite[Vol. 2, 10.13]{pi-spec}.
+The dispatcher also makes use of the two \nameref{sec:appendix:protocols:security:architectual:protocols} to authenticate each \ac{DXE} driver to decide whether or not to execute it \cite[Vol. 2, 10.13]{pi-spec}.
 
-When the \ac{DXE} dispatcher is unable to load any new drivers it transfers execution to the \emph{\ac{BDS} Architectural Protocol} \cite[Vol. 2, 2.4]{pi-spec}.
+When the \ac{DXE} dispatcher is unable to load any new drivers it transfers execution to the \nameref{lst:bds-protocol} \cite[Vol. 2, 2.4]{pi-spec}.
 This presents the advancement into the \ac{BDS} phase, but not simultaneously the end of the \ac{DXE} phase \cite[Vol. 2, 2.1]{pi-spec}.
 The two phases work together until the \ac{OS} takes control of the system with the call to \code{ExitBootServices()}.
 
 \subsubsection{\acf{BDS}}
 
-The \ac{BDS} phase consists of the implementation of the \emph{\ac{BDS} Architectural Protocol}.
+The \ac{BDS} phase consists of the implementation of the \nameref{lst:bds-protocol}.
 It implements the \ac{UEFI} boot manager policy as defined in \cite[Section 3]{uefi-spec} and summarized in \autoref{sec:uefi-pi:uefi:boot-manager}.
 When discovering additional \acp{FV} the \ac{DXE} dispatcher is invoked through the \ac{DXE} services.
 Execution may also be returned to the \ac{DXE} phase when not enough drivers were initialized to successfully boot from a device \cite[Vol. 2, 12.2]{pi-spec}.

@@ -81,8 +81,8 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
 \cite{tianocore-edk2-driver-writer-s-guide} explains the categories of handles that are formed by the type of protocols that are grouped. \autoref{fig:handle-types} shows these categories.
 
 \begin{description}
-    \item[Image handles] are handles of \ac{UEFI} images loaded into memory, as they support the \hyperref[lst:loaded-image-protocol]{Loaded Image Protocol}, giving access to information about the image in memory. This includes the image's address, size, memory type, origin, and optional load options.
-    \item[Driver handles] are handles that group the \ac{UEFI} Driver Model related protocols (Driver Binding Protocol, the two Component Name Protocols, and the two Driver Diagnostics Protocols).
+    \item[Image handles] are handles of \ac{UEFI} images loaded into memory, as they support the \nameref{lst:loaded-image-protocol}, giving access to information about the image in memory. This includes the image's address, size, memory type, origin, and optional load options.
+    \item[Driver handles] are handles that group the \ac{UEFI} Driver Model related protocols (\nameref{lst:driver-binding-protocol}, the two Component Name Protocols, and the two Driver Diagnostics Protocols).
     \item[Driver image handles] are \ac{UEFI} Driver Model related protocols installed onto images loaded in memory.
     \item[Agent handles] is a term used in the \ac{UEFI} Driver Model, they describe tracked consumers of other protocols.
     \item[Controller/Device handles] are interchangeably used to refer to physical and virtual devices that offer \ac{I/O} abstraction protocols.
@@ -104,16 +104,16 @@ Devices can be keyboards, mice, monitors, etc. (for user in\-/and output) or har
 
 Device drivers are very similar to bus drivers, but they do not create new device handles, they instead offer abstractions built upon existing bus driver \ac{I/O} abstractions.
 A driver following the \ac{UEFI} Driver Model is not allowed to interact with any hardware in its entry point and instead installs protocols on its own image handle.
-It is required to install the Driver Binding Protocol and it may additionally install configuration or diagnostic related protocols.
-The Loaded Image Protocol also offers a field where a driver can provide a function through which it can be unloaded.
+It is required to install the \nameref{lst:driver-binding-protocol} and it may additionally install configuration or diagnostic related protocols.
+The \nameref{lst:loaded-image-protocol} also offers a field where a driver can provide a function through which it can be unloaded.
 Runtime drivers usually register a notification function that is triggered when an \ac{OS} loader calls \code{ExitBootServices()}, allowing them to translate any allocated memory to their virtual addresses \cite[Section 2.5.2]{uefi-spec}.
 
-The firmware will try to connect device drivers to a controller by using the drivers instance of the Driver Binding Protocol and call the \code{Supported()} function on a controller handle.
+The firmware will try to connect device drivers to a controller by using the drivers instance of the \nameref{lst:driver-binding-protocol} and call the \code{Supported()} function on a controller handle.
 The device driver then checks whether it supports the controller.
 This could be, for example, looking for specific \ac{I/O} protocols, that it will want to use later and abstract further.
-If the driver supports the device, the firmware will call the \code{Start()} function of the Driver Binding Protocol to have the driver install its offered protocols on the controller handle.
+If the driver supports the device, the firmware will call the \code{Start()} function of the \nameref{lst:driver-binding-protocol} to have the driver install its offered protocols on the controller handle.
 The firmware connection process can be done recursively as the newly installed device driver might now fulfill the requirements for another driver.
-If a driver needs to be uninstalled from a specific controller, the firmware can call the \code{Stop()} method of the Driver Binding Protocol function on the controller handle.
+If a driver needs to be uninstalled from a specific controller, the firmware can call the \code{Stop()} method of the \nameref{lst:driver-binding-protocol} function on the controller handle.
 An example for this would be another device driver wanting to exclusively manage a controller.
 To support this functionality, all consumers of a protocol are tracked in the form of agent handles \cite[Section 2.5.4]{uefi-spec}.
 
@@ -126,7 +126,7 @@ This allows for fast startup, where it may choose to connect only drivers relate
 
 \autoref{lst:entry-point} shows the entry point of \ac{UEFI} images, when they are loaded it is the only part that is \emph{linked}, the rest of the communication has to be discovered programmatically through the \ac{UEFI} System Table.
 It serves as the entrance door into the \ac{UEFI} environment, providing access to the generic boot and runtime services, as well as system configuration information \cite[Section 3.3]{tianocore-edk2-driver-writer-s-guide}.
-The Loaded Image Protocol instance provides an interface to hand over optional load options to an image \cite{beyond-bios}.
+The \nameref{lst:loaded-image-protocol} instance provides an interface to hand over optional load options to an image \cite{beyond-bios}.
 
 \autoref{fig:uefi-system-table} shows the system table.
 The functionality of the system table is only available in its entirety during boot as the boot services and structures are eventually unloaded, when the \ac{OS} takes over control.
@@ -186,7 +186,7 @@ Driver load options are processed before the boot load options, there also exist
 A general depiction of the \ac{UEFI} boot flow is depicted in \autoref{fig:uefi-boot-sequence}.
 Implementations usually allow for an interactive menu, where users can modify the boot order or boot single entries manually \cite[Section 3.1.1]{uefi-spec}.
 Boot options are generally first attempted to be loaded through the \code{LoadImage()} boot service.
-If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \hyperref[lst:simple-file-system-protocol]{Simple File System Protocol} \cite[Section 3.1.2]{uefi-spec}. For x64 it uses the default path \code{\textbackslash EFI\textbackslash BOOT\textbackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
+If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \nameref{lst:simple-file-system-protocol} \cite[Section 3.1.2]{uefi-spec}. For x64 it uses the default path \code{\textbackslash EFI\textbackslash BOOT\textbackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
 
 \begin{figure}[htb]%
     \centering%
