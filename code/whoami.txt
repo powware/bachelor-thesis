@@ -1,0 +1,82 @@
+
+USER INFORMATION
+----------------
+
+User Name           SID     
+=================== ========
+nt authority\system S-1-5-18
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                             Type             SID                                                           Attributes                                        
+====================================== ================ ============================================================= ==================================================
+Mandatory Label\System Mandatory Level Label            S-1-16-16384                                                                                                    
+Everyone                               Well-known group S-1-1-0                                                       Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                          Alias            S-1-5-32-545                                                  Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\SERVICE                   Well-known group S-1-5-6                                                       Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                          Well-known group S-1-2-1                                                       Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users       Well-known group S-1-5-11                                                      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization         Well-known group S-1-5-15                                                      Mandatory group, Enabled by default, Enabled group
+NT SERVICE\Schedule                    Well-known group S-1-5-80-4125092361-1567024937-842823819-2091237918-836075745 Enabled by default, Enabled group, Group owner    
+LOCAL                                  Well-known group S-1-2-0                                                       Mandatory group, Enabled by default, Enabled group
+BUILTIN\Administrators                 Alias            S-1-5-32-544                                                  Enabled by default, Enabled group, Group owner    
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State   
+========================================= ================================================================== ========
+SeAssignPrimaryTokenPrivilege             Replace a process level token                                      Disabled
+SeLockMemoryPrivilege                     Lock pages in memory                                               Enabled 
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Disabled
+SeTcbPrivilege                            Act as part of the operating system                                Enabled 
+SeSecurityPrivilege                       Manage auditing and security log                                   Disabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Disabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Disabled
+SeSystemProfilePrivilege                  Profile system performance                                         Enabled 
+SeSystemtimePrivilege                     Change the system time                                             Disabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Enabled 
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Enabled 
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Enabled 
+SeCreatePermanentPrivilege                Create permanent shared objects                                    Enabled 
+SeBackupPrivilege                         Back up files and directories                                      Disabled
+SeRestorePrivilege                        Restore files and directories                                      Disabled
+SeShutdownPrivilege                       Shut down the system                                               Disabled
+SeDebugPrivilege                          Debug programs                                                     Enabled 
+SeAuditPrivilege                          Generate security audits                                           Enabled 
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Disabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled 
+SeUndockPrivilege                         Remove computer from docking station                               Disabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Disabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled 
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled 
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Enabled 
+SeTimeZonePrivilege                       Change the time zone                                               Enabled 
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Enabled 
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Enabled 
+
+BitLocker Drive Encryption: Configuration Tool version 10.0.22000
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+Volume C: []
+Key Protectors of Type TPM
+
+    TPM:
+      ID: {768D2DC2-B8AE-4D26-9893-68573DDA42B4}
+      PCR Validation Profile:
+        0, 2, 4, 11
+
+Key protector with ID "{768D2DC2-B8AE-4D26-9893-68573DDA42B4}" deleted.
+BitLocker Drive Encryption: Configuration Tool version 10.0.22000
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+Key Protectors Added:
+
+    TPM:
+      ID: {5BAF8385-750C-4D6E-AF46-234EB33D646B}
+      PCR Validation Profile:
+        0, 2, 4, 11
+

@@ -52,26 +52,22 @@ They are both applications which launch the Windows Boot Manager through its boo
 Firmware rootkits have been rarer and how exactly the firmware images were infected is not often known.
 VectorEDK uses \ac{OEM}'s software tooling to generate a firmware update utility on a bootable \ac{USB} stick that can then be inserted with physical access to the system \cite{mosaicregressor}.
 
-\TODO{hier weitermachen}
+LoJax infection method comes with the signed kernel driver from the program \program{RWEverything}.
+\program{RWEverything} is a legitimate tool that can be used to query hardware\-/related informations on a system.
+LoJax uses the driver to read and write to memory mapped \ac{I/O}, as well as \ac{PCI} configuration registers.
+It leverages this to find the \ac{SPI} flash mapping, to dump the firmware image.
+It then removes previously packaged \ac{NTFS} drivers and adds its payload.
+Reflashing the modified image relies on the platform to be either misconfigured or of an older kind that has a race condition exploit.
+The \ac{SPI} flash is secure by a \ac{BIOS} control register, which has a \ac{BIOS} write enable bit and \ac{BIOS} lock enable bit.
+The locking mechanism has to be correctly implemented by firmware designers through \ac{SMM} interrupts.
+When writing to the \ac{BIOS} write enable bit, while the \ac{BIOS} is enabled, the operation initially succeeds but is then reverted by a \ac{SMM} interrupt routine.
+This could either be incorrectly implemented or exploited through race condition using multi\-/processing or multi\-/threading on older hardware.
+When one thread constantly sets the write enable bit to 1 and the other tries to perform write operations on the \ac{SPI} flash, the firmware image will eventually be overwritten \cite{lojax}.
 
-RWEverything legitimate driver for hardware information
-        reading and writing memory mapped \ac{I/O} and \ac{PCI} Configuration registers
-        to find spi flash mapping and read from it
-        remove previous NTFS driver
-        add DXE drivers
-        reflash image
-        \ac{BIOS} control register with \ac{BIOS} write enable bit and \ac{BIOS} lock enable bit
-        the locking mechanism has to be implemented by firmware designers through \ac{SMM} interrupts
-        \ac{BIOS} write enable bit is initially written but the interrupt resets it to 0
-        when not correctly implemented this does not happen
-        and on old platforms a race condition with multi\-/core and multi\-/threadding
-        where one thread sets the write bit enable to 1 and the other tries to write to the \ac{SPI} flash
-        \cite{lojax}
-
-The payload itself were usually \ac{DXE} drivers residing in a firmware volume \cite{mosaicregressor-technical-details,lojax}, as these are automatically executed by the \ac{DXE} dispatcher.
-MoonBounce and CosmicStrand do something different and instead patch existing files in the firmware image.
+MosaicRegressor and LoJax add their payload in the form of \ac{DXE} drivers to a firmware volume \cite{mosaicregressor-technical-details,lojax}, as these are automatically executed by the \ac{DXE} dispatcher.
+MoonBounce and CosmicStrand instead patch existing files in the firmware image.
 MoonBounce patches the \ac{DXE} Core \cite{moonbounce}, while CosmicStrand patches an existing \ac{DXE} driver \cite{cosmicstrand}.
-While both approaches could fundamentally be done in the form of an added \ac{DXE} driver, it makes the detection harder.
+While both approaches could fundamentally be done in the form of an added \ac{DXE} driver, it does make the detection harder.
 
 \section{Approach}
 

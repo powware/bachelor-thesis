@@ -138,7 +138,7 @@ Under security options, we can see that the task is executed using the built\-/i
 This task is therefore the perfect candidate to run our payload.
 
 The Task Scheduler keeps book of its active tasks in the Windows registry under the path \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache}.
-The tasks are grouped by four subkeys: \program{boot}, \program{logon}, \program{plain}, and \program{maintenance}.
+The tasks are grouped by four subkeys: \program{Boot}, \program{Logon}, \program{Plain}, and \program{Maintenance}.
 The entries under these subkeys consist only of a \ac{GUID}.
 This \ac{GUID} references the task descriptors that are saved using task master (registry) keys, which are located under \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache\textbackslash Tasks} \cite[Section 10]{windows-internals-7-part2}.
 A secondary copy of the task descriptors exists within the regular file system under \program{\%windir\%\textbackslash system32\textbackslash Task}, stored in the form of \ac{XML} files.
@@ -146,9 +146,11 @@ A secondary copy of the task descriptors exists within the regular file system u
 We can use the Task Scheduler Configuration Tool to modify the \program{Proxy} task on a system under our control, changing the executable path as well as remove the delay configured in its trigger.
 We can save the output of \program{whoami /all} into a file to verify the privileges our payload is executed with.
 The \program{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
-After manually triggering the task through the configuration tool, we see that our payload was run from the \emph{nt authority\textbackslash system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+After manually triggering the task through the configuration tool, we can see in \autoref{lst:whoami}, that our payload was run from the \emph{nt authority\textbackslash system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
 
-\TODO{whoami /all snippet}
+\vspace{1em}
+
+\lstinputlisting[language=bash,firstline=5,lastline=7,caption={Snippet of \program{whoami /all} invoked by the Proxy task},captionpos=b,label=lst:whoami]{code/whoami.txt}
 
 Using the Windows registry editor \program{reged.exe} we can navigate to the task descriptor store and search for the task master key belonging to our task.
 We can then export the task master key and import it on our victim's system as part of our attack.
