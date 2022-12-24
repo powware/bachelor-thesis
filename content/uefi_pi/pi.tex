@@ -13,11 +13,11 @@ A \emph{Firmware Image} is stored in one or more non\-/volatile physical storage
 Flash memory often offers the ability to restrict read and write properties differently depending on the storage region \cite[Vol. 3, 2.1.1]{pi-spec}.
 \ac{UEFI} variables may reside in a region that remains read- and writable during the whole operation of a system, whereas the code storage may only be writable during the initial \ac{PI} phases.
 Firmware images might be split over multiple physical \acp{FD}, but may also be in-turn logically split into \acp{FV}.
-\acp{FV} are comparable to hard drive volumes as they also are formatted with a file system, usually the \ac{PI} \ac{FFS} format defined in \cite[Vol. 3, 2.2]{pi-spec}.
+\acp{FV} are comparable to hard drive volumes as they also are formatted with a file system, usually, the \ac{PI} \ac{FFS} format defined in \cite[Vol. 3, 2.2]{pi-spec}.
 The \ac{PI} \ac{FFS} is a flat file system consisting of a single list of files without any directory structure.
-Parsing the volume is done by iterating over all files one-by-one.
+Parsing the volume is done by iterating over all files one by one.
 Files contain code or data in the form of sections.
-Sections split a file in discrete parts with the type of a section dictating its content.
+Sections split a file into discrete parts with the section type dictating its content.
 File types impose restrictions on which types of sections a file may or may not contain.
 The full list of file types defined in the \ac{PI} specification is listed in the appendix in \autoref{tab:file-types}.
 File sections are organized in trees, with encapsulation as well as leaf sections.
@@ -36,9 +36,9 @@ The full list of section types is given in the appendix in \autoref{tab:file-sec
 
 \subsection{\acs{PI} Architecture Firmware Phases}
 
-\cite{pi-spec} defines a multi-phase architecture of the \acl{PI} that can be used by system designers to implement \acl{PF}.
-It is designed to be very extensible and to simplify the process of independent hardware vendors working together, when combining their software into a single \ac{PF}.
-The proposed \ac{PI} architecture phases are depicted in \autoref{fig:pi-phases}. They are not entirely distinct and system designers may choose to implement phases differently.
+\cite{pi-spec} defines a multiphase architecture of the \acl{PI} that can be used by system designers to implement \acl{PF}.
+It is designed to be very extensible and to simplify the process of independent hardware vendors working together when combining their software into a single \ac{PF}.
+The proposed \ac{PI} architecture phases are depicted in \autoref{fig:pi-phases}. They are not entirely distinct, and system designers may choose to implement phases differently.
 
 \begin{figure}[htb]%
     \centering%
@@ -52,29 +52,30 @@ The proposed \ac{PI} architecture phases are depicted in \autoref{fig:pi-phases}
 
 The \ac{SEC} phase is the first phase performed during platform initialization.
 Under its responsibilities fall the handling of all platform restart events, setting up a temporary memory, and establishing the system's root of trust.
-It serves as the foundation for all secure operations on which inductive security designs rely to build a chain of trust by having a module verify the integrity of its subsequent module.
-For this the \ac{SEC} phase may verify the integrity of the \ac{PEI} foundation before transferring execution to it.
+It serves as the foundation for all security operations on which inductive security designs rely to build a chain of trust by having a module verify the integrity of its subsequent module.
+For this, the \ac{SEC} phase may verify the integrity of the \ac{PEI} foundation before transferring execution to it.
 As this is very specific to how the platform is implemented, the \ac{SEC} phase is only specified in the form of basic requirements that it needs to meet before handing over execution to the \ac{PEI} phase.
-When it transfers execution, it passes information about the current state of the system, including location and size of the temporary stack, \ac{RAM}, and \ac{BFV}.
+When it transfers execution, it passes information about the current state of the system, including the location and size of the temporary stack, \ac{RAM}, and \ac{BFV}.
 It can also optionally pass protocols for the \ac{PEI} phase to use.
 
 \subsubsection{\acf{PEI}}
 
 The \ac{PEI} phase configures the system to meet the minimum requirements for the \ac{DXE}.
 Its job is the initialization of all system hardware requiring to be initialized beforehand, as well as the initialization of permanent memory, which is later described in \acp{HOB} to be passed off to the \ac{DXE} phase \cite[Vol. 1, 2.1]{pi-spec}.
-The \ac{PEI} phase is architecturally a stripped down version of the \ac{DXE} phase, as it offers the same extensibility through modules supplied by the different \acp{OEM} responsible for the component initialization.
+The \ac{PEI} phase is architecturally a stripped\-/down version of the \ac{DXE} phase, as it offers the same extensibility through modules supplied by the different \acp{OEM} responsible for the component initialization.
 As the \ac{PEI}'s environment is still very restricted and the main memory only initialized towards the end of the phase, more complex processing is to be done in the \ac{DXE}.
 Even though the implementation of the \ac{PEI} phase is the most hardware dependent, the core functionality of the \ac{PEI} is common to all processor architectures and offered through the \ac{PEI} foundation \cite[Vol. 1, 2.2]{pi-spec}.
-It is the module initially invoked by the \ac{SEC} phase and responsible of dispatching further \acp{PEIM} and offering an inter-module communication through the management of \acp{PPI} \cite[Vol. 1, 2.5]{pi-spec}.
+It is the module initially invoked by the \ac{SEC} phase and responsible for dispatching further \acp{PEIM} and offering an inter-module communication through the management of \acp{PPI} \cite[Vol. 1, 2.5]{pi-spec}.
 The \ac{PEI} foundation implements a \ac{PEI} dispatcher, who iterates over \acp{PEIM} found in \acp{FV}, to evaluate their \acp{DEPEX}.
 \acp{DEPEX} are logical combinations of \acp{PPI} that must be present before loading a \ac{PEIM}.
 Loading \acp{PEIM} results in the installation of new \acp{PPI} and the discovery of additional \acp{FV}.
 This leads to previously unfulfilled \acp{DEPEX} to now be fulfilled and the dispatcher loading these \acp{PEIM} on their next evaluation.
-This process is repeated until no more \acp{PEIM} are able to be dispatched.
+This process is repeated until no more \acp{PEIM} can be dispatched.
 The foundation then invokes the \emph{\ac{DXE} IPL \ac{PPI}}, which loads the \ac{DXE} foundation into memory, to then transfer execution \cite[Vol. 1, 2.6]{pi-spec}.
 The \ac{BFV} containing the \ac{PEI} foundation, initially discovered by the \ac{SEC} phase, and any additionally discovered \acp{FV} are also passed off to the \ac{DXE} in the form of \acp{HOB}.
 
-While the \ac{PEI} phase has many architecturally required \acp{PPI} that modules have to implement, the \ac{PI} also defines optional \acp{PPI}, one of which is the \emph{Security PPI}. It used to maintain the chain of trust by offering the chance for platform builders to authenticate or log \acp{PEIM} before they are executed \cite[Vol. 1, 6.3.6]{pi-spec}.
+While the \ac{PEI} phase has many architecturally required \acp{PPI} that modules have to implement, the \ac{PI} also defines optional \acp{PPI}, one of which is the \emph{Security PPI}.
+It is used to maintain the chain of trust by offering the chance for platform builders to authenticate or log \acp{PEIM} before they are executed \cite[Vol. 1, 6.3.6]{pi-spec}.
 
 
 \subsubsection{\acf{DXE}}
@@ -87,16 +88,16 @@ The \ac{DXE} foundation produces the \ac{UEFI} boot and runtime services as well
 \ac{DXE} drivers are very similar to \ac{UEFI} images as they even share the same entry point signature.
 They also come in boot and runtime variants \cite[Vol. 2, 11.2.3]{pi-spec}.
 The implementation of the \ac{UEFI} system table services is done by \ac{DXE} drivers, who provide architectural protocols for the \ac{DXE} foundation to consume \cite[Vol. 2, 12.1]{pi-spec}.
-Thus the foundation has to provide the most basic services, required to load and execute \ac{DXE} drivers, on its own.
+Thus, the foundation has to provide the most basic services, required to load and execute \ac{DXE} drivers, on its own.
 \ac{DXE} drivers implementing architectural protocols are called early drivers, as they cannot assume that all \ac{UEFI} system table services are already available to them and as they do not follow the \ac{UEFI} driver model \cite[Vol. 2, 11.2.1]{pi-spec}.
-To guarantee that some of the architectural drivers are loaded before others, an \emph{a priori} file can be used.
+To guarantee that some architectural drivers are loaded before others, an \emph{a priori} file can be used.
 When an \emph{a priori} file is present on a \ac{FV}, it is read to provide a deterministic order of drivers, which are to be executed before the dispatcher starts its regular \ac{DXE} driver discovery and \ac{DEPEX} evaluation on the rest of the architectural drivers \cite[Vol. 2, 10.3]{pi-spec}.
-\ac{DXE} drivers, which follow the \ac{UEFI} driver model, have an empty \ac{DEPEX}, as installing the \nameref{lst:driver-binding-protocol} to its own image handle does not require any architectural protocols.
+\ac{DXE} drivers, which follow the \ac{UEFI} driver model, have an empty \ac{DEPEX}, as installing the \nameref{lst:driver-binding-protocol} to its image handle does not require any architectural protocols.
 They are still only dispatched after all architectural protocols have been installed \cite[Vol. 2, 11.2.2]{pi-spec}.
-The dispatcher also makes use of the two \nameref{sec:appendix:protocols:security:architectual:protocols} to authenticate each \ac{DXE} driver to decide whether or not to execute it \cite[Vol. 2, 10.13]{pi-spec}.
+The dispatcher also makes use of the two \nameref{sec:appendix:protocols:security:architectual:protocols} to authenticate each \ac{DXE} driver to decide whether to execute it \cite[Vol. 2, 10.13]{pi-spec}.
 
 When the \ac{DXE} dispatcher is unable to load any new drivers it transfers execution to the \nameref{lst:bds-protocol} \cite[Vol. 2, 2.4]{pi-spec}.
-This presents the advancement into the \ac{BDS} phase, but not simultaneously the end of the \ac{DXE} phase \cite[Vol. 2, 2.1]{pi-spec}.
+This indicates the advancement into the \ac{BDS} phase, but not simultaneously the end of the \ac{DXE} phase \cite[Vol. 2, 2.1]{pi-spec}.
 The two phases work together until the \ac{OS} takes control of the system with the call to \code{ExitBootServices()}.
 
 \subsubsection{\acf{BDS}}
@@ -109,7 +110,7 @@ Execution may also be returned to the \ac{DXE} phase when not enough drivers wer
 
 \subsubsection{\acf{TSL}}
 
-The \ac{TSL} phase consist of the \ac{UEFI} \ac{OS} bootloader performing its necessary actions in preparation of assuming control over the system by calling \code{ExitBootServices()} and transferring execution to the \ac{OS} kernel \cite[Section 2.3]{tianocore-edk2-build-spec}.
+The \ac{TSL} phase consists of the \ac{UEFI} \ac{OS} bootloader performing its necessary actions in preparation for assuming control over the system by calling \code{ExitBootServices()} and transferring execution to the \ac{OS} kernel \cite[Section 2.3]{tianocore-edk2-build-spec}.
 The \ac{DXE} phase and all boot services are unloaded.
 
 \subsubsection{\acf{RT}}
@@ -118,4 +119,4 @@ The \ac{RT} phase offers only minimal functionality via the remaining runtime se
 
 \subsubsection{\acf{AL}}
 
-The \ac{AL} phase facilitates drivers storing the system state during shutdown, sleep, hibernation, and restart events \cite[Section 2.3]{tianocore-edk2-build-spec}.
+The \ac{AL} phase facilitates drivers storing the system state during the shutdown, sleep, hibernation, and restart events \cite[Section 2.3]{tianocore-edk2-build-spec}.

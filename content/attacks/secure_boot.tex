@@ -4,14 +4,14 @@
 \label{sec:attacks:secure-boot}
 
 Our second attack is performed with Secure Boot enabled.
-We assume that the used signature \acp{DB} do not contain our image's hashes and that the interactive \ac{UEFI} setup menu is password protected.
-Otherwise we could simply turn off Secure Boot.
+We assume that the signature \acp{DB} of allowed images does not contain our image's hashes and that the interactive \ac{UEFI} setup menu is password protected.
+Otherwise, we could simply turn off Secure Boot.
 
 \subsection{Bootkit}
 
-The interactive menu being password\-/protected makes the likelihood of an infection via booting into our installer smaller.
+The interactive menu being password\-/protected makes the likelihood of infection via booting into our installer smaller.
 We now solely rely on the boot order/firmware policy to prefer removable media.
-Even if this was to be the case, we promptly see that Secure Boot already denies execution of the installer when trying to boot it.
+Even if this was to be the case, we promptly see that Secure Boot already denies the execution of the installer when trying to boot it.
 When using our Windows installer we observe the same denial for the bootkit itself.
 The Windows Boot Manager boot option pointing to our bootkit is now denied execution.
 If we were to have overwritten the standard boot entry of the hard drive \program{EFI\textbackslash Boot\textbackslash bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
@@ -22,11 +22,11 @@ In \autoref{sec:uefi-pi:pi:security} we discussed how the \ac{PI} specification 
 As \code{LoadImage()} is used internally within the \ac{DXE} dispatcher the security protocol invocations also apply to our rootkit's \ac{DXE} drivers when being loaded.
 We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot} that Secure Boot relies on the firmware image as its root of trust, where Secure Boot is inherently unable to verify the behavior of the \ac{PI} process.
 
-Now these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and execute just like before.
+Now, these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and executes just like before.
 When we look at the reference implementation in \ac{EDK} II, we can see why: \autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the \nameref{lst:security2-architectural-protocol}.
 It shows that the image origin dictates which policy is being applied.
 The standard policy for images from a \acf{FV} (\code{IMAGE\_FROM\_FV}) is to always allow execution.
-This aligns with what the \ac{UEFI} specification says on Secure Boot Firmware Policy:
+This aligns with what the \ac{UEFI} specification says about the Secure Boot Firmware Policy:
 \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here.
     For example: whether the image is in the system flash \textelp{}}.
 This behavior was reproducible on all our test setups.

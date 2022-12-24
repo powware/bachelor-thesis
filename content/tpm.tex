@@ -5,7 +5,7 @@
 
 With the \ac{TPM} the \ac{TCG} specifies a system component designated for security\-/related functions, providing the ability to establish trust in a system \cite{microsoft-windows-trusted-platform-module-overview}.
 Its implementation can be accomplished through dedicated hardware or by using the \ac{CPU}'s isolated \ac{SMM} \cite[Section 9.3]{tcg-tpm-library-part1-architecture}.
-Asides the generation and secure storage of cryptographic keys, the \ac{TPM} can be used for system integrity measurements.
+Asides from generating and securely storing cryptographic keys, the \ac{TPM} can be used for system integrity measurements.
 Boot code is measured into the \ac{TPM} by the \ac{PF}, providing evidence over the initialization process and making it possible to detect deviations \cite{microsoft-windows-trusted-platform-module-overview}.
 
 \section{\acfp{PCR}}
@@ -30,11 +30,11 @@ The Boot Block forms the \ac{SRTM}, while the \ac{UEFI} firmware is only part of
 The \ac{RTM} can either start with the \ac{SRTM} measuring itself or a \ac{H-CRTM} measuring the \ac{SRTM}.
 It falls under the responsibility of the \ac{PF} to perform the integrity measurements \cite{tcg-pc-client-platform-firmware-profile-spec}.
 Different parts of the boot process are measured into separate \acp{PCR}.
-\autoref{fig:pf-measurement-flow} shows a high level measurement flow.
-\autoref{tab:pcr-usage} on \pageref{tab:pcr-usage} shows \ac{PCR} indexes relevant for this thesis and the type of measurements performed to extend them.
+\autoref{fig:pf-measurement-flow} shows a high\-/level measurement flow.
+\autoref{tab:pcr-usage} on \pageref{tab:pcr-usage} shows \ac{PCR} indexes relevant to this thesis and the type of measurements performed to extend them.
 
 Interaction with the \ac{TPM} is done via a well\-/defined interface.
-For external chips this is done over hardware buses such as \ac{LPC} or \ac{SPI}.
+For external chips, this is done over hardware buses such as \ac{LPC} or \ac{SPI}.
 \ac{TCG} specifies the \nameref{lst:tcg2-protocol} for the \ac{UEFI} environment, providing an abstracted communication interface independent of the underlying implementation.
 
 \begin{figure}[htb]
@@ -50,16 +50,16 @@ For external chips this is done over hardware buses such as \ac{LPC} or \ac{SPI}
         \toprule
         \textbf{\acs{PCR} Index}    & \textbf{Measurements}                                                                                    \\
         \midrule
-        \textbf{0}                  & SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs, and PI Drivers                               \\[\defaultaddspace]
+        \textbf{0}                  & \acs{SRTM}, \acs{BIOS}, Host Platform Extensions, Embedded Option\-/\acsp{ROM}, and \acs{PI} Drivers     \\[\defaultaddspace]
         \arrayrulecolor{gray}
         \midrule
         \textbf{1}                  & Host Platform Configuration                                                                              \\[\defaultaddspace]
         \midrule
-        \textbf{2}                  & UEFI driver and application Code                                                                         \\[\defaultaddspace]
+        \textbf{2}                  & \acs{UEFI} driver and application Code                                                                   \\[\defaultaddspace]
         \midrule
-        \textbf{3}                  & UEFI driver and application Configuration and Data                                                       \\[\defaultaddspace]
+        \textbf{3}                  & \acs{UEFI} driver and application Configuration and Data                                                 \\[\defaultaddspace]
         \midrule
-        \textbf{4}                  & UEFI Boot Manager Code (usually the MBR) and Boot Attempts                                               \\[\defaultaddspace]
+        \textbf{4}                  & \acs{UEFI} Boot Manager Code (usually the \acs{MBR}) and Boot Attempts                                   \\[\defaultaddspace]
         \midrule
         \multirow{2}{*}{\textbf{5}} & Boot Manager Code Configuration and Data (for use by the Boot Manager Code) and \ac{GPT}/Partition Table \\ \addlinespace[1.0\defaultaddspace]
         \midrule
@@ -84,9 +84,9 @@ For external chips this is done over hardware buses such as \ac{LPC} or \ac{SPI}
 
 \section{Sealing/Unsealing}
 
-The chain of measurements can be used to attest for a trusted system state.
-The \ac{TPM} can be given data, for example a cryptographic key, in a state that is assumed to be trusted.
+The chain of measurements can be used to attest that the system is in a trusted state.
+The \ac{TPM} can be given data, for example, a cryptographic key, in a state that is assumed to be trusted.
 This state is reflected by the current \acp{PCR}, consisting of the collection of lead\-/up measurements.
 The \ac{TPM} then seals the data with a policy that describes which \ac{PCR} indexes to use and/or proof of authentication through a \ac{PIN} or passphrase.
-The data can then only be unsealed on subsequent boots when the system is in the same trusted state that it was in, when the data was sealed.
+The data can then only be unsealed on subsequent boots when the system is in the same trusted state that it was in when the data was sealed.
 Any modification of the boot code will be reflected in a deviation of \ac{PCR} values leaving the \ac{TPM} unable to unseal the data \cite[Section 3.3.6]{trusted-computing-platforms}.

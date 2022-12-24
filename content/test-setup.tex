@@ -4,7 +4,7 @@
 \label{sec:test-setup}
 
 We perform our attacks against Windows 11 on three different setups.
-Even though all three \ac{UEFI} firmwares are \ac{PI} specification compliant, there is still a lot of freedom for \acp{OEM} when implementing the \ac{PF}.
+Even though all three \ac{UEFI} firmware are \ac{PI} specification compliant, there is still a lot of freedom for \acp{OEM} when implementing the \ac{PF}.
 The Security in Telecommunications chair has mainly been focusing on \ac{AMD} hardware security in the past, leading to our test setups missing Intel\-/based machines.
 
 \section{\acs{QEMU}}
@@ -21,7 +21,7 @@ Accessing the firmware image with this setup is done through simple file access.
 
 Our first hardware setup is a Lenovo Ideapad 5 Pro-16ACH6, an \ac{AMD}-based laptop with an \ac{AMD} Ryzen 9 5900H \cite{lenovo-ideapad}.
 It supports Microsoft Device Guard and \hyperlink{pcr7-binding}{\ac{PCR}7 binding} when Secure Boot is enabled using the default keys.
-We can read and write the firmware image with physical hardware access by opening the device and using an \ac{SPI} chip clip on-top of the \ac{SPI} chip on the mainboard, as shown in \autoref{fig:lenovo-clamp}.
+We can read and write the firmware image with physical hardware access by opening the device and using an \ac{SPI} chip clip on top of the \ac{SPI} chip on the mainboard, as shown in \autoref{fig:lenovo-clamp}.
 The \ac{SPI} chip clip is connected to a programmer and can be managed with the Linux utility \program{flashrom}.
 
 \begin{figure}[htb]

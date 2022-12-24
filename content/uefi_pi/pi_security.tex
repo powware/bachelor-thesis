@@ -5,23 +5,23 @@
 
 The \ac{PI} specification defines \acp{PPI} and \ac{DXE} protocols which can be used to validate images when loading them.
 During the \ac{PEI} phase, the \emph{\ac{PEI} Guided Section Extraction \ac{PPI}} can be used to authenticate file sections, while the \emph{Security \ac{PPI}} implements the policy response to the authentication result.
-The \ac{DXE} phase has counter parts in the form of the Guided Section Extraction Protocol and the \nameref{lst:security-architectural-protocol}.
+The \ac{DXE} phase has counterparts in the form of the Guided Section Extraction Protocol and the \nameref{lst:security-architectural-protocol}.
 The policy response may be the locking of flash upon authentication failure or attestation logging \cite[Vol. 2, Section 12.9.1]{pi-spec}.
-It also has the architectural protocol \nameref{lst:security2-architectural-protocol}, which implements Secure Boot validation, \ac{TCG} measured boot, and User Identity policy for image loading.
-The implementation of the boot service \code{LoadImage()} has to use these protocols in accordance to the rules defined in \cite[Vol. 2, Section 12.9.2]{pi-spec}.
-The Security2 protocol is invoked on every loaded image, with the Security protocol being invoked afterwards on images loaded through the Firmware Volume Protocol.
+It also has the architectural protocol \nameref{lst:security2-architectural-protocol}, which implements Secure Boot validation, \ac{TCG} measured boot; and User Identity policy for image loading.
+The implementation of the boot service \code{LoadImage()} has to use these protocols in accordance with the rules defined in \cite[Vol. 2, Section 12.9.2]{pi-spec}.
+The Security2 protocol is invoked on every loaded image, with the Security protocol being invoked afterward on images loaded through the Firmware Volume Protocol.
 When the Security2 protocol is not installed it uses the Security protocol regardless of the image's origin.
 
 \subsubsection{Hardware Validated Boot}
 
 Secure Boot relies on the firmware as its root of trust.
-Hardware validated boot is able to shift the root of trust out of the firmware image into a smaller part in the hardware, in hopes to reduce the size of the attack vector.
+Hardware validated boot shifts the root of trust out of the firmware image into a smaller part in the hardware, in hopes to reduce the size of the attack vector.
 This part performs validation of the \ac{IBB} before handing over execution to the firmware image \cite{tianocore-understanding-uefi-secure-boot-chain}.
 
 \subsubsection{Firmware Protection}
 
-The \ac{PI} specification defines an \emph{End of \acs{DXE} Event}, which indicates the introduction of third party software execution to the platform.
-Up until this point it is assumed that the entire system software is under the control of the platform manufacturer.
+The \ac{PI} specification defines an \emph{End of \acs{DXE} Event}, which indicates the introduction of third\-/party software execution to the platform.
+Up until this point, it is assumed that the entire system software is under the control of the platform manufacturer.
 Drivers may react to this event by locking critical system resources, using the \ac{SMM} related services \cite[Vol. 2, 5.1.2.1]{pi-spec}.
 The \ac{SMM} is a secure execution environment, achieved by isolation from the rest of the system, through the \ac{CPU} \cite[Vol. 4, Section 1.3]{pi-spec}.
 The \ac{PI} reference implementation also makes use of this event to lock the device that stores the firmware image \cite{tianocore-edk2-fmpdxe}.

@@ -5,7 +5,7 @@
 \label{sec:windows}
 
 Windows 11 is, at the time of writing, the latest iteration in the line of desktop \acp{OS} from Microsoft.
-It is build upon the foundation of Windows 10 and, as such, shares many security settings and policies with its predecessor \cite{microsoft-windows-11-overview}.
+It is built upon the foundation of Windows 10 and, as such, shares many security settings and policies with its predecessor \cite{microsoft-windows-11-overview}.
 Simultaneously, it raises the requirements of hardware\-/related security features.
 It does not support legacy \ac{BIOS} anymore, requires the \ac{PF} to conform to at least \ac{UEFI} version 2.3.1 and to be capable of Secure Boot.
 It also requires the presence of a \ac{TPM} version 2.0 \cite{microsoft-windows-minimum-hardware-requirements-overview}.
@@ -30,11 +30,11 @@ This is also the location of the final step of the Windows \ac{UEFI} boot proces
 \subsection{Boot}
 
 Now that we have established the basic structure of the Windows \ac{UEFI} boot environment, we can discuss the boot process.
-The Windows boot process begins after the \ac{UEFI} Boot Manager launches the Windows Boot Manager, which starts by retrieving its own executable path and the \ac{BCD} entry \ac{GUID} from the boot load options.
-Then it loads the \ac{BCD} and access its entry.
+The Windows boot process begins after the \ac{UEFI} Boot Manager launches the Windows Boot Manager, which starts by retrieving its executable path and the \ac{BCD} entry \ac{GUID} from the boot load options.
+Then it loads the \ac{BCD} and accesses its entry.
 It loads its own executable into memory for integrity verification \cite[Section 12]{windows-internals-7-part2} if not disabled in the \ac{BCD}.
 Depending on what hibernation status is set within the \ac{BCD}, it may launch the \program{Winresume.efi} application, which reads the hibernation file and resumes the kernel execution \cite[Section 12]{windows-internals-7-part2}.
-On a full boot it checks the \ac{BCD} for boot entries.
+On a full boot, it checks the \ac{BCD} for boot entries.
 If the entry points to a BitLocker encrypted drive, it attempts decryption.
 If this fails a recovery prompt is displayed, otherwise the system proceeds to load the \ac{OS} loader \program{Windload.efi} which maps the kernel image \program{ntoskernl.exe} into memory. After a call to \code{ExitBootServices()} it transfers execution to the kernel \cite[Section 12]{windows-internals-7-part2}.
 
@@ -45,8 +45,8 @@ It also supports firmware and option\-/\ac{ROM} updates via the capsule delivery
 
 \section{Registry}
 
-A crucial part to the whole Windows ecosystem is the \emph{Registry}.
-It is a system database containing information required to boot, what drivers to load, general system wide configuration as well as application configuration \cite[Section 1]{windows-internals-7-part1}.
+A crucial part of the whole Windows ecosystem is the \emph{Registry}.
+It is a system database containing the information required to boot, what drivers to load, general system\-/wide configuration as well as application configuration \cite[Section 1]{windows-internals-7-part1}.
 The Registry is a hierarchical database containing keys and values, whereas keys can contain other keys or values, forming a tree\-/like structure.
 Values store data through various data types.
 It is comparable to a file system structure with keys behaving like directories and values behaving like files \cite[Section 10]{windows-internals-7-part2}.

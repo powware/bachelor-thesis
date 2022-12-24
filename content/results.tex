@@ -4,9 +4,9 @@
 \label{sec:results}
 
 We were able to implement \ac{UEFI} attacks in the form of a \ac{UEFI} firmware rootkit and a \ac{UEFI} bootloader rootkit (bootkit).
-Both were able to deploy Windows level payload from within the \ac{UEFI} environment using an \ac{NTFS} driver.
+Both were able to deploy Windows\-/level payload from within the \ac{UEFI} environment using an \ac{NTFS} driver.
 We were able to modify the Windows Registry by porting the Linux utility \program{reged} to \ac{UEFI}.
-Through the manipulation of a Task Scheduler master registry key we were able to have our Windows payload executed with the privileges of the built-in local system account.
+Through the manipulation of a Task Scheduler master registry key, we were able to have our Windows payload executed with the privileges of the built-in local system account.
 The execution happens at system boot before login.
 
 We showed that the attack using our rootkit is unaffected by Secure Boot, as Secure Boot relies on the \ac{PF} as its root of trust.
@@ -14,7 +14,7 @@ This leaves Secure Boot unable to verify the behavior of the \ac{PI}, including 
 As Secure Boot's threat model consists of the hand\-/over process from the platform firmware to \ac{UEFI} images, the attack through our bootkit is successfully mitigated.
 
 When the target system uses \ac{BDE} with a \ac{TPM} 2.0 and the default validation profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}}, both our root\-/ and bootkit trigger the BitLocker recovery prompt protecting the hard drive from unauthorized access and stopping the boot process.
-We also show that Windows, giving the user an ability to override the \ac{TPM}'s security reaction by entering the recovery key, allows us to overcome \ac{BDE}.
+We also show that Windows, giving the user the ability to override the \ac{TPM}'s security reaction by entering the recovery key, allows us to overcome \ac{BDE}.
 Our \emph{BitLogger} was able to log the entered keystrokes to obtain the recovery key.
 We were then able to use the recovery key with our \ac{UEFI} port of \program{Dislocker} to mount the encrypted drive, allowing us to repeat our initial attack of deploying a payload and modifying the registry.
 

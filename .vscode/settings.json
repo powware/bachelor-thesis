@@ -13,5 +13,16 @@
         "*.custom_xml": "xml",
         "*.generic_xml": "xml",
         "simpletextinex.h": "c"
-    }
+    },
+    "grammarly.selectors": [
+        {
+            "language": "latex",
+            "scheme": "file",
+            "pattern": "content/past-threats.tex"
+        },
+        {
+            "language": "latex",
+            "scheme": "file"
+        }
+    ]
 }
