@@ -41,11 +41,11 @@ The infection is the most important part of an attack, as it dictates when, in w
 \subsection{Bootkit}
 
 Bootkits use the \ac{UEFI} Boot manager to gain execution on a system.
-There are a variety of methods using different options of the boot mechanism.
+There are a variety of methods using different mechanisms of the boot process.
 FinSpy backs up and replaces the Windows Boot Manager \program{bootmgfw.efi} on the \ac{ESP} \cite{finspy}.
-ESPecter patches the entrypoint of the Windows Boot Manager \program{bootmgfw.efi} and its copy \program{bootx64.efi} in the default boot path, so that it executes malicious code upon launch \cite{especter}.
-Dreamboot and EFIGuard are more proof-of-concept than real attacks and suggest to be booted into using removable media, but they are also able to be added to the default boot path on an \ac{ESP}, or generally added as their own new boot entry \cite{efiguard}.
-They are both applications which launch the Windows Boot Manager through its boot entry upon execution \cite{dreamboot, efiguard}.
+ESPecter patches the entry point of the Windows Boot Manager \program{bootmgfw.efi} and its copy \program{bootx64.efi} in the default boot path, so it executes malicious code upon launch \cite{especter}.
+Dreamboot and EFIGuard are more proof-of-concept than real attacks and suggest being booted into using removable media, but they are also able to be added to the default boot path on an \ac{ESP}, or generally added as their own new boot entry \cite{efiguard}.
+They are both applications, which launch the Windows Boot Manager through its boot entry upon execution \cite{dreamboot, efiguard}.
 
 \subsection{Rootkit}
 
@@ -53,16 +53,16 @@ Firmware rootkits have been rarer and how exactly the firmware images were infec
 VectorEDK uses \ac{OEM}'s software tooling to generate a firmware update utility on a bootable \ac{USB} stick that can then be inserted with physical access to the system \cite{mosaicregressor}.
 
 LoJax infection method comes with the signed kernel driver from the program \program{RWEverything}.
-\program{RWEverything} is a legitimate tool that can be used to query hardware\-/related informations on a system.
+\program{RWEverything} is a legitimate tool that can be used to query hardware\-/related information on a system.
 LoJax uses the driver to read and write to memory mapped \ac{I/O}, as well as \ac{PCI} configuration registers.
 It leverages this to find the \ac{SPI} flash mapping, to dump the firmware image.
 It then removes previously packaged \ac{NTFS} drivers and adds its payload.
 Reflashing the modified image relies on the platform to be either misconfigured or of an older kind that has a race condition exploit.
-The \ac{SPI} flash is secure by a \ac{BIOS} control register, which has a \ac{BIOS} write enable bit and \ac{BIOS} lock enable bit.
+The \ac{SPI} flash is secure by a \ac{BIOS} control register, which has a \ac{BIOS} Write Enable bit and \ac{BIOS} Lock Enable bit.
 The locking mechanism has to be correctly implemented by firmware designers through \ac{SMM} interrupts.
-When writing to the \ac{BIOS} write enable bit, while the \ac{BIOS} is enabled, the operation initially succeeds but is then reverted by a \ac{SMM} interrupt routine.
-This could either be incorrectly implemented or exploited through race condition using multi\-/processing or multi\-/threading on older hardware.
-When one thread constantly sets the write enable bit to 1 and the other tries to perform write operations on the \ac{SPI} flash, the firmware image will eventually be overwritten \cite{lojax}.
+When writing to the \ac{BIOS} Write Enable bit, while the \ac{BIOS} is enabled, the operation initially succeeds but is then reverted by a \ac{SMM} interrupt routine.
+This could either be incorrectly implemented or exploited through race conditions using multi\-/processing or multi\-/threading existing on older hardware.
+When one thread constantly sets the Write Enable bit to 1 and the other tries to perform write operations on the \ac{SPI} flash, the firmware image will eventually be overwritten \cite{lojax}.
 
 MosaicRegressor and LoJax add their payload in the form of \ac{DXE} drivers to a firmware volume \cite{mosaicregressor-technical-details,lojax}, as these are automatically executed by the \ac{DXE} dispatcher.
 MoonBounce and CosmicStrand instead patch existing files in the firmware image.
@@ -75,7 +75,7 @@ We can categorize the threats by their attack vector.
 Rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment prior to the Windows boot process.
 We found that their approach can mainly be divided into storage\-/based and memory\-/based attacks.
 Storage\-/based attacks mostly gain execution in the operating system environment by writing their payload into the Windows installation and modifying configuration data on the disk.
-These attacks are often performed offline, before any parts of the operating system are executed.
+These attacks are often performed offline before any parts of the operating system are executed.
 Memory\-/based attacks instead hook into the operating system's boot process to execute malicious code alongside the operating system in memory.
 For storage\-/based attacks, we were only able to find examples of rootkits \cite{vector-edk,mosaicregressor-technical-details,lojax}, whereas memory\-/based attacks were performed by both root- and bootkits \cite{dreamboot,efiguard,especter,finspy,moonbounce,cosmicstrand}.
 There is no technical limitation as we show in \autoref{sec:attacks:neither:bootkit} when we implement our own storage\-/based bootkit, but more likely a general preference for memory\-/based attacks, as they are more sophisticated.
@@ -83,22 +83,23 @@ Storage\-/based attacks face more restrictions such as BitLocker and code integr
 
 \subsection{Storage-based}
 
-Storage\-/based attacks need file-based access to the Windows installation to modify its content.
+Storage\-/based attacks need file\-/based access to the Windows installation to modify its content.
 The primary partition is \ac{NTFS} formatted and, due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[Section 13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack.
-\cite{mosaicregressor-technical-details} and \cite{lojax} seem to use \cite{vector-edk}'s leaked \ac{NTFS} driver.
-\cite{lojax} deploys its payload under the file path \program{C:\textbackslash Windows\textbackslash SysWOW64\textbackslash autoche.exe} and then modifies the registry entry \program{HKEY\_LOCAL\_MACHINE\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Control\textbackslash Session Manager\textbackslash BootExecute}, so that their payload is executed instead of the original executable.
-\cite{mosaicregressor-technical-details} simply deploys their payload in the Windows startup folder, whose contents, as its names suggests, are executed upon Windows startup.
+MosaicRegressor and Lojax seem to use VectorEDK's leaked \ac{NTFS} driver \cite{mosaicregressor-technical-details, lojax}.
+LoJax deploys its payload under the file path \program{C:\textbackslash Windows\textbackslash SysWOW64\textbackslash autoche.exe} and then modifies the registry entry \program{HKEY\_LOCAL\_MACHINE\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Control\textbackslash Session Manager\textbackslash BootExecute}, so that their payload is executed instead of the original executable \cite{lojax}.
+MosaicRegressor simply deploys their payload in the Windows startup folder \cite{mosaicregressor-technical-details}, whose contents, as its names suggests, are executed upon Windows startup.
 
 \subsection{Memory-based}
 
-It seems to be unique to \cite{especter} to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in-memory.
-\cite{finspy, dreamboot} when executed, load \program{bootmgfw.efi} into memory and apply patches before launching it.
-\cite{efiguard}'s core functionality is the same for its root- and bootkit variant.
-A \ac{DXE} driver is loaded, either from the \ac{DXE} dispatcher or through an intermediary loader application.
-This driver then hooks the \ac{UEFI} boot service \code{LoadImage()}. When this is either called by the \ac{UEFI} boot manager or the loader application to load \program{bootmgfw.efi}, it patches the bootloader in memory \cite{efiguard}. \cite{moonbounce} applies its patches within an \code{ExitBootServices()} hook.
+It seems to be unique to ESPecter to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in\-/memory \cite{especter}.
+FinSpy and Dreamboot when executed, load \program{bootmgfw.efi} into memory and apply patches before transferring execution \cite{finspy, dreamboot}.
+EFIGuard loads an additional \ac{UEFI} driver which is able to hook the boot service \code{LoadImage()}.
+When the function is called to load \program{bootmgfw.efi}, it patches the bootloader in memory \cite{efiguard}.
+MoonBounce applies its patches from within an \code{ExitBootServices()} hook \cite{moonbounce}.
 
 The general approach is the same for all memory\-/based attacks.
-They propagate their malicious execution further up in the boot chain, by hooking when images are loaded, i.e., from \program{bootmgfw.efi} to \program{Winload.efi} to \program{ntoskernel.exe} to the kernel image.
+They propagate malicious code execution further up in the boot chain by hooking each image of the boot process as it is loaded into memory, i.e., from \program{bootmgfw.efi} to \program{Winload.efi} to \program{ntoskernel.exe}, the kernel image.
 
-Some attacks patch the kernel to disable Windows Driver signing and then install a kernel driver \cite{efiguard,especter}.
-Others deploy payloads with elevated privileges \cite{finspy, dreamboot} or map code directly into the kernel space \cite{moonbounce,cosmicstrand}.
+EFIGuard and ESPecter patch the kernel to disable Windows Driver signing, allowing them to install further kernel drivers \cite{efiguard,especter}.
+While FinSpy and Dreamboot deploy payloads executed with elevated privileges \cite{finspy,dreamboot}.
+MoonBounce and CosmicStrand map code directly into the kernel space \cite{moonbounce,cosmicstrand}.
