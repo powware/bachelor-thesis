@@ -22,7 +22,7 @@ We were able to achieve system\-/level privileged execution on Windows 11 by exp
 With BitLocker enabled, our \emph{BitLogger} was able to decrypt and mount the drive using a keylogged Recovery Key.
 When BitLocker is misconfigured or our code is part of the trusted measurements, we could sniff the \acs{TPM} communication to retrieve the \acs{VMK}.
 % conclusions
-\acs{UEFI} threats are very powerful and discredit all system integrity, making it impossible to put any further trust into the system.
+Our thesis shows, that \acs{UEFI} threats are very powerful, to a point where they discredit all system integrity, making it impossible to put any further trust into the system.
 
 \acresetall
 
@@ -32,16 +32,16 @@ When BitLocker is misconfigured or our code is part of the trusted measurements,
 \label{sec:zusammenfassung}
 
 Firmware Attacken sind eine der gef\"urchtesten Sicherheitsrisiken in der Computersicherheit.
-Sie werden w\"ahrend des Bootvorgangs ausgef\"uhrt und k\"oennen bereits Kontrolle \"uber das gesamte System erlangen, bevor das Betriebssystem und seine begleitenden Antivirusprogramme geladen worden sind.
-Mit der zunehmenden Verbreitung von standardisierten \acf{UEFI}\-/Firmware sind diese Bedrohungen weniger ger\"ateabh\"anig geworden und k\"onnen nun eine Vielzahl von Systemen gleichzeitig adressieren.
+Sie werden w\"ahrend des Bootvorgangs ausgef\"uhrt und k\"onnen Kontrolle \"uber das gesamte System erlangen, bevor das Betriebssystem und seine begleitenden Antivirusprogramme geladen worden sind.
+Mit der zunehmenden Verbreitung von standardisierter \acf{UEFI} Firmware sind diese Bedrohungen weniger ger\"ateabh\"anig geworden und k\"onnen nun eine Vielzahl von Systemen gleichzeitig adressieren.
 Das Vorkommnis solcher Attacken ist weiterhin recht selten, da sie von Natur aus schwierig aufzufinden sind.
-Durch Analysen bisheriger Funde k\"oennen wir ihre Angriffsvektoren kategorisieren und unsere praktische Analyse durchf\"uhren.
+Durch Analysen bisheriger Funde k\"onnen wir ihre Angriffsvektoren kategorisieren und unsere praktische Analyse durchf\"uhren.
 Wir tauchen in die \ac{UEFI}\-/Welt ein, um durch die Implementierung eigener Attacken die Sicherheitsmechanismen des Bootvorgangs besser zu verstehen.
 Dabei setzen wir unseren Fokus auf Secure Boot und BitLocker unter Verwendung des \acf{TPM}.
 Als Resultat unserer Attacken erreichten wir Codeausf\"uhrung mit erh\"ohten Privilegien unter Windows 11.
 Mittels unbeschr\"ankten Zugriffs auf die Festplatte konnten wir weitere Benutzerebnenprogramme installieren und die Windows Registry modifizieren.
-Wenn BitLocker aktiv ist, erm\"oglichte unser \emph{BitLogger} das Entschl\"usseln der Festplatten durch einen mitgelauschten Recovery Key.
-Bei einer Fehlkonfiguration BitLockers oder im Fall, dass unser Schadcode Teil der vertrauten Messungen ist, ist es m\"oglich die Kommunikation zum \ac{TPM} mitzuschneiden, um an den \acf{VMK} zu gelangen.
+Wenn BitLocker aktiv ist, erm\"oglichte unser \emph{BitLogger} das Entschl\"usseln der Festplatten durch einen mitgeloggten Recovery Key.
+Bei einer Fehlkonfiguration BitLockers oder, wenn unser Schadcode Teil der vertrauten Messungen ist, k\"onnen wir die \ac{TPM}\-/Kommunikation mitlesen, um an den \acf{VMK} zu gelangen.
 Unsere Arbeit zeigt, dass \ac{UEFI}\-/Bedrohungen sehr m\"achtig sind und durch sie jegliche Systemintegrit\"at so diskreditiert wird, dass es unm\"oglich ist dem System weiter zu vertrauen.
 
 \acresetall

@@ -1,6 +1,7 @@
 % !TeX root = ../../thesis.tex
 
 \section{Security}
+\vspace{-0.5em}
 
 \autoref{fig:windows-startup-process} gives an overview of the security within the Windows startup process, with \emph{Secure Boot} starting the process and \emph{Trusted Boot} eventually taking over.
 We do not cover \emph{Measured Boot} in this thesis.
@@ -12,8 +13,9 @@ We do not cover \emph{Measured Boot} in this thesis.
     \label{fig:windows-startup-process}
 \end{figure}
 
+\vspace{-0.5em}
 \subsection{Secure Boot}
-% \vspace{-0.5em} % shorten white space to make room for one more line
+\vspace{-0.5em}
 Devices shipping with Windows 11 must\-/have Secure Boot enabled by default \cite{microsoft-windows-minimum-hardware-requirements-overview}.
 Windows\-/certified devices generally must allow users to enroll custom keys and signature \acp{DB} (to allow execution of non\-/Windows bootloaders).
 Additionally, a user should be able to completely disable secure boot.
@@ -21,10 +23,10 @@ Windows offers two signature \acp{DB}: the \emph{Microsoft Windows Production PC
 Microsoft advises to only allow other third party \ac{UEFI} applications if necessary and even mandates the exclusion of \acp{DB} other than \emph{Microsoft Windows Production PCA 2011} on Secured\-/core \acp{PC} \cite{microsoft-secure-the-windows-boot-process}.
 
 \subsection{Trusted Boot}
-% \vspace{-0.5em} % shorten white space to make room for one more line
+\vspace{-0.5em}
 Trusted Boot picks up where Secure Boot left off and maintains the code integrity chain through the kernel into the Windows startup process.
 \ac{KMCI} verifies the digital signature of Windows boot components, including boot drivers, startup files, and the \ac{ELAM} driver \cite{microsoft-trusted-boot}.
-\ac{ELAM} provides antimalware software developers an interface to be initialized early in the boot process, before other third\-/party components, to monitor the subsequent boot process \cite{micosoft-windows-elam}.
+\ac{ELAM} provides anti\-/malware software developers an interface to be initialized early in the boot process, before other third\-/party components, to monitor the subsequent boot process \cite{micosoft-windows-elam}.
 \cite{understanding-windows-trusted-boot} gives a detailed walkthrough of the trusted boot process.
 
 Microsoft can also leverage hardware virtualization features called \ac{VSM} for \ac{VBS}.
@@ -36,7 +38,7 @@ Microsoft has since retired the term to prevent confusion, as there is no direct
 \subsection{\acf{BDE}}
 \label{sec:windows:security:bde}
 
-Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside of the \ac{OS} environment \cite[Section 9]{windows-internals-6-part2}.
+Windows is only able to enforce security policies when it is active, leaving the system vulnerable when accessed from outside the \ac{OS} environment \cite[Section 9]{windows-internals-6-part2}.
 Windows uses BitLocker, an integrated \ac{FVE}, aimed to protect system files and data from unauthorized access while at rest \cite{microsoft-bitlocker-overview}.
 It also serves as a mechanism to verify boot integrity when used in combination with a \ac{TPM} \cite[Section 9]{windows-internals-6-part2}.
 The en- and decryption of the volume is done by a filter driver beneath the \ac{NTFS} driver as depicted in \autoref{fig:bitlocker-volume-access-driver-stack}.
