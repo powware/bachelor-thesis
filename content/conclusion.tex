@@ -3,15 +3,15 @@
 \chapter{Conclusion}
 \label{sec:conclusion}
 
-Our practical analysis of \ac{UEFI} threats against Windows 11 showed that enabling Secure Boot when using BitLocker comes with a hidden forfeiture of security.
+Our practical analysis of \ac{UEFI} threats against Windows 11 showed that enabling Secure Boot when using BitLocker comes with a hidden reduction in security.
 Microsoft misuses Secure Boot in an attempt to provide platform firmware integrity validation, where the \ac{TPM} already offers a perfectly fine solution.
 With such a misconfigured BitLocker validation profile our rootkit was able to sniff the communication between the Windows Boot Manager and \ac{TPM} without introducing side effects.
-Through interception of the \emph{unseal} command we gained access to the unencrypted BitLocker \ac{VMK}, to decrypt the hard drive and deploy further payload in the Windows installation.
+Through interception of the \emph{unseal} command, we gained access to the unencrypted BitLocker \ac{VMK}, to decrypt the hard drive and deploy further payload in the Windows installation.
 By then modifying the Windows registry our payload was executed with privileges of the local system account.
 
-Microsoft also have set a dangerous precedence by offering the user a mechanism to override the security reaction to integrity violations in an inherently untrustworthy system.
+Microsoft also has set a dangerous precedent by offering the user a mechanism to override the security reaction to integrity violations in an inherently untrustworthy system.
 In the case of a correctly configured BitLocker validation profile the code of our root- or bootkit is measured into the \ac{TPM}, causing the \emph{unseal} operation to fail and the Windows Boot Manager to trigger a recovery prompt.
-The burden of security enforcement is now left to the user and when they decide put further trust into the system and enter the recover key, our \emph{BitLogger} is able to record the performed keystrokes to decrypt the hard drive.
+The burden of security enforcement is now left to the user and when they decide to put further trust into the system and enter the recovery key, our \emph{BitLogger} can record the performed keystrokes to decrypt the hard drive.
 
 \section*{Future Work}
 

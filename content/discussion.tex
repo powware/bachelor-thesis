@@ -8,62 +8,62 @@
 \chapter{Discussion}
 \label{sec:discussion}
 
-The biggest takeaway of our attacks is, that counter\-/intuetively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
+The biggest takeaway of our attacks is, that counter\-/intuitively BitLocker\-/protected Windows 11 installations are likely less secure against \ac{UEFI} rootkits when Secure Boot is enabled compared to when it is disabled.
 We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Windows is secure regardless of using \ac{TPM} profile \hyperref[tab:pcr-usage]{\code{\{0, 2, 4, 11\}}} or profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}} and that \textcquote{microsoft-windows-bitlocker-group-policy-settings-allow-secure-boot}{Secure boot ensures that the computer's pre-boot environment loads only firmware that is digitally signed by authorized software publishers.}.
-Excluding \ac{PCR}0 in the validation profile and relying soley on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
+Excluding \ac{PCR}0 in the validation profile and relying solely on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
 Quite the contrary, Secure Boot relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
-Its purpose is to enforce authentication when the \ac{PF} interacts with \ac{UEFI} images outside of the firmware image.
-Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings-allow-secure-boot}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled  and the \textbf{hardware is capable} of using secure boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
+Its purpose is to enforce authentication when the \ac{PF} interacts with \ac{UEFI} images outside the firmware image.
+Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings-allow-secure-boot}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled and the \textbf{hardware is capable} of using Secure Boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
 Hardware Validated Boot moves the root of trust out of the firmware image into hardware and together with Secure Boot would be a sufficient way to replace the early boot component measurements of the \ac{TPM} for BitLocker.
 But as we have shown, the policy does not require Hardware Validated Boot.
 Microsoft's decision to use Secure Boot for integrity validation leaves a lot of systems more vulnerable than they should be.
-Any attacker with read and write access to the firmware image is able to gain control over such a system.
+Any attacker with read and write access to the firmware image can gain control over such a system.
 This is especially easy for attackers with physical access, with a stolen laptop being a prime candidate for the attack.
 We cannot even argue for Microsoft doing this out of a trade\-/off between security and convenience.
-It is true that leaving out \ac{PCR}0 does significantly reduce the chance of the \ac{TPM} being unable unseal the \ac{VMK} after a firmware update, making validation profiles containing \ac{PCR}0 more prone to false positives in comparison.
+It is true that leaving out \ac{PCR}0 does significantly reduce the chance of the \ac{TPM} being unable to unseal the \ac{VMK} after a firmware update, making validation profiles containing \ac{PCR}0 more prone to false positives in comparison.
 It is also the case that Secure Boot does not enforce its authentication and policies on code that is measured into \ac{PCR}0.
 If Microsoft were to have intentionally made this trade\-/off, Secure Boot should not be the deciding factor on whether to leave out \ac{PCR}0 or not.
-A validation profile that maintains a similarly, to \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, reduced security for systems without Secure Boot would have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}}.
+A validation profile that maintains a similarly reduced security, compared to \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, for systems without Secure Boot would have been \hyperref[tab:pcr-usage]{\code{\{2, 4, 11\}}}.
 With this profile, only measurements of the \ac{TPM} regarding code that Secure Boot reigns over, are used for BitLocker, and \ac{PCR}0 would have also been left out for convenience.
 Microsoft's decision, instead, causes different levels of security across systems with and without Secure Boot, with systems using Secure Boot being at the short end of the stick.
 Secure Boot effectively leads to a hidden degradation of security.
 
-As a result, we advice to override the default validation profile settings when using BitLocker.
-For additional security \ac{PCR}0 should always be included.
+As a result, we advise overriding the default validation profile settings when using BitLocker.
+For additional security, \ac{PCR}0 should always be included.
 
 \section{Recovery Key as Security Override}
 
-Even when BitLocker correctly picks up on an integrity violation, the security advantage still highly dependens on the user's reaction to the recovery prompt.
+Even when BitLocker correctly picks up on an integrity violation, the security advantage still highly depends on the user's reaction to the recovery prompt.
 While BitLocker protects in scenarios where the system owner is not present by preventing unauthorized access to the hard drive, we argue that the significance of the recovery prompt's appearance is dismissed by providing the system owner an immediate ability to override the security reaction with a recovery key.
 This leaves the burden of security enforcement to the user.
-It is now their responsibility to be aware of the security related implications of the recovery prompt and to act accordingly upon them.
+It is now their responsibility to be aware of the security\-/related implications of the recovery prompt and to act accordingly upon them.
 We can look at how the user is influenced in their decision, taking a closer look at the recovery prompt in \autoref{fig:bitlocker-recovery-prompt}, we see that the message suggests a configuration change might have caused the prompt to appear.
-It is hinting the user, that the removal of a disk or \ac{USB} stick might fix the issue.
+It is hinting to the user, that the removal of a disk or \ac{USB} stick might fix the issue.
 The rest is only about helping the user to find their recovery key to enter.
 
 When taking appropriate precautions the hard drive should be removed from the system and inserted into a trustworthy system.
-From here the recovery key can be used to to fullfil its namesake, recovering data from the drive.
+From here the recovery key can be used to fulfill its namesake, recovering data from the drive.
 Entering the recovery key into the recovery prompt is not data recovery, it is overriding a security mechanism.
-Presumably a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prior BitLocker suspension, boot configuration related changes etc.
-When there is no reasonable assumption for the user to have encounter the recovery prompt they should not enter the recovery key.
-After all the inherent problem is that the system integrity has been violated, in what fashion is now unverifiable.
+Presumably, a user assumes to have encountered the recovery prompt through a false positive, a firmware update without prior BitLocker suspension, boot configuration\-/related changes etc.
+When there is no reasonable assumption for the user to have encountered the recovery prompt they should not enter the recovery key.
+After all the inherent problem is that the system's integrity has been violated, in what fashion is now unverifiable.
 It leaves the system in a state where no further trust should be put into it.
 A distinction about whether a false positive or malicious code has caused the recovery prompt is not possible.
-It is also the only time a user has a chance to react correctly, as with their decision to further put trust into an infected system, causes from hereinafter that malicious code will be part of the root of trust.
+It is also the only time a user has a chance to react correctly, as their decision to further put trust into an infected system, causes from hereinafter that malicious code will be part of the root of trust.
 
-Microsoft allowing this security override created a dangerous precedence, especially since they do not display any warnings about inherent danger.
-Instead of a recovery prompt the user should have been made aware of the inherent loss of system integrity instead of normalising the security override.
+Microsoft allowing this security override created a dangerous precedent, especially since they do not display any warnings about the inherent danger.
+Instead of a recovery prompt, the user should have been made aware of the inherent loss of system integrity instead of normalizing the security override.
 Any future adjustments in the recovery prompt, to provide more user awareness, can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
-It is already possible to  easily modify the message and \ac{URL} displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings-url}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
+It is already possible to easily modify the message and \ac{URL} displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings-url}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
 Even if the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
 
 An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
-It is somewhat of a last ditch effort, relying on social engineering and may be compared to phishing.
+It is somewhat of a last\-/ditch effort, relying on social engineering and may be compared to phishing.
 
 \section{Mitigations}
 
-Enabling Hardware Validated Boot should prevent the execution of any malicious code within in the firmware image.
+Enabling Hardware Validated Boot should prevent the execution of any malicious code within the firmware image.
 Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction, preventing the stolen laptop scenario, even if only \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used.
-When the owner is present to enter the \ac{PIN} into an infected system, it unfortunately does not provide any additional security.
-It is always beneficial to use a password to protect the interactive firmware menu, so that Secure Boot cannot be disabled and booting into malicious removable media is prevented.
-System designers can also take into account to make it harder to acccess the flash, so that an attacker will have trouble modifing the firmware image.
+When the owner is present to enter the \ac{PIN} into an infected system, it, unfortunately, does not provide any additional security.
+It is always beneficial to use a password to protect the interactive firmware menu, so Secure Boot cannot be disabled and booting into malicious removable media is prevented.
+System designers can also take into account making it harder to access the flash, so an attacker will have trouble modifying the firmware image.
