@@ -91,7 +91,7 @@ On top of that, the private data likely contains information about the device st
 
 \lstinputlisting[language=C, captionpos=b, firstline=6, caption={Example of a driver using private data in the implementation of the \nameref{lst:disk-io-protocol}}, label=lst:private-data]{code/private_data.c}
 
-Since our \ac{UEFI} payload is executed before the Windows Boot Manager, we can query all instances of the \nameref{lst:simple-text-input-ex-protocol} and change each function pointer of \code{ReadKeyStrokeEx()} to point to our function hook.
+Since our \ac{UEFI} payload is executed before the Windows Boot Manager, we can query all \nameref{lst:simple-text-input-ex-protocol} instances and change each function pointer of \code{ReadKeyStrokeEx()} to point to our function hook.
 When the Windows Boot Manager later receives the protocol instance and calls \code{ReadKeyStrokeEx()} our hook is called instead of the original function.
 The hook has to be implemented in memory, that remains loaded until the Windows Boot Manager uses \code{ReadKeyStrokeEx()}.
 We can do this using a boot driver, as its image remains loaded until \code{ExitBootServices()} is called.

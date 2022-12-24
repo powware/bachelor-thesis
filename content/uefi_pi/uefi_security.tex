@@ -21,12 +21,12 @@ Secure Boot also disallows legacy booting through the \ac{CSM}.
 Secure Boot is managed through three components: a \ac{PK}, one or more \ac{KEK}, and the signature \acp{DB}.
 
 \begin{description}
-    \item[\acf{PK}]
+    \item[\acl{PK}]
         The \ac{PK} establishes a trust relationship between platform owner and firmware, the public half is enrolled into the firmware.
         The private half represents platform ownership, as it can be used to change or delete the \ac{PK} as well as enroll or modify \acp{KEK}.
-    \item[\acf{KEK}]
-        The \ac{KEK} establishes a trust relationship between \ac{OS} and firmware, as its private half is used to modify the signature \acp{DB}.
-    \item[Signature \acfp{DB}]
+    \item[\acl{KEK}]
+        The \ac{KEK} establishes a trust relationship between \ac{OS} and firmware, as its private half is used to modify the signature \acfp{DB}.
+    \item[Signature \aclp{DB}]
         Signature \acp{DB} contain image hashes and certificates, to either allow or deny execution of associated images.
 \end{description}
 

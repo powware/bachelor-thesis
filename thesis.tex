@@ -81,36 +81,6 @@
 % for example: ``The \filename{result\_scenario1.sca} file''
 \newcommand{\filename}[1]{\textsl{#1}\xspace}
 %
-% ---------------------------------------------------------------------------------------------------
-% NOTE: the alternative four commands below can be used just like the ones above WITHOUT the need to escape special LaTeX characters
-% BUT:  these command variants cannot be used inside other commands or macros (e.g., \caption{})
-%
-%\usepackage{xparse}		% package to support parsing of customized commands and macros
-%
-% to emphasize all source-code-related information outside a listing without escaping LaTeX characters
-% for example: ``The \Code{copy(&buffer)} function''
-%\DeclareDocumentCommand\Code{ v }{%
-%{\texttt{#1}\xspace}%
-%}%
-%
-% to emphasize all non-source-code-related information
-% for example: ``The program uses the a \Cursive{Mersenne_Twister} function ''
-%\DeclareDocumentCommand\Cursive{ v }{%
-%{\textit{#1}\xspace}%
-%}%
-%
-% to emphasize program and tool names without escaping LaTeX characters
-% for example: ``The \Program{opp_runall} tool''
-%\DeclareDocumentCommand\Program{ v }{%
-%{\textbf{#1}\xspace}%
-%}%
-%
-% to emphasize file names without escaping LaTeX characters
-% for example: ``The \Filename{result#01.res} file''
-%\DeclareDocumentCommand\Filename{ v }{%
-%{\textsl{#1}\xspace}%
-%}%
-%
 
 % --------------------------pdfbookmark
 % Front matter
