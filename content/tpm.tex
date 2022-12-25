@@ -26,7 +26,7 @@ The measurement chain starts with a point called the \ac{CRTM}, consisting of th
 A root of trust in a system is an element that must be trusted as its behavior is non\-/verifiable \cite{tcg-tpm-library-part1-architecture}.
 \cite[3.2.2]{tcg-pc-client-platform-firmware-profile-spec} requires this chain to start in an immutable portion of the \ac{PI} process, the \ac{SRTM}.
 \cite[3.2.3.1]{tcg-pc-client-platform-firmware-profile-spec} defines the \ac{PF} to be composed of a Boot Block and the \ac{UEFI} firmware, the Boot Block consists of the \ac{SEC} and \ac{PEI} phase as well as the \ac{IBB}.
-The Boot Block forms the \ac{SRTM}, while the \ac{UEFI} firmware is only part of the chain of trust by being measured from the \ac{SRTM}.
+The \ac{IBB} forms the \ac{SRTM}, while the rest of the \ac{UEFI} firmware is only part of the chain of trust by being measured from the \ac{SRTM}.
 The \ac{RTM} can either start with the \ac{SRTM} measuring itself or a \ac{H-CRTM} measuring the \ac{SRTM}.
 It falls under the responsibility of the \ac{PF} to perform the integrity measurements \cite{tcg-pc-client-platform-firmware-profile-spec}.
 Different parts of the boot process are measured into separate \acp{PCR}.

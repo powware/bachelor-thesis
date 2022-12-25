@@ -24,7 +24,7 @@ We access the \ac{ESP} and create a copy of the Windows Boot Manager located und
 We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
 Now that our bootkit is in place of the Windows Boot Manager; when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, it will cause our bootkit to be executed.
 \autoref{fig:windows-boot-entry} shows a dump of the Windows boot entry using the \ac{UEFI} shell command \program{bcfg}.
-The entry contains the device path including the file path and optional data.
+The entry contains the \hyperref[lst:device-path-protocol]{device path} including the \hyperref[lst:device-path-protocol]{file path} and optional data.
 
 \begin{figure}[htb]
     \centering
@@ -43,7 +43,7 @@ Using \ac{EDK} II to compile it, we receive a \program{.efi} executable image.
 
 We can use the \ac{UEFI} shell and its file system\-/related commands to test the \ac{NTFS} driver's capabilities.
 When booting into the \ac{UEFI} shell we are greeted with a screen displaying the \ac{UEFI} specification version the firmware supports and a list of default mappings for file systems and block devices.
-These mappings are created by the shell to provide a short name that can be used interchangeably with a longer device path when issuing commands \cite[Section 3.7.2]{uefi-shell-spec}.
+These mappings are created by the shell to provide a short name that can be used interchangeably with a longer \hyperref[lst:device-path-protocol]{device path} when issuing commands \cite[Section 3.7.2]{uefi-shell-spec}.
 They are designed to be consistent across reboots as long as the hardware configuration stays the same and are comparable to Windows partition letters \cite[Appendix A]{uefi-shell-spec}.
 \autoref{fig:mapping} shows the mapping of a partition containing a Windows installation.
 As there is no \ac{NTFS} driver present yet, it is only displayed as a block device.

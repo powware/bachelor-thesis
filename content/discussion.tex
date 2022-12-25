@@ -13,9 +13,9 @@ We disprove Microsoft's statements that \textcquote{microsoft-pcr7-binding}{Wind
 Excluding \ac{PCR}0 in the validation profile and relying solely on Secure Boot for integrity validation is a flawed approach, as this is not part of Secure Boot's threat model.
 On the contrary, Secure Boot relies on the firmware as its root of trust, meaning it is not able to validate the behavior of the \ac{PI} process.
 Its purpose is to enforce authentication when the \ac{PF} interacts with \ac{UEFI} images outside the firmware image.
-Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings-allow-secure-boot}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled and the \textbf{hardware is capable} of using Secure Boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to Hardware Validated Boot.
-Hardware Validated Boot moves the root of trust out of the firmware image into hardware and together with Secure Boot would be a sufficient way to replace the early boot component measurements of the \ac{TPM} for BitLocker.
-But as we have shown, the policy does not require Hardware Validated Boot.
+Microsoft also states \textcquote{microsoft-windows-bitlocker-group-policy-settings-allow-secure-boot}{When this policy [\emph{Allow Secure Boot for integrity validation}] is enabled and the \textbf{hardware is capable} of using Secure Boot for BitLocker scenarios, the \emph{Use enhanced Boot Configuration Data validation profile} group policy setting is ignored}, which might refer to \ac{HVB}.
+\ac{HVB} moves the root of trust out of the firmware image into hardware and together with Secure Boot would be a sufficient way to replace the early boot component measurements of the \ac{TPM} for BitLocker.
+But as we have shown, the policy does not require \ac{HVB}.
 Microsoft's decision to use Secure Boot for integrity validation leaves a lot of systems more vulnerable than they should be.
 Any attacker with read and write access to the firmware image can gain control over such a system.
 This is especially easy for attackers with physical access, with a stolen laptop being a prime candidate for the attack.
@@ -63,7 +63,10 @@ It is somewhat of a last\-/ditch effort, that relies on social engineering and m
 
 \section{Mitigations}
 
-Enabling Hardware Validated Boot should prevent the execution of any malicious code within the firmware image.
+\TODO{REWORD}
+start by including PCR0
+
+Enabling \ac{HVB} should prevent the execution of any malicious code within the firmware image.
 Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction, preventing the stolen laptop scenario, even if only \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used.
 When the owner is present to enter the \ac{PIN} into an infected system, it, unfortunately, does not provide any additional security.
 It is always beneficial to use a password to protect the interactive firmware menu, so Secure Boot cannot be disabled and booting into malicious removable media is prevented.

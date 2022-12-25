@@ -14,65 +14,73 @@
 \lstinputlisting[language=C,caption={Runtime Services},captionpos=b,label=lst:runtime-services]{code/runtime_services.h}
 \clearpage
 
+\section{\acsp{PPI}}
+
+\subsection{\acs{PEI} Guided Section Extraction \acs{PPI}}
+\lstinputlisting[language=C,firstline=4,caption={\acs{PEI} Guided Section Extraction \acs{PPI}},captionpos=b,label=lst:pei-guided-section-extraction-ppi]{code/ppis/GuidedSectionExtraction.h}
+\clearpage
+
+\subsection{\acs{PEI} Security2 \acs{PPI}}
+\lstinputlisting[language=C,firstline=4,caption={\acs{PEI} Security2 \acs{PPI}},captionpos=b,label=lst:pei-security2-ppi]{code/ppis/Security2.h}
+\clearpage
+
 \section{Protocols}
+
+\subsection{Device Path Protocol}
+\lstinputlisting[language=C,firstline=4,caption={Device Path Protocol},captionpos=b,label=lst:device-path-protocol]{code/protocols/DevicePath.h}
+\clearpage
 
 \subsection{Loaded Image Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Loaded Image Protocol},captionpos=b,label=lst:loaded-image-protocol]{code/protocols/LoadedImage.h}
-
 \clearpage
 
 \subsection{Driver Binding Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Driver Binding Protocol},captionpos=b,label=lst:driver-binding-protocol]{code/protocols/DriverBinding.h}
+\clearpage
 
+\subsection{Partition Information Protocol}
+\lstinputlisting[language=C,firstline=4,caption={Partition Information Protocol},captionpos=b,label=lst:partition-information-protocol]{code/protocols/PartitionInfo.h}
 \clearpage
 
 \subsection{Simple File System and File Protocol}
 
 \subsubsection{Simple File System Protocol}
-
 \lstinputlisting[language=C,firstline=4,lastline=14,caption={Simple File System Protocol},captionpos=b,label=lst:simple-file-system-protocol]{code/protocols/SimpleFileSystem.h}
 
 \subsubsection{File Protocol}
-
 \lstinputlisting[language=C,firstline=16,caption={File Protocol},captionpos=b,label=lst:file-protocol]{code/protocols/SimpleFileSystem.h}
-
 \clearpage
 
 \subsection{Disk \acs{I/O} Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Disk \ac{I/O} Protocol},captionpos=b,label=lst:disk-io-protocol]{code/protocols/DiskIo.h}
-
 \clearpage
 
 \subsection{Block \acs{I/O} Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Block \ac{I/O} Protocol},captionpos=b,label=lst:block-io-protocol]{code/protocols/BlockIo.h}
-
 \clearpage
 
 \subsection{\acf{BDS} Architectural Protocol}
-
 \lstinputlisting[language=C,firstline=4,caption={\acs{BDS}  Architectural Protocol},captionpos=b,label=lst:bds-protocol]{code/protocols/Bds.h}
-
-\clearpage
-
-\subsection{Firmware Volume2 Protocol}
-
-\lstinputlisting[language=C,firstline=4,caption={\ac{BDS} Protocol},captionpos=b,label=lst:firmware-volume2-protocol]{code/protocols/FirmwareVolume2.h}
-
 \clearpage
 
 \subsection{Simple Text Input Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Simple Text Input Protocol},captionpos=b,label=lst:simple-text-input-protocol]{code/protocols/SimpleTextIn.h}
-
 \clearpage
 
 \subsection{Simple Text Input Ex Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Simple Text Input Ex Protocol},captionpos=b,label=lst:simple-text-input-ex-protocol]{code/protocols/SimpleTextInEx.h}
-
 \clearpage
 
 \subsection{\acs{TCG}2 Protocol}
 \lstinputlisting[language=C,firstline=4,caption={\ac{TCG}2 Protocol},captionpos=b,label=lst:tcg2-protocol]{code/protocols/Tcg2Protocol.h}
 
+\clearpage
+\subsection{Firmware Volume2 Protocol}
+\lstinputlisting[language=C,firstline=4,caption={\ac{BDS} Protocol},captionpos=b,label=lst:firmware-volume2-protocol]{code/protocols/FirmwareVolume2.h}
+\clearpage
+
+\subsection{Guided Section Extraction Protocol}
+\lstinputlisting[language=C,firstline=4,caption={Guided Section Extraction Protocol},captionpos=b,label=lst:guided-section-extraction-protocol]{code/protocols/GuidedSectionExtraction.h}
 \clearpage
 
 \subsection{Security Architectural Protocols}
@@ -83,19 +91,15 @@
 
 \subsubsection{Security2 Architectural Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Security2 Architectural Protocol},captionpos=b,label=lst:security2-architectural-protocol]{code/protocols/Security2.h}
-
 \clearpage
 
 \subsection{Firmware Management Protocol}
 \lstinputlisting[language=C,firstline=4,caption={Firmware Management Protocol},captionpos=b,label=lst:firmware-management-protocol]{code/protocols/FirmwareManagement.h}
-
 \clearpage
 
-\subsection{Partition Information Protocol}
-\lstinputlisting[language=C,firstline=4,caption={Partition Information Protocol},captionpos=b,label=lst:partition-information-protocol]{code/protocols/PartitionInfo.h}
-
+\subsection{\acs{PCI} Root Bridge \acs{I/O} Protocol}
+\lstinputlisting[language=C,firstline=4,caption={\acs{PCI} Root Bridge \acs{I/O} Protocol},captionpos=b,label=lst:pci-root-bridge-io-protocol]{code/protocols/PciRootBridgeIo.h}
 \clearpage
-
 
 \section{Firmware File Types}
 

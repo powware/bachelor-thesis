@@ -74,7 +74,7 @@ This process is repeated until no more \acp{PEIM} can be dispatched.
 The foundation then invokes the \emph{\ac{DXE} IPL \ac{PPI}}, which loads the \ac{DXE} foundation into memory, to then transfer execution \cite[Vol. 1, 2.6]{pi-spec}.
 The \ac{BFV} containing the \ac{PEI} foundation, initially discovered by the \ac{SEC} phase, and any additionally discovered \acp{FV} are also passed off to the \ac{DXE} in the form of \acp{HOB}.
 
-While the \ac{PEI} phase has many architecturally required \acp{PPI} that modules have to implement, the \ac{PI} also defines optional \acp{PPI}, one of which is the \emph{Security PPI}.
+While the \ac{PEI} phase has many architecturally required \acp{PPI} that modules have to implement, the \ac{PI} also defines optional \acp{PPI}, one of which is the \nameref{lst:lst:pei-security2-ppi}.
 It is used to maintain the chain of trust by offering the chance for platform builders to authenticate or log \acp{PEIM} before they are executed \cite[Vol. 1, 6.3.6]{pi-spec}.
 
 

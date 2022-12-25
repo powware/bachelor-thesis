@@ -8,7 +8,7 @@ A shell application may already be part of the boot options but can always be su
 
 The \ac{UEFI} shell is a great tool to visualize the \ac{UEFI} environment.
 With the \program{devtree} command, for example, we can see the tree of all handles complying with the \ac{UEFI} driver model.
-This also serves as a great reference on how device paths are formed.
+This also serves as a great reference on how \hyperref[lst:device-path-protocol]{device paths} are formed.
 \autoref{fig:devtree} shows the output of \program{devtree} cropped to show a \ac{GPT} formatted hard drive and its logical partitions.
 When the firmware discovers a block device it is also required to search for a partition table and create a device handle for each partition.
 Device drivers abstracting file systems can then be connected to a partition handle and check whether a supported file system format type is present.

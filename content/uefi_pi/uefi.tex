@@ -86,7 +86,7 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
     \item[Driver image handles] are the \ac{UEFI} Driver Model protocols installed onto images loaded in memory.
     \item[Agent handles] is a term used in the \ac{UEFI} Driver Model, they describe tracked consumers of other protocols.
     \item[Controller/Device handles] are interchangeably used to refer to physical and virtual devices that offer \ac{I/O} abstraction protocols.
-        Physical device handles support the Device Path Protocol for generic path/location information \cite[Section 10.2]{uefi-spec}.
+        Physical device handles support the \nameref{lst:device-path-protocol} for generic path/location information \cite[Section 10.2]{uefi-spec}.
     \item[Service handles] are used for generic hardware\-/unrelated abstractions.
 \end{description}
 
@@ -96,8 +96,8 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
 It is designed to simplify the implementation process of device drivers by moving common device management and discovery functionality into the firmware.
 This leaves drivers with the responsibility to offer only interfaces for installation and removal.
 
-An \ac{UEFI} platform is assumed to consist of one or more \acp{CPU} to be connected to one or more core chipsets.
-The core chipsets produce host bus controllers which offer initial \ac{I/O} abstractions like the \ac{PCI} Root Bridge \ac{I/O} Protocol.
+A \ac{UEFI} platform is assumed to consist of one or more \acp{CPU} to be connected to one or more core chipsets.
+The core chipsets produce host bus controllers which offer initial \ac{I/O} abstractions like the \nameref{lst:pci-root-bridge-io-protocol}.
 Bus drivers can be connected to these host bus controllers to discover and create child controllers, these can either be further buses or devices.
 This forms a tree of buses with devices as leaves.
 Devices can be keyboards, mice, monitors, etc. (for user in\-/and output) or hard drives, network adapters, etc. (boot devices) \cite[Section 2.5]{uefi-spec}.
