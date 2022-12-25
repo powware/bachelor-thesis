@@ -8,6 +8,7 @@ During the \ac{PEI} phase, the \nameref{lst:pei-guided-section-extraction-ppi} c
 The \ac{DXE} phase has counterparts in the form of the \nameref{lst:guided-section-extraction-protocol} and the \nameref{lst:security-architectural-protocol}.
 The policy response may be the locking of flash upon authentication failure or attestation logging \cite[Vol. 2, Section 12.9.1]{pi-spec}.
 It also has the \nameref{lst:security2-architectural-protocol}, which implements Secure Boot validation, \ac{TCG} measured boot; and User Identity policy for image loading.
+
 The implementation of the boot service \code{LoadImage()} has to use these protocols in accordance with the rules defined in \cite[Vol. 2, Section 12.9.2]{pi-spec}.
 The  \nameref{lst:security2-architectural-protocol} is invoked on every loaded image, with the \nameref{lst:security-architectural-protocol} being invoked afterward on images loaded through the \nameref{lst:firmware-volume2-protocol}.
 When the  \nameref{lst:security2-architectural-protocol} is not installed it uses the \nameref{lst:security-architectural-protocol} regardless of the image's origin.
@@ -17,12 +18,12 @@ When the  \nameref{lst:security2-architectural-protocol} is not installed it use
 Secure Boot relies on the firmware as its root of trust.
 \ac{HVB} can shift the root of trust out of the firmware image into a smaller part of the hardware, in hopes to reduce the size of the attack vector.
 \ac{AMD} and Intel offer this with \ac{PSB} and Intel Boot Guard respectively.
-Both implementations perform validation of the \ac{IBB} before the host \ac{CPU} transfers execution to the firmware image \cite{tianocore-understanding-uefi-secure-boot-chain,anchoring-trust}.
+Both implementations perform validation of the \ac{IBB} before the host \acsu{CPU} transfers execution to the firmware image \cite{tianocore-understanding-uefi-secure-boot-chain,anchoring-trust}.
 
 \subsubsection{Firmware Protection}
 
 The \ac{PI} specification defines an \emph{End of \acs{DXE} Event}, which indicates the introduction of third\-/party software execution to the platform.
 Up until this point, it is assumed that the entire system software is under the control of the platform manufacturer.
 Drivers may react to this event by locking critical system resources, using the \ac{SMM} related services \cite[Vol. 2, 5.1.2.1]{pi-spec}.
-The \ac{SMM} is a secure execution environment, achieved by isolation from the rest of the system, through the \ac{CPU} \cite[Vol. 4, Section 1.3]{pi-spec}.
+The \ac{SMM} is a secure execution environment, achieved by isolation from the rest of the system, through the \acsu{CPU} \cite[Vol. 4, Section 1.3]{pi-spec}.
 The \ac{PI} reference implementation also makes use of this event to lock the device that stores the firmware image \cite{tianocore-edk2-fmpdxe}.
