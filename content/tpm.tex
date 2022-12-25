@@ -4,7 +4,7 @@
 \label{sec:tpm}
 
 With the \ac{TPM} the \ac{TCG} specifies a system component designated for security\-/related functions, providing the ability to establish trust in a system \cite{microsoft-windows-trusted-platform-module-overview}.
-Its implementation can be accomplished through dedicated hardware or by using the \ac{CPU}'s isolated \ac{SMM} \cite[Section 9.3]{tcg-tpm-library-part1-architecture}.
+Its implementation can be accomplished through dedicated hardware or by using the \acsu{CPU}'s isolated \ac{SMM} \cite[Section 9.3]{tcg-tpm-library-part1-architecture}.
 Asides from generating and securely storing cryptographic keys, the \ac{TPM} can be used for system integrity measurements.
 Boot code is measured into the \ac{TPM} by the \ac{PF}, providing evidence over the initialization process and making it possible to detect deviations \cite{microsoft-windows-trusted-platform-module-overview}.
 
@@ -23,12 +23,12 @@ This creates a chain of measurements where from one diverging measurement on, al
 
 The \ac{TPM} is a passive system component, relying on the host processor to perform measurements and extend the \acp{PCR}.
 The measurement chain starts with a point called the \ac{CRTM}, consisting of the first instructions executed to establish a chain of trust.
-A root of trust in a system is an element that must be trusted as its behavior is non\-/verifiable \cite{tcg-tpm-library-part1-architecture}.
-\cite[3.2.2]{tcg-pc-client-platform-firmware-profile-spec} requires this chain to start in an immutable portion of the \ac{PI} process, the \ac{SRTM}.
-\cite[3.2.3.1]{tcg-pc-client-platform-firmware-profile-spec} defines the \ac{PF} to be composed of a Boot Block and the \ac{UEFI} firmware, the Boot Block consists of the \ac{SEC} and \ac{PEI} phase as well as the \ac{IBB}.
+A root of trust in a system is an element that must be trusted as its behavior is non\-/verifiable \cite[Section 9.4]{tcg-tpm-library-part1-architecture}.
+\cite[Section 3.2.2]{tcg-pc-client-platform-firmware-profile-spec} requires this chain to start in an immutable portion of the \ac{PI} process, the \ac{SRTM}.
+\cite[Section 3.2.3.1]{tcg-pc-client-platform-firmware-profile-spec} defines the \ac{PF} to be composed of an \ac{IBB} and the \ac{UEFI} firmware, the \ac{IBB} consists of the \ac{SEC} and \ac{PEI} phase.
 The \ac{IBB} forms the \ac{SRTM}, while the rest of the \ac{UEFI} firmware is only part of the chain of trust by being measured from the \ac{SRTM}.
 The \ac{RTM} can either start with the \ac{SRTM} measuring itself or a \ac{H-CRTM} measuring the \ac{SRTM}.
-It falls under the responsibility of the \ac{PF} to perform the integrity measurements \cite{tcg-pc-client-platform-firmware-profile-spec}.
+It falls under the responsibility of the \ac{PF} to perform the integrity measurements and maintain a chain of trust \cite{tcg-pc-client-platform-firmware-profile-spec}.
 Different parts of the boot process are measured into separate \acp{PCR}.
 \autoref{fig:pf-measurement-flow} shows a high\-/level measurement flow.
 \autoref{tab:pcr-usage} on \pageref{tab:pcr-usage} shows \ac{PCR} indexes relevant to this thesis and the type of measurements performed to extend them.
