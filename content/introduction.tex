@@ -15,9 +15,9 @@ After discovering and selecting the appropriate boot device it hands over execut
 This process has been previously performed by the \ac{BIOS} and while the term supersedes the underlying implementation, modern systems are mostly \ac{UEFI}\-/based, with even backward\-/compatibility being phased out by \acp{OEM}.
 Legacy \ac{BIOS} is dead and \ac{UEFI} is here to stay.
 
-\ac{UEFI}, as the successor, addresses the previous \ac{BIOS} limitations, modernizing the boot process in a standardized fashion, and allowing to fully abstract the underlying hardware while providing mechanisms for extensibility during runtime and in the long\-/term.
+\ac{UEFI}, as the successor, addresses the previous \ac{BIOS} limitations, modernizing the boot process in a standardized fashion, and allowing to fully abstract the underlying hardware while providing mechanisms for discoverability during runtime and extensibility in the long\-/term.
 \ac{UEFI} provides a family of specifications with the \ac{UEFI} specification itself defining the environment and interfaces for boot applications to communicate with the firmware.
-The \ac{UEFI} \ac{PI} specification defines a model for system designers to follow when implementing the \ac{PF}.
+The \ac{UEFI} \acf{PI} specification defines a model for system designers to follow when implementing the \ac{PF}.
 Its design focuses on simplifying the collaboration process between different hardware vendors, whose components come together in a system.
 Dynamic module discovery, dispatch, and inter-module communication allow for the independent development of early boot components.
 A well\-/defined storage solution brings it all together in a single firmware image.
@@ -56,7 +56,7 @@ We furthermore focus on storage\-/based attacks comparable to LoJax and Mosaicre
 We start off in \autoref{sec:uefi-pi} by introducing all necessary knowledge about the \ac{UEFI} environment, defined through the family of \ac{UEFI} specifications, listing the interface and its implementation.
 We briefly go over relevant security concepts of the \ac{TPM} and its interaction with the \ac{PF} in \autoref{sec:tpm}.
 This allows us to go over Windows~11's interaction with the \ac{UEFI} environment as well as relevant security mechanisms in \autoref{sec:windows}.
-With this knowledge we then look at analyzes of previously discovered \ac{UEFI} threats in \autoref{sec:past-threats}, categorizing them by their attack vector and threat model.
+With this knowledge we then look at analyses of previously discovered \ac{UEFI} threats in \autoref{sec:past-threats}, categorizing them by their attack vector and threat model.
 In \autoref{sec:test-setup} we discuss the test setups, we performed our attacks on, consisting of emulation and hardware.
 We then lay out our practical approach of implementing our own \ac{UEFI} attacks in \autoref{sec:attacks}, analyzing security mechanisms faced when attempting attacks from the \ac{UEFI} environment.
 \autoref{sec:results} describes the results reflected through our attacks.
