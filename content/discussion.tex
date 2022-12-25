@@ -63,11 +63,12 @@ It is somewhat of a last\-/ditch effort, that relies on social engineering and m
 
 \section{Mitigations}
 
-\TODO{REWORD}
-start by including PCR0
-
-Enabling \ac{HVB} should prevent the execution of any malicious code within the firmware image.
+Using a custom validation profile with BitLocker, that includes \ac{PCR}0 is without a doubt the most important mitigation for rootkit\-/based attacks.
+A system that already has a \ac{TPM} 2.0 and compliant firmware should not be missing out on system integrity that is gained when including the register.
 Using the \ac{TPM} with additional authentication mechanisms like a \ac{PIN} or \ac{USB} also adds to the security against an attacker trying to gain access to a system without the owner's interaction, preventing the stolen laptop scenario, even if only \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used.
 When the owner is present to enter the \ac{PIN} into an infected system, it, unfortunately, does not provide any additional security.
+It is also very important to not carelessly react to the occurrence of the recovery prompt, especially when sensitive data is at play.
+Keeping an eye on when firmware updates happen to judge whether there it is reasonable to assume a false positive.
 It is always beneficial to use a password to protect the interactive firmware menu, so Secure Boot cannot be disabled and booting into malicious removable media is prevented.
 System designers can also make access to the (\ac{SPI}) flash more complicated, so an attacker will have more trouble modifying the firmware image.
+Enabling for systems that offer it, \ac{HVB} should also prevent the execution of any malicious code within the firmware image.
