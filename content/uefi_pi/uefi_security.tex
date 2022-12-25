@@ -8,8 +8,8 @@ This involves authentication of ownership over the platform.
 \subsubsection{Secure Boot}
 \label{sec:uefi-pi:uefi:secure-boot}
 
-Secure Boot provides a secure hand-off from the firmware to 3rd party applications used during the boot process, located on insecure media \cite{tianocore-understanding-uefi-secure-boot-chain} \cite[Sections 32.2 and 32.5.1]{uefi-spec}.
-It assumes the firmware to be a trusted entity and all 3rd party software to be untrusted, this includes images from hardware vendors in the \ac{PCI} option \acp{ROM}, bootloader from \ac{OS} vendors, and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
+Secure Boot provides a secure hand-off from the firmware to third\-/party applications used during the boot process, located on insecure media \cite{tianocore-understanding-uefi-secure-boot-chain} \cite[Sections 32.2 and 32.5.1]{uefi-spec}.
+It assumes the firmware to be a trusted entity and all third\-/party software to be untrusted, this includes images from hardware vendors located in \acsu{PCI} option\-/\acsp{ROM}\acused{ROM}, bootloaders from \ac{OS} vendors, and tools such as the \ac{UEFI} shell \cite{tianocore-understanding-uefi-secure-boot-chain}.
 Digital signatures, embedded within the \ac{UEFI} images, can be used to authenticate the origin and/or integrity \cite[Section 32.2]{uefi-spec}.
 This is done through asymmetric signing.
 Component providers must sign their executables with their private keys and publish the public keys.
@@ -35,7 +35,7 @@ Internally, these are all implemented by authenticated variables, residing in ta
 The \ac{PK} is a simple variable where the \ac{KEK} and \ac{DB} are implemented through signature list data structures \cite[Section 32.4.1]{uefi-spec}.
 The variable services can be used to append entries or to read and write the list as a whole \cite[Sections 32.3.5 and 32.5.3]{uefi-spec}.
 The variables are part of the \hyperref[sec:uefi-pi:uefi:variables]{Globally Defined Variables}, for each variable, there also exists a variant reserved for default entries.
-These can be used by an \ac{OEM} to supply platform\-/defined values, used for example during Secure Boot initialization by a user.
+These can be used by an \ac{OEM} to supply platform\-/defined values, used during Secure Boot initialization.
 Their contents can be copied to their live versions, to then be used during Secure Boot operation.
 The current state of Secure Boot is communicated with a secure variable, which the \ac{OS} can probe \cite[Section 3.3]{uefi-spec}.
 
@@ -45,7 +45,7 @@ Users, who are physically present, may disable Secure Boot as well as enroll def
 
 The \nameref{lst:firmware-management-protocol} provides a boot abstraction for authenticated updating and management of the \ac{PF} \cite[Section 23]{uefi-spec}.
 The runtime services \code{QueryCapsuleCapabilities()} and \code{CapsuleUpdate()} may be used by the \ac{OS} to pass updates to the firmware in a persistent manner, so that they can be processed on subsequent boots \cite[Section 23.3]{uefi-spec}.
-\acp{OEM} also often provide their own ways to process firmware updates, for example via dedicated \ac{USB} ports, which allow processing of firmware updates upon boot.
+\acp{OEM} also often provide their own ways to process firmware updates, for example via dedicated \acsu{USB} ports, which allow processing of firmware updates upon boot.
 As these are entirely dictated by the platform designer, it is not possible to make vendor\-/independent assessments about their security.
 
 \subsubsection{User Identity Policies}

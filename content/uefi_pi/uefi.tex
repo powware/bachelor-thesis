@@ -10,12 +10,12 @@ It is aimed to be a complete solution, abstracting all platform features and cap
 
 The \ac{UEFI} interfaces are defined in the \code{C} programming language.
 During the boot process, system resources are owned and managed by the \ac{UEFI} firmware until the \ac{OS} explicitly assumes control over the system.
-On the \code{x64} \ac{CPU} architecture the \ac{PF} hands over the execution in \code{64-bit} long mode which includes memory protection.
+On the \code{x64} \acsu{CPU} architecture the \ac{PF} hands over the execution in \code{64-bit} long mode which includes memory protection.
 Paging is also enabled, and the virtual memory is identity mapped, meaning virtual addresses equal physical addresses, with most regions being marked as read, write, and execute.
-The \ac{CPU} is operating in uniprocessor mode and a sufficient amount of stack is available \cite[Section 2.3.4]{uefi-spec}.
+The \acsu{CPU} is operating in uniprocessor mode and a sufficient amount of stack is available \cite[Section 2.3.4]{uefi-spec}.
 
 Since \ac{UEFI} mainly exists to offer a well\-/defined boot environment for \ac{OS} loaders, its services are not required anymore upon \ac{OS} takeover.
-A large part of \ac{UEFI} can thus be unloaded, leaving only a portion of the initially offered services.
+A large part of \ac{UEFI} can thus be unloaded, leaving only a small portion of the initially offered services.
 The remaining runtime services can be used by the \ac{OS} to configure or update the \ac{PF}.
 
 \subsection{\acf{GUID}}
@@ -27,18 +27,18 @@ The \ac{UEFI} environment depends on \acp{GUID}, also known as \acp{UUID}, to un
 
 Partitions allow a disk to be distinctly separated into logical disks, allowing for each to be formatted with a different file system.
 Prior to \ac{UEFI} disks have been partitioned using the \ac{MBR} partition table, supporting up to four different partitions.
-The \ac{MBR} is stored within the first sector, also optionally containing 424 bytes of bootable code through which the \ac{BIOS} boots \cite[Section 13.3.1]{uefi-spec}.
-\ac{UEFI} is still backwards compatible with \ac{MBR} partitioned disks and contained on each disk, but \ac{UEFI} does not execute the boot code.
+The \ac{MBR} is stored within the first disk sector, optionally containing 424 bytes of bootable code through which the \ac{BIOS} boots applications \cite[Section 13.3.1]{uefi-spec}.
+\ac{UEFI} is still backward\-/compatible with \ac{MBR} partitioned disks, but \ac{UEFI} does not execute the boot code.
 The \ac{MBR} is used in two different ways by the \ac{UEFI} environment, either as a legacy \ac{MBR} or a protective \ac{MBR}.
-With the legacy \ac{MBR}, \ac{UEFI} uses the partitions defined in the \ac{MBR} partition table, whereas the protective \ac{MBR} only has one partition spanning the entire disk.
-The protective partition is for legacy devices and, in practice, \ac{GPT} partitioning is used to separate the disk.
-For this, \ac{UEFI} defines two \ac{OS} types used in \ac{MBR} partition entries.
-One identifies the \ac{ESP}, the partition \ac{UEFI} boots from, within the legacy \ac{MBR} partition table and the other indicates that a protective partition is used \cite[Section 5]{uefi-spec}.
+With the legacy \ac{MBR}, \ac{UEFI} uses the partitions defined in the \ac{MBR} partition table, whereas the protective \ac{MBR} only has one protective partition spanning the entire disk.
+The protective partition is for legacy devices and, in practice, \ac{GPT} partitioning is used to separate the disk into volumes.
+\ac{UEFI} defines two new \ac{MBR} partition types.
+One of the types identifies the \ac{ESP}, the partition \ac{UEFI} boots from, and the other indicates that a partition is protective \cite[Section 5]{uefi-spec}.
 \cite[Section 5]{uefi-spec} defines the \ac{GPT} disk layout. With the \ac{GPT} format, \ac{LBA} are 64-bit instead of 32-bit, enabling support for drives with up to 9400000000 \ac{TB} of storage, whereas \ac{MBR} is limited to 2 \ac{TB}.
 This is accompanied by allowing more than four partitions, with Windows supporting up to 128 \cite{microsoft-windows-and-gpt-faq}.
-\acp{GUID} are used to identify partitions and partition types, but also offer a human\-/readable partition name.
-\ac{GPT} also has a primary and a backup partition table for redundancy purposes.
-The primary table follows the \ac{MBR} sector and the backup is at the end of the disk.
+\acp{GUID} are used to identify partitions and partition types, but \ac{GPT} also offers a human\-/readable name to be associated with a partition.
+\ac{GPT} uses a primary and a backup partition table for redundancy purposes.
+The primary table immediately follows the \ac{MBR} sector and the backup table is located at the very end of the disk.
 
 \subsection{\acf{ESP}}
 
@@ -49,7 +49,7 @@ Drivers and indirectly loaded applications have no storage restrictions.
 Vendors are to use vendor\-/specifically named sub\-/directories within the \program{EFI} directory.
 Fixed disks have no restrictions on the amount of \acp{ESP} present, whereas removable media is only allowed to have one \ac{ESP}, so that boot behavior is deterministic.
 In general, the \ac{ESP} is identified by a specific \ac{GUID}, but implementations are allowed to support accordingly structured \ac{FAT} partitions.
-Since there is no limitation on the amount of \acp{ESP}, boot applications can share the drive with their \ac{OS}, or can be accumulated in a single system\-/wide \ac{ESP} \cite[Section 13.3.3]{uefi-spec}.
+Since there is no limitation on the amount of \acp{ESP} present in a system, boot applications can share the drive with their \ac{OS}, or can be accumulated in a single system\-/wide \ac{ESP} \cite[Section 13.3.3]{uefi-spec}.
 
 \subsection{\acs{UEFI} Images}
 
@@ -96,7 +96,7 @@ Multiple instances of a protocol identified by the same \ac{GUID} can exist on d
 It is designed to simplify the implementation process of device drivers by moving common device management and discovery functionality into the firmware.
 This leaves drivers with the responsibility to offer only interfaces for installation and removal.
 
-A \ac{UEFI} platform is assumed to consist of one or more \acp{CPU} to be connected to one or more core chipsets.
+A \ac{UEFI} platform is assumed to consist of one or more \acsp{CPU} to be connected to one or more core chipsets.
 The core chipsets produce host bus controllers which offer initial \ac{I/O} abstractions like the \nameref{lst:pci-root-bridge-io-protocol}.
 Bus drivers can be connected to these host bus controllers to discover and create child controllers, these can either be further buses or devices.
 This forms a tree of buses with devices as leaves.
@@ -184,10 +184,11 @@ Each load option entry for a driver or application resides in a variable followi
 If a firmware implementation allows for the creation of new load options they can then be added to the ordered lists \code{DriverOrder} and \code{BootOrder}.
 These reference the load options and dictate the order in which they are processed.
 Driver load options are processed before the boot load options, there also exists the \code{BootNext} variable to override the boot options once.
-A general depiction of the \ac{UEFI} boot flow is depicted in \autoref{fig:uefi-boot-sequence}.
-Implementations usually allow for an interactive menu, where users can modify the boot order or boot single entries manually \cite[Section 3.1.1]{uefi-spec}.
+A general overview of the \ac{UEFI} boot flow is depicted in \autoref{fig:uefi-boot-sequence}.
+Firmware implementations usually allow for an interactive menu, where users can modify the boot order or single boot entries manually \cite[Section 3.1.1]{uefi-spec}.
 Boot options are generally first attempted to be loaded through the \code{LoadImage()} boot service.
-If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \nameref{lst:simple-file-system-protocol} \cite[Section 3.1.2]{uefi-spec}. For x64 it uses the default path \code{\brackslash EFI\brackslash BOOT\brackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
+If the \hyperref[lst:device-path-protocol]{device path} of a boot option only points to a device instead of containing an additional \hyperref[lst:device-path-protocol]{file path} on that device, it attempts to load a default boot application with the \nameref{lst:simple-file-system-protocol} \cite[Section 3.1.2]{uefi-spec}.
+For \code{x64} architecture this is \code{\brackslash EFI\brackslash BOOT\brackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
 
 \begin{figure}[htb]%
     \centering%
