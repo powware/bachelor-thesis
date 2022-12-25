@@ -198,5 +198,5 @@ This allows us to be a spectator of the process without interrupting it.
 Similarly, we can sniff the communication hooking the \nameref{lst:tcg2-protocol}, which is used to abstract the \ac{TPM} communication in the \ac{UEFI} environment.
 The \code{SubmitCommand()} function is used to request the unseal operation from the \ac{TPM}.
 We can hook this function and filter for the correct command submission using the header structures of the request and response.
-We then extract the unencrypted \ac{VMK} from the command response, as already done in \cite{tpm-lpc-sniffing}.
+We then extract the unencrypted \ac{VMK} from the response byte stream, as already done in \cite{tpm-lpc-sniffing}.
 The \ac{VMK} can then be simply passed to Dislocker for the initialization of our hook layer.
