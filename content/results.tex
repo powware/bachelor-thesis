@@ -18,8 +18,8 @@ We also show that Windows, giving the user the ability to override the \ac{TPM}'
 Our \emph{BitLogger} was able to log the entered keystrokes to obtain the recovery key.
 We were then able to use the recovery key with our \ac{UEFI} port of \program{Dislocker} to mount the encrypted drive, allowing us to repeat our initial attack of deploying a payload and modifying the registry.
 
-In the case of our \ac{UEFI} payload being part of the \ac{TPM} measurements used to encrypt the \ac{VMK} or when a validation profile is used that does not include the measurements of our payload.
+In the case of our \ac{UEFI} payload already being part of the \ac{TPM} measurements used to encrypt the \ac{VMK} or when a validation profile is used that does not include the measurements of our payload, we were able to access the BitLocker protected drive without a recovery key or any other additional user input.
 We showed that this is the case when Secure Boot is enabled and \hyperlink{pcr7-binding}{\ac{PCR}7 is bound}.
 Binding is possible when Secure Boot only uses Microsoft's signature \ac{DB} required to boot Windows.
 BitLocker then uses a validation profile of \hyperref[tab:pcr-usage]{\code{\{7, 11\}}}, leaving out \ac{PCR}0 where our rootkit is measured into.
-This provides us a chance to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with \program{Dislocker}, making it possible for our rootkit to gain access to the system without requiring any prior knowledge or additional user input.
+This provides us a chance to sniff the communication between the \ac{TPM} and the Windows Boot Manager to retrieve the unencrypted \ac{VMK} for use with \program{Dislocker}.

@@ -44,7 +44,7 @@ The rest is only about helping the user to find their recovery key to enter.
 
 When taking appropriate precautions the hard drive should be removed from the system and inserted into a trustworthy system.
 From here the recovery key can be used to fulfill its namesake, recovering data from the drive.
-Entering the recovery key into the recovery prompt is not data recovery but an overriding of a security mechanism.
+Entering the recovery key into the recovery prompt is not data recovery and instead the override of a security mechanism.
 A user presumably assumes to have encountered the recovery prompt through a false positive, a firmware update without prior BitLocker suspension, boot configuration\-/related changes etc.
 When there is no reasonable assumption for the user to have encountered the recovery prompt they should not enter the recovery key.
 After all the inherent problem is that the system's integrity has been violated, in what fashion is now unverifiable.
@@ -55,7 +55,7 @@ It is also the only time a user has a chance to react correctly, as their decisi
 Microsoft's decision to allow this security override created a dangerous precedent, especially since they do not display any warnings about the inherent danger.
 Instead of a recovery prompt, the user should have been made aware of the inherent loss of system integrity instead of normalizing the security override.
 Any future adjustments to provide more user awareness within the recovery prompt; can be manipulated by an attacker, as by definition the appearance of the prompt signals that there is no more system integrity.
-It is already possible to easily modify the message and \ac{URL} displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings-url}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
+It is already possible to easily modify the message and \acsu{URL} displayed by the recovery prompt, as these can be configured through group policies \cite{microsoft-windows-bitlocker-group-policy-settings-url}, that are read from the \ac{BCD} hive \cite{microsoft-windows-bcd-settings-and-bitlocker}.
 Even if the recovery prompt were to be removed in the future, phishing attacks could still replicate the prompt.
 
 An attack that willingly triggers the BitLocker recovery prompt generally risks raising suspicion, which may lead to investigations and being discovered.
@@ -71,4 +71,4 @@ It is also very important to not carelessly react to the occurrence of the recov
 Keeping an eye on when firmware updates happen to judge whether there it is reasonable to assume a false positive.
 It is always beneficial to use a password to protect the interactive firmware menu, so Secure Boot cannot be disabled and booting into malicious removable media is prevented.
 System designers can also make access to the (\ac{SPI}) flash more complicated, so an attacker will have more trouble modifying the firmware image.
-Enabling for systems that offer it, \ac{HVB} should also prevent the execution of any malicious code within the firmware image.
+Enabling \ac{HVB} on systems that support it should prevent the execution of any malicious code within the firmware image.
