@@ -31,17 +31,16 @@ Our thesis shows, that \acs{UEFI} threats are very powerful, to a point where th
 \thispagestyle{empty}
 \label{sec:zusammenfassung}
 
-Firmware Attacken sind eine der gef\"urchtesten Sicherheitsrisiken in der Computersicherheit.
-Sie werden w\"ahrend des Bootvorgangs ausgef\"uhrt und k\"onnen Kontrolle \"uber das gesamte System erlangen, bevor das Betriebssystem und seine begleitenden Antivirusprogramme geladen worden sind.
+Firmware Attacken sind eine der gef\"urchtesten Bedrohungen in der Computersicherheit.
+Sie werden w\"ahrend des Bootvorgangs ausgef\"uhrt und k\"onnen bereits volle Kontrolle \"uber das System erlangen, bevor das Betriebssystem und begleitende Antivirusprogramme \"uberhaupt geladen worden sind.
 Mit der zunehmenden Verbreitung von standardisierter \acf{UEFI} Firmware sind diese Bedrohungen weniger ger\"ateabh\"anig geworden und k\"onnen nun eine Vielzahl von Systemen gleichzeitig adressieren.
-Das Vorkommnis solcher Attacken ist weiterhin recht selten, da sie von Natur aus schwierig aufzufinden sind.
-Durch Analysen bisheriger Funde k\"onnen wir ihre Angriffsvektoren kategorisieren und unsere praktische Analyse durchf\"uhren.
-Wir tauchen in die \ac{UEFI}\-/Welt ein, um durch die Implementierung eigener Attacken die Sicherheitsmechanismen des Bootvorgangs besser zu verstehen.
+Das Vorkommnis dieser Attacken ist jedoch weiterhin recht selten, da sie von Natur aus sehr schwierig aufzufinden sind.
+Durch Analysen bisheriger Funde k\"onnen wir ihre Angriffsvektoren kategorisieren und selbst eine praktische Analyse durchf\"uhren.
+Ein detailierter Einstieg in das Thema \ac{UEFI} erlaubt uns die Implementierung eigener Attacken, womit wir die Sicherheitsmechanismen des Bootvorgangs anwendungsorientiert untersuchen k\"onnen.
 Dabei setzen wir unseren Fokus auf Secure Boot und BitLocker unter Verwendung des \acf{TPM}.
-Als Resultat unserer Attacken erreichten wir Codeausf\"uhrung mit erh\"ohten Privilegien unter Windows 11.
-Mittels unbeschr\"ankten Zugriffs auf die Festplatte konnten wir weitere Benutzerebnenprogramme installieren und die Windows Registry modifizieren.
+Mittels unbeschr\"ankten Zugriffs auf die Festplatte konnten wir unter Windows 11 Benutzerebenenprogramme installieren und deren Ausf\"uhrung auf Systemebene durch Modifikation der Windows Registry erzwingen.
 Wenn BitLocker aktiv ist, erm\"oglichte unser \emph{BitLogger} das Entschl\"usseln der Festplatten durch einen mitgeloggten Recovery Key.
-Bei einer Fehlkonfiguration BitLockers oder, wenn unser Schadcode Teil der vertrauten Messungen ist, k\"onnen wir die \ac{TPM}\-/Kommunikation mitlesen, um an den \acf{VMK} zu gelangen.
+Bei einer Fehlkonfiguration BitLockers oder, im Fall, dass unser Schadcode Teil der vertrauten Messungen ist, k\"onnen wir den \ac{VMK} durch Mitlesen der \ac{TPM}\-/Kommunikation abfangen.
 Unsere Arbeit zeigt, dass \ac{UEFI}\-/Bedrohungen sehr m\"achtig sind und durch sie jegliche Systemintegrit\"at so diskreditiert wird, dass es unm\"oglich ist dem System weiter zu vertrauen.
 
 \acresetall
