@@ -17,7 +17,7 @@ We start by assuming that the infection is performed after BitLocker has already
 When booting with our previous \ac{UEFI} payload, the \ac{NTFS} driver is unable to recognize any file system structure on the Windows boot partition, due to the \ac{FVE}.
 This results in an inability to further deploy the Windows payload on the target system.
 Additionally, during the execution of the Windows Boot Manager, the BitLocker recovery prompt, shown in \autoref{fig:bitlocker-recovery-prompt}, interrupts the regular boot process requiring the drive's recovery key for decryption before being able to continue booting.
-This happens due to \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}.
+This happens due to the \ac{TPM}'s \ac{PCR} values differing from what was initially used to seal the \ac{VMK}.
 The rootkit is measured into \ac{PCR}0 and the bootkit into \ac{PCR}2.
 This leaves the Windows bootloader unable to retrieve the unencrypted \ac{VMK} from the \ac{TPM} and as a result unable to decrypt the Windows installation \cite[Section 12]{windows-internals-7-part2}.
 
@@ -37,11 +37,13 @@ This would deny both our rootkit and bootkit any further access to any sensitive
 If they were to mistrust the \ac{OS}, or they were to have neglected to properly back up their recovery key, they might perform a fresh installation of Windows.
 In the case of our bootkit this would get rid of the threat, but the rootkit remains within the firmware image and would be part of the chain of trust for the fresh installation.
 
+\vspace{-0.5em}
 \subsection{BitLogger}
+\vspace{-0.5em}
 
 When the user enters their recovery key, the Windows Boot Manager uses the recovery key to decrypt the \ac{VMK} in the metadata entry that was encrypted using the recovery key when BitLocker was set up.
 It then proceeds to access the BitLocker encrypted drive containing the \program{Windload.efi} \ac{OS} loader.
-This all still happens during the \ac{UEFI} boot environment, before \program{ExitBootServices} is called, as this is done within \program{Windload.efi}.
+This all still happens during the \ac{UEFI} boot environment, before \code{ExitBootServices()} is called, as this is done within \program{Windload.efi}.
 Unfortunately, we remain unable to access the Windows installation during this, as BitLocker only ever decrypts read operations in memory, leaving the drive fully encrypted at all times.
 If we were to acquire the recovery key, we could use it to decrypt the \ac{VMK}, then the \ac{FVEK}, and in turn the drive ourselves.
 
@@ -54,8 +56,8 @@ This change is also already enough to trigger the recovery prompt by invalidatin
 A keystroke during the recovery prompt now shows us that the \nameref{lst:simple-text-input-ex-protocol} is being used.
 The protocol structure is listed in \autoref{lst:simple-text-input-ex-protocol}.
 The Windows Boot Manager uses the \code{ReadKeyStrokeEx()} function to retrieve the latest pending key press.
-The protocol also offers the \code{WaitForKeyEx()} event, signaling when keystrokes are available.
-Execution can be blocked until this event is emitted with the \code{WaitForEvent} boot service.
+The protocol also offers the \code{WaitForKeyEx} event, signaling when keystrokes are available.
+Execution can be blocked until this event is emitted with the \code{WaitForEvent()} boot service.
 The protocol also allows users to register and unregister a callback function to react upon user input.
 An exemplary use of the \code{ReadKeyStrokeEx()} is given below in \autoref{lst:handle-protocol-simple-text-input-ex}.
 
@@ -85,7 +87,7 @@ The protocol instance address is subtracted by the offset of the protocol within
 In \autoref{lst:private-data} we show an example of retrieving private data through the public protocol interface.
 This keeps the protocol interface limited to public functionality.
 The \ac{UEFI} boot services are not aware of the size of the private data when managing protocol instances and therefore cannot make copies spanning the entire data.
-On top of that, the private data likely contains information about the device state, as changes in the state would have to occur in each protocol user's instance to remain in a synchronous state.
+On top of that, the private data likely contains information about the device state and changes in the state would have to occur in each protocol user's instance to remain in a synchronous state.
 
 \vspace{1em}
 
@@ -110,7 +112,7 @@ A simplified version of how the hooking process works can be seen in \autoref{ls
 We want to use the recovery key programmatically, so we cannot simply log all key presses in chronological order and evaluate them by hand later.
 The BitLocker recovery prompt has a few rules and does not allow the user to simply enter any possible combination of digits.
 Each entered block is checked for validity before allowing the cursor to advance to another block.
-This also applies when moving the cursor backward to a previously entered block, while incomplete blocks are not evaluated.
+This also applies when moving the cursor backward to a previously entered block, while incomplete blocks are skipped from evaluation.
 A block passes the validity check when it is divisible by 11 \cite[Section 9]{windows-internals-6-part2}, while this is also a requirement applying to the recovery key, no further checks regarding the general correctness are done unless a complete key is entered.
 The cursor can be used to increment and decrement the current digit by using the up and down arrow keys.
 Because of this and validity checks when trying to move the cursor out of a block, we have to implement internal tracking of the cursor movement.
@@ -118,10 +120,10 @@ The recovery prompt in \autoref{fig:bitlocker-recovery-prompt} also tells us tha
 
 \subsection{Dislocker}
 
-To make use of the recovery key we can use an open source software called \emph{Dislocker}, which implements the \ac{FUSE} interface to offer mounting a BitLocker encrypted partitions under Linux, supporting read and write access \cite{dislocker}.
+To make use of the recovery key we can use an open source software called \program{Dislocker}, which implements the \ac{FUSE} interface to offer mounting a BitLocker encrypted partitions under Linux, supporting read and write access \cite{dislocker}.
 
 In \autoref{sec:windows:security:bde} we discussed how the BitLocker filter driver integrates into Windows.
-To integrate Dislocker into \ac{UEFI}, we start by analyzing how the \ac{UEFI} \ac{NTFS} driver works.
+To integrate \program{Dislocker} into \ac{UEFI}, we start by analyzing how the \ac{UEFI} \ac{NTFS} driver works.
 We can start by checking the \ac{EDK} II module file of the driver.
 Among the source files and libraries required to build a module, the file also declares which (protocol) \acp{GUID} the driver consumes and produces \cite{tianocore-edk2-module-writer-s-guide}.
 A snippet of the \emph{protocols section} is listed in \autoref{lst:uefi-driver}.
@@ -137,25 +139,25 @@ We will ignore the asynchronous protocols, as they only serve to further abstrac
 The same can be said for the \nameref{lst:disk-io-protocol}, as it abstracts the \nameref{lst:block-io-protocol} to offer an offset-length driven continuous access to the underlying block device \cite[Section 13.7]{uefi-spec}.
 The \nameref{lst:block-io-protocol} is only used directly to retrieve volume size and block size, as well as read the first block to determine whether the volume is formatted using \ac{NTFS}.
 
-The source code analysis shows that the file\-/wise access the driver offers through \nameref{lst:simple-file-system-protocol} and the \nameref{lst:simple-file-system-protocol} is multiple abstraction layers built on top of block\-/wise access to the underlying media through the \nameref{lst:block-io-protocol}.
+The source code analysis shows that the file\-/wise access through \nameref{lst:simple-file-system-protocol} and the \nameref{lst:file-protocol}, that the driver offers, consists of multiple layers of abstractions on top of block\-/wise access to the underlying media through the \nameref{lst:block-io-protocol}.
 To imitate the BitLocker filter driver in \autoref{fig:bitlocker-volume-access-driver-stack}, which en- and decrypts each block as it passes through, we hook the \nameref{lst:block-io-protocol} functions \code{ReadBlocks()} and \code{WriteBlocks()}. Their signatures are given in the appendix in \autoref{lst:block-io-protocol}.
-This allows for our hooks to create a layer where we can perform Dislocker operations on blocks passing through.
-A diagram of the volume access protocol stack with our Dislocker hook layer can be seen in \autoref{fig:dislocker-volume-access-protocol-stack}.
+This allows for our hooks to create a layer where we can perform \program{Dislocker} operations on blocks passing through.
+A diagram of the volume access protocol stack with our \program{Dislocker} hook layer can be seen in \autoref{fig:dislocker-volume-access-protocol-stack}.
 Each read operation is decrypted before being passed upwards and each write operation is encrypted before being written to disk.
 
 \begin{figure}[htb]%
     \centering
     \includesvg[width=0.7\textwidth]{dislocker_volume_access_protocol_stack.drawio.svg}
-    \caption{Dislocker Volume Access Protocol Stack}%
+    \caption{\program{Dislocker} Volume Access Protocol Stack}%
     \label{fig:dislocker-volume-access-protocol-stack}%
 \end{figure}
 
-When we look at the Dislocker source code, we find that Dislocker offers two main functions, \code{dislock()} and \code{enlock()}, each taking offset\-/length parameters, comparable to the \nameref{lst:disk-io-protocol} abstraction.
+When we look at the \program{Dislocker} source code, we find that it offers two main functions, \code{dislock()} and \code{enlock()}, each taking offset\-/length parameters, comparable to the \nameref{lst:disk-io-protocol} abstraction.
 \code{dislock()} is implemented to read from the underlying volume using \code{pread}, before decrypting the data and handing it to the caller.
 \code{enlock()} encrypts the data before it writes it to the disk using \code{pwrite}.
 The two functions directly access the volume and are not implemented as simple de- and encryption algorithms performed on data in memory, because some sectors of a volume are not encrypted (BitLocker metadata) or are mapped to different sectors.
-In our hooked \code{ReadBlocks} and \code{WriteBlocks} functions, we simply call \code{dislock()} and \code{enlock()} respectively and have the Dislocker implementation call the original \code{ReadBlocks} and \code{WriteBlocks} functions through \code{pread} and \code{pwrite} when it needs to access the underlying volume.
-This way, Dislocker can choose which blocks to perform its operations on, as well as freely remap underlying sectors.
+In our hooked \code{ReadBlocks} and \code{WriteBlocks} functions, we simply call \code{dislock()} and \code{enlock()} respectively and have the \program{Dislocker} implementation call the original \code{ReadBlocks} and \code{WriteBlocks} functions through \code{pread} and \code{pwrite} when it needs to access the underlying volume.
+This way, \program{Dislocker} can choose which blocks to perform its operations on, as well as freely remap underlying sectors.
 The general hooking process is depicted in \autoref{lst:block-io-hooking}.
 
 \vspace{1em}
@@ -164,17 +166,17 @@ The general hooking process is depicted in \autoref{lst:block-io-hooking}.
 
 For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \program{HKLM\brackslash SOFTWARE} registry hive, thus simply performing the deployment as soon as the \ac{UEFI} payload is executed was an option, as this happens before any Windows boot related actions are performed.
 With BitLocker, we have to deploy after \emph{BitLogger} was able to obtain the recovery key.
-We then initialize Dislocker with the recovery key, to enable the transparent \nameref{lst:block-io-protocol} hook layer.
+We then initialize \program{Dislocker} with the recovery key, to enable the transparent \nameref{lst:block-io-protocol} hook layer.
 We then need to reconnect all \nameref{lst:driver-binding-protocol} instances to all controllers to trigger a (re-)evaluation.
-The BitLocker encrypted drive now appears unencrypted to the driver, allowing it to install its \nameref{lst:simple-file-system-protocol} instance on the device.
+The BitLocker encrypted drive now appears unencrypted to the \ac{NTFS} driver, allowing it to install its \nameref{lst:simple-file-system-protocol} instance on the encrypted device.
 From here we simply perform our attack, as developed in \autoref{sec:attacks:neither}, to deploy the Windows payload and import our modified registry key.
-After doing this we need to disable the Dislocker hook layer again, as otherwise, Windows is unable to boot and instead attempts Windows recovery.
+After doing this we need to disable the \program{Dislocker} hook layer again, as otherwise, Windows is unable to boot and instead attempts Windows recovery.
 
 Windows recovery causes the recovery environment to show a second recovery prompt, but now outside the \ac{UEFI} environment with their own device drivers.
 This recovery environment is located on the unencrypted \ac{NTFS} partition created during installation.
 It is also accessible when pressing the escape key during the initial \ac{UEFI} environment's recovery prompt.
 We want to prevent the user from switching environments, as our \emph{BitLogger} would not be able to obtain the recovery key.
-In our \code{ReadKeyStrokeEx} hook, we can suppress the user's escape keystroke and return a different key to the Windows Boot Manager.
+In our \code{ReadKeyStrokeEx()} hook, we can suppress the user's escape keystroke and return a different key to the Windows Boot Manager to prevent an environment switch.
 
 If we were to attack Windows 10 we would be done now, but Windows 11 will show the recovery prompt every boot.
 Windows 10 seems to automatically reseal the \ac{VMK} with the new \ac{PCR} values, whereas Windows 11 does not, so our \ac{UEFI} payload keeps invalidating the \ac{PCR} values.
@@ -188,7 +190,7 @@ When BitLocker uses a validation profile that does not include \ac{PCR} values w
 This is the case for our rootkit when BitLocker uses Secure Boot for integrity validation and \hyperlink{pcr7-binding}{\ac{PCR}7 is bound}.
 The validation profile \hyperref[tab:pcr-usage]{\code{\{7, 11\}}} is used, while our rootkit is part of the measurements in \ac{PCR}0.
 
-The recovery prompt is not triggered, and we are unable to receive a recovery key and cannot initialize Dislocker.
+The recovery prompt is not triggered, and we are unable to receive a recovery key and cannot initialize \program{Dislocker}.
 In the case we caused the \ac{TPM} protector update following the \emph{BitLogger} attack, we could simply save the recovery key in an unencrypted region of the drive.
 This is not necessary as we are now in a position where we can gain access to the drive without the recovery key.
 
@@ -199,4 +201,4 @@ Similarly, we can sniff the communication hooking the \nameref{lst:tcg2-protocol
 The \code{SubmitCommand()} function is used to request the unseal operation from the \ac{TPM}.
 We can hook this function and filter for the correct command submission using the header structures of the request and response.
 We then extract the unencrypted \ac{VMK} from the response byte stream, as already done in \cite{tpm-lpc-sniffing}.
-The \ac{VMK} can then be simply passed to Dislocker for the initialization of our hook layer.
+The \ac{VMK} can then be simply passed to \program{Dislocker} for the initialization of our hook layer.
