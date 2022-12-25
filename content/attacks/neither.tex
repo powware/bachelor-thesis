@@ -20,7 +20,7 @@ This can be forced during the boot process when accessing the interactive firmwa
 Installation from Windows requires admin privileges to mount and modify the \ac{ESP}.
 
 The installation process is identical for both options.
-We access the \ac{ESP} and create a copy of the Windows Boot Manager located under \program{EFI\textbackslash Microsoft\textbackslash Boot\textbackslash bootmgfw.efi}.
+We access the \ac{ESP} and create a copy of the Windows Boot Manager located under \program{EFI\brackslash Microsoft\brackslash Boot\brackslash bootmgfw.efi}.
 We then replace the original with our bootkit as well as drop all resources required by the bootkit on the \ac{ESP}.
 Now that our bootkit is in place of the Windows Boot Manager; when the \ac{UEFI} Boot Manager selects the boot load option for the Windows Boot Manager, it will cause our bootkit to be executed.
 \autoref{fig:windows-boot-entry} shows a dump of the Windows boot entry using the \ac{UEFI} shell command \program{bcfg}.
@@ -137,16 +137,16 @@ The function name as well as the task name suggest the performed action relates 
 Under security options, we can see that the task is executed using the built\-/in \emph{SYSTEM} account.
 This task is therefore the perfect candidate to run our payload.
 
-The Task Scheduler bookkeeps its active tasks in the Windows registry under the path \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache}.
+The Task Scheduler bookkeeps its active tasks in the Windows registry under the path \program{HKLM\brackslash SOFTWARE\brackslash Microsoft\brackslash Windows NT\brackslash CurrentVersion\brackslash Schedule\brackslash TaskCache}.
 The tasks are grouped by four subkeys: \program{Boot}, \program{Logon}, \program{Plain}, and \program{Maintenance}.
 The entries under these subkeys consist only of a \ac{GUID}.
-This \ac{GUID} references the task descriptors that are saved using task master keys, which are located under \program{HKLM\textbackslash SOFTWARE\textbackslash Microsoft\textbackslash Windows NT\textbackslash CurrentVersion\textbackslash Schedule\textbackslash TaskCache\textbackslash Tasks} \cite[Section 10]{windows-internals-7-part2}.
-A secondary copy of the task descriptors exists within the regular file system under \program{\%windir\%\textbackslash system32\textbackslash Task}, stored in the form of \ac{XML} files.
+This \ac{GUID} references the task descriptors that are saved using task master keys, which are located under \program{HKLM\brackslash SOFTWARE\brackslash Microsoft\brackslash Windows NT\brackslash CurrentVersion\brackslash Schedule\brackslash TaskCache\brackslash Tasks} \cite[Section 10]{windows-internals-7-part2}.
+A secondary copy of the task descriptors exists within the regular file system under \program{\%windir\%\brackslash system32\brackslash Task}, stored in the form of \ac{XML} files.
 
 We can use the Task Scheduler Configuration Tool to modify the \program{Proxy} task on a system under our control, changing the executable path as well as removing the delay configured in its trigger.
 We can save the output of \program{whoami /all} into a file to verify the privileges our payload is executed with.
 The \program{whoami} command shows the current user and privileges \cite{microsoft-whoami}.
-After manually triggering the task through the configuration tool, we can see in \autoref{lst:whoami}, that our payload was run from the \emph{nt authority\textbackslash system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
+After manually triggering the task through the configuration tool, we can see in \autoref{lst:whoami}, that our payload was run from the \emph{nt authority\brackslash system} user account, which is the most privileged system account \cite{microsoft-localsystem-account}.
 
 \vspace{1em}
 
@@ -159,7 +159,7 @@ We can use a Linux utility called \program{chntpw} To import the key.
 The tool's primary purpose is to reset the password of local Windows user accounts \cite{chntpw}.
 It does this by editing the hive files of a Windows installation and as such the author also offers a standalone registry editor called \program{reged}.
 We can test the Linux tool when dual\-/booting Linux and Windows.
-For now, we place our payload manually in the Windows installation and then boot into Linux, where we can open the \program{HKEY\_LOCAL\_MACHINE/SOFTWARE} hive in \program{reged} and import our modified registry key.
+For now, we place our payload manually in the Windows installation and then boot into Linux, where we can open the \program{HKEY\underbreak LOCAL\underbreak MACHINE/SOFTWARE} hive in \program{reged} and import our modified registry key.
 This overwrites the task descriptor and, when booting into Windows, our payload is executed.
 
 Our \ac{UEFI} payload now needs to perform the registry modification from within the \ac{UEFI} environment.
@@ -211,9 +211,9 @@ We can add our files to the build process of the \ac{OVMF} package in \ac{EDK} I
 The build process generates intermediary \program{.ffs} files, which are the sectioned files.
 
 For our Windows payload, we can use a special \ac{EDK} II module type that takes binary files as input.
-The generated result is a sectioned file of type \code{EFI\_FV\_FILETYPE\_FREEFORM}.
+The generated result is a sectioned file of type \code{EFI\underbreak FV\underbreak FILETYPE\underbreak FREEFORM}.
 This type puts no restrictions on the contained file sections \cite[Vol. 3, 2.1.4.1.7]{pi-spec}.
-The output contains only one file section of type \code{EFI\_SECTION\_RAW} consisting of the binary payload.
+The output contains only one file section of type \code{EFI\underbreak SECTION\underbreak RAW} consisting of the binary payload.
 
 Now that we have sectioned files corresponding to all our resources used in the attack we can import these into the target image with \program{UEFITool}.
 Redeploying the modified image concludes our infection process.

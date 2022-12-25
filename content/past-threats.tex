@@ -89,7 +89,7 @@ Storage\-/based attacks face more restrictions such as BitLocker and code integr
 Storage\-/based attacks need file\-/based access to the Windows installation to modify its content.
 The primary partition is \ac{NTFS} formatted and, due to the \ac{UEFI} specification only mandating compliant firmware to support \ac{FAT}12, \ac{FAT}16 and \ac{FAT}32 \cite[Section 13.3.1.1]{uefi-spec}, \ac{NTFS} drivers are delivered as part of the attack.
 MosaicRegressor and Lojax seem to use VectorEDK's leaked \ac{NTFS} driver \cite{mosaicregressor-technical-details, lojax}.
-LoJax deploys its payload under the file path \program{C:\textbackslash Windows\textbackslash SysWOW64\textbackslash autoche.exe} and then modifies the registry entry \program{HKEY\_LOCAL\_MACHINE\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Control\textbackslash Session Manager\textbackslash BootExecute}, so that their payload is executed instead of the original executable \cite{lojax}.
+LoJax deploys its payload under the file path \program{C:\brackslash Windows\brackslash SysWOW64\brackslash autoche.exe} and then modifies the registry entry \program{HKEY\underbreak LOCAL\underbreak MACHINE\brackslash SYSTEM\brackslash CurrentControlSet\brackslash Control\brackslash Session Manager\brackslash BootExecute}, so that their payload is executed instead of the original executable \cite{lojax}.
 MosaicRegressor simply deploys its payload in the Windows startup folder \cite{mosaicregressor-technical-details}, whose contents, as its name suggests, are executed upon Windows startup.
 
 \subsection{Memory-based}

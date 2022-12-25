@@ -162,7 +162,7 @@ The general hooking process is depicted in \autoref{lst:block-io-hooking}.
 
 \lstinputlisting[language=C,captionpos=b,label=lst:block-io-hooking,firstline=4,caption={Simplified example of hooking the \nameref{lst:block-io-protocol}}]{code/block_io_hooking.c}
 
-For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \program{HKLM\textbackslash SOFTWARE} registry hive, thus simply performing the deployment as soon as the \ac{UEFI} payload is executed was an option, as this happens before any Windows boot related actions are performed.
+For the previous two attacks the timing of deploying the payload did not matter, as long as it was done before Windows loads the \program{HKLM\brackslash SOFTWARE} registry hive, thus simply performing the deployment as soon as the \ac{UEFI} payload is executed was an option, as this happens before any Windows boot related actions are performed.
 With BitLocker, we have to deploy after \emph{BitLogger} was able to obtain the recovery key.
 We then initialize Dislocker with the recovery key, to enable the transparent \nameref{lst:block-io-protocol} hook layer.
 We then need to reconnect all \nameref{lst:driver-binding-protocol} instances to all controllers to trigger a (re-)evaluation.

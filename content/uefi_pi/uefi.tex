@@ -172,7 +172,7 @@ The data type has to be known beforehand and as such is specified for variables 
 The storage implementation is not specified by \ac{UEFI}, but it must support non\-/volatility, to retain after reboots, or temper resistance if demanded.
 Variables are defined by a vendor \ac{GUID}, a name, and attributes.
 Attributes include their scope (boot, runtime, non-volatile), whether writes require authentication or result in appending data instead of overwriting \cite[Section 8.2]{uefi-spec}.
-Architecturally defined \ac{UEFI} variables are called Globally Defined Variables where the vendor \ac{GUID} has the value \code{EFI\_GLOBAL\_VARIABLE} \cite[Section 3.3]{uefi-spec}.
+Architecturally defined \ac{UEFI} variables are called Globally Defined Variables where the vendor \ac{GUID} has the value \code{EFI\underbreak GLOBAL\underbreak VARIABLE} \cite[Section 3.3]{uefi-spec}.
 
 \subsection{Boot Manager}
 \label{sec:uefi-pi:uefi:boot-manager}
@@ -187,7 +187,7 @@ Driver load options are processed before the boot load options, there also exist
 A general depiction of the \ac{UEFI} boot flow is depicted in \autoref{fig:uefi-boot-sequence}.
 Implementations usually allow for an interactive menu, where users can modify the boot order or boot single entries manually \cite[Section 3.1.1]{uefi-spec}.
 Boot options are generally first attempted to be loaded through the \code{LoadImage()} boot service.
-If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \nameref{lst:simple-file-system-protocol} \cite[Section 3.1.2]{uefi-spec}. For x64 it uses the default path \code{\textbackslash EFI\textbackslash BOOT\textbackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
+If the device path of a boot option only points to a device instead to the file on a device, it attempts to load a default boot application with the \nameref{lst:simple-file-system-protocol} \cite[Section 3.1.2]{uefi-spec}. For x64 it uses the default path \code{\brackslash EFI\brackslash BOOT\brackslash BOOTX64.EFI} \cite[Section 3.5]{uefi-spec}.
 
 \begin{figure}[htb]%
     \centering%

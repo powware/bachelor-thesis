@@ -19,7 +19,7 @@ To be able to analyze \ac{UEFI} threats against Windows 11 it is important to un
 The interaction with \ac{UEFI} begins with the installation process and the partitioning of the hard drive Windows is installed onto.
 % creates at least four partitions
 When the Windows Installer is launched, it creates at least four \ac{GPT} partitions on the target hard drive: the \acf{ESP}, a recovery partition, a partition reserved for temporary storage, and the boot partition containing the system files.
-Two copies of the \emph{Windows Boot Manager} \program{bootmgfw.efi} are placed on the \ac{ESP}, one under \program{EFI\textbackslash Boot\textbackslash bootx64.efi} for the default boot behavior (i.e., booting from the installed hard drive) and one under \program{EFI\textbackslash Microsoft\textbackslash Boot\textbackslash bootmgfw.efi} alongside boot resources such as the \ac{BCD}.
+Two copies of the \emph{Windows Boot Manager} \program{bootmgfw.efi} are placed on the \ac{ESP}, one under \program{EFI\brackslash Boot\brackslash bootx64.efi} for the default boot behavior (i.e., booting from the installed hard drive) and one under \program{EFI\brackslash Microsoft\brackslash Boot\brackslash bootmgfw.efi} alongside boot resources such as the \ac{BCD}.
 The path of the latter boot manager is saved in a boot load option variable entry \code{Boot\#\#\#\#}, which is then added to the \code{BootOrder} list variable.
 The boot load option contains optional data consisting of a \ac{GUID} identifying the Windows Boot Manager entry in the \ac{BCD}.
 The \ac{BCD}, as its name suggests, contains arguments used to configure various steps of the boot process \cite[Section 12]{windows-internals-7-part2}.
@@ -56,7 +56,7 @@ Although some more advanced options may not be exposed and can be accessed throu
 It also supports importing and exporting registry keys along their subkeys and contained values.
 Internally, the registry is not a single large file but instead a set of files called hives.
 Each hive contains one tree that is mapped into the Registry as a whole.
-There is no one\-/to\-/one mapping of a registry root key to a hive file, the \ac{BCD} file, for example, is also a hive file and is mapped into the Registry under \program{HKEY\_LOCAL\_MACHINE\textbackslash BCD00000000} \cite[Section 10]{windows-internals-7-part2}.
+There is no one\-/to\-/one mapping of a registry root key to a hive file, the \ac{BCD} file, for example, is also a hive file and is mapped into the Registry under \program{HKEY\underbreak LOCAL\underbreak MACHINE\brackslash BCD00000000} \cite[Section 10]{windows-internals-7-part2}.
 Some hives even reside entirely in memory as a means of offering hardware configuration through the Registry \ac{API}.
 
 \input{content/windows/windows_security}

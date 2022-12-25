@@ -14,7 +14,7 @@ We now solely rely on the boot order/firmware policy to prefer removable media.
 Even if this was to be the case, we promptly see that Secure Boot already denies the execution of the installer when trying to boot it.
 When using our Windows installer we observe the same denial for the bootkit itself.
 The Windows Boot Manager boot option pointing to our bootkit is now denied execution.
-If we were to have overwritten the standard boot entry of the hard drive \program{EFI\textbackslash Boot\textbackslash bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
+If we were to have overwritten the standard boot entry of the hard drive \program{EFI\brackslash Boot\brackslash bootx64.efi}, a copy of the Windows Boot Manager, Windows would now be rendered unbootable.
 
 \subsection{Rootkit}
 
@@ -25,7 +25,7 @@ We also discussed in \autoref{sec:uefi-pi:uefi:secure-boot} that Secure Boot rel
 Now, these two seem to be conflicting, but when we deploy our rootkit it is unaffected by Secure Boot and executes just like before.
 When we look at the reference implementation in \ac{EDK} II, we can see why: \autoref{lst:dxe-image-verification-handler} shows a snippet of the function that is used to implement the \nameref{lst:security2-architectural-protocol}.
 It shows that the image origin dictates which policy is being applied.
-The standard policy for images from a \acf{FV} (\code{IMAGE\_FROM\_FV}) is to always allow execution.
+The standard policy for images from a \acf{FV} (\code{IMAGE\underbreak FROM\underbreak FV}) is to always allow execution.
 This aligns with what the \ac{UEFI} specification says about the Secure Boot Firmware Policy:
 \textcquote[32.5.3.2]{uefi-spec}{The firmware may approve \ac{UEFI} images for other reasons than those specified here.
     For example: whether the image is in the system flash \textelp{}}.
