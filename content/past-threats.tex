@@ -6,7 +6,7 @@
 % https://www.blackhat.com/docs/asia-17/materials/asia-17-Matrosov-The-UEFI-Firmware-Rootkits-Myths-And-Reality.pdf
 % https://www.researchgate.net/profile/Anton-Sergeev-2/publication/269310822_Too_young_to_be_secure_Analysis_of_UEFI_threats_and_vulnerabilities/links/551306b50cf23203199aa237/Too-young-to-be-secure-Analysis-of-UEFI-threats-and-vulnerabilities.pdf
 
-Before we implement our own \ac{UEFI} attacks, we first take a look at how past \ac{UEFI} threats are structured.
+Before we implement our \ac{UEFI} attacks, we first take a look at how past \ac{UEFI} threats are structured.
 The threats discussed range from actual attacks found in the wild and analyzed by security researchers, over attacks that have been implemented for similar research purposes, to tools that enable system owners a more advanced control over their systems.
 
 
@@ -75,7 +75,7 @@ While both approaches could fundamentally be done in the form of an added \ac{DX
 \section{Approach}
 
 We can categorize the threats by their attack vector.
-Rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment prior to the Windows boot process.
+Rootkits and bootkits do not seem to have distinct approaches, as they both start their execution in the \ac{UEFI} environment before the Windows boot process.
 We found that their approach can mainly be divided into storage\-/based and memory\-/based attacks.
 Storage\-/based attacks mostly gain execution in the operating system environment by writing their payload into the Windows installation and modifying configuration data on the disk.
 These attacks are often performed offline before any parts of the operating system are executed.
@@ -96,7 +96,7 @@ MosaicRegressor simply deploys its payload in the Windows startup folder \cite{m
 
 It seems to be unique to ESPecter to patch out the integrity self-check of the Windows Boot Manager, as it is the only bootkit to change the bootloader on disk instead of in\-/memory \cite{especter}.
 FinSpy and Dreamboot when executed, load \program{bootmgfw.efi} into memory and apply patches before transferring execution \cite{finspy, dreamboot}.
-EFIGuard loads an additional \ac{UEFI} driver which is able to hook the boot service \code{LoadImage()}.
+EFIGuard loads an additional \ac{UEFI} driver which hooks the boot service \code{LoadImage()}.
 When the function is called to load \program{bootmgfw.efi}, it patches the bootloader in memory \cite{efiguard}.
 MoonBounce applies its patches from within an \code{ExitBootServices()} hook \cite{moonbounce}.
 
